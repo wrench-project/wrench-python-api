@@ -340,7 +340,7 @@ struct Request {
   std::string remote_addr;
   int remote_port = -1;
 
-  // for server
+  // for wrench-daemon
   std::string version;
   std::string target;
   Params params;
@@ -3726,7 +3726,7 @@ inline const std::string &BufferStream::get_buffer() const { return buffer; }
 
 } // namespace detail
 
-// HTTP server implementation
+// HTTP wrench-daemon implementation
 inline Server::Server() : svr_sock_(INVALID_SOCKET), is_running_(false) {
 #ifndef _WIN32
   signal(SIGPIPE, SIG_IGN);
@@ -4330,7 +4330,7 @@ inline bool Server::listen_internal() {
           detail::close_socket(svr_sock_);
           ret = false;
         } else {
-          ; // The server socket was closed by user.
+          ; // The wrench-daemon socket was closed by user.
         }
         break;
       }
@@ -5607,7 +5607,7 @@ static SSLInit sslinit_;
 
 } // namespace detail
 
-// SSL HTTP server implementation
+// SSL HTTP wrench-daemon implementation
 inline SSLServer::SSLServer(const char *cert_path, const char *private_key_path,
                             const char *client_ca_cert_file_path,
                             const char *client_ca_cert_dir_path) {

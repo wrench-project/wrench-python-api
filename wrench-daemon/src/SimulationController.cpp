@@ -1,102 +1,95 @@
-#include "workflow_manager.h"
+#include "SimulationController.h"
 
 #include <random>
 #include <iostream>
 #include <unistd.h>
+#include <boost/lockfree/spsc_queue.hpp>
 
-WRENCH_LOG_CATEGORY(workflow_manager, "Log category for WorkflowManager");
+
+WRENCH_LOG_CATEGORY(simulation_controller, "Log category for SimulationController");
 
 
 namespace wrench {
 
-    // Struct to hold information on tracefile jobs to be added in
-    struct TraceFileJobInfo {
-        int nodes;
-        double flops;
-        wrench::WorkflowTask* task;
-    };
-
     /**
      * @brief Construct a new Workflow Manager object
      * 
-     * @param compute_services Set of pointers representative of compute services.
-     * @param storage_services Set of pointers representative of storage.
      * @param hostname String containing the name of the simulated computer.
-     * @param node_count Integer value holding the number of nodes the computer has.
-     * @param core_count Integer value holding the number of cores per node.
      */
-    WorkflowManager::WorkflowManager(
-            const std::set<std::shared_ptr<ComputeService>> &compute_services,
-            const std::set<std::shared_ptr<StorageService>> &storage_services,
-            const std::string &hostname,
-            const int node_count,
-            const int core_count) :
-            node_count(node_count), core_count(core_count), WMS(
-            nullptr, nullptr,
-            compute_services,
-            storage_services,
-            {}, nullptr,
-            hostname,
-            "WorkflowManager"
-    ) { }
+    SimulationController::SimulationController(
+            const std::string &hostname) :
+            WMS(
+                    nullptr, nullptr,
+                    {},
+                    {},
+                    {}, nullptr,
+                    hostname,
+                    "SimulationController"
+            ) { }
 
     /**
-     * @brief Overridden main within WMS to handle the how jobs are processed. 
+     * @brief Simulation controller's main method
      * 
-     * @return int Default return value
+     * @return int  exit code
      */
-    int WorkflowManager::main()
+    int SimulationController::main()
     {
+        // Setup
+        wrench::TerminalOutput::setThisProcessLoggingColor(TerminalOutput::COLOR_RED);
+        WRENCH_INFO("Starting");
+        WRENCH_INFO("Creating a Job Manager");
         this->job_manager = this->createJobManager();
-
-        auto batch_service = *(this->getAvailableComputeServices<BatchComputeService>().begin());
+        WRENCH_INFO("Creating a Data Movement Manager");
+        this->data_movement_manager = this->createDataMovementManager();
 
         double time_origin = this->simulation->getCurrentSimulatedDate();
-        // Main loop handling the WMS implementation.
+
+        // Main control loop
         while(true)
         {
-            // Add tasks onto the job_manager so it can begin processing them
-            while (!this->toSubmitJobs.empty())
-            {
-                // Retrieves the job to be submitted and set up needed arguments.
-                auto to_submit = this->toSubmitJobs.front();
-                auto job = std::get<0>(to_submit);
-                auto service_specific_args = std::get<1>(to_submit);
 
-                // Submit the job.
-                job_manager->submitJob(job, batch_service, service_specific_args);
-
-                // Lock the queue otherwise deadlocks might occur.
-                queue_mutex.lock();
-                this->toSubmitJobs.pop();
-                queue_mutex.unlock();
-                std::printf("Submit Server Time: %f\n", this->simulation->getCurrentSimulatedDate());
-            }
-
-            // Clean up memory by removing completed and failed jobs
-            while(not doneJobs.empty())
-                doneJobs.pop();
-
-            // Cancel jobs
-            while(not cancelJobs.empty())
-            {
-                // Retrieve compute service and job to execute job termination.
-                auto batch_service = *(this->getAvailableComputeServices<BatchComputeService>().begin());
-                auto job_name = cancelJobs.front();
-                try {
-                    batch_service->terminateJob(job_list[job_name]);
-                } catch (std::exception &e) {
-                    cerr << "EXCEPTION: " << e.what() << "\n";
-                }
-
-                // Remove from the map list of jobs
-                job_list.erase(job_name);
-
-                // Lock the queue otherwise deadlocks might occur.
-                queue_mutex.lock();
-                cancelJobs.pop();
-                queue_mutex.unlock();
-            }
+//            // Add tasks onto the job_manager so it can begin processing them
+//            while (!this->toSubmitJobs.empty())
+//            {
+//                // Retrieves the job to be submitted and set up needed arguments.
+//                auto to_submit = this->toSubmitJobs.front();
+//                auto job = std::get<0>(to_submit);
+//                auto service_specific_args = std::get<1>(to_submit);
+//
+//                // Submit the job.
+//                job_manager->submitJob(job, batch_service, service_specific_args);
+//
+//                // Lock the queue otherwise deadlocks might occur.
+//                queue_mutex.lock();
+//                this->toSubmitJobs.pop();
+//                queue_mutex.unlock();
+//                std::printf("Submit Server Time: %f\n", this->simulation->getCurrentSimulatedDate());
+//            }
+//
+//            // Clean up memory by removing completed and failed jobs
+//            while(not doneJobs.empty())
+//                doneJobs.pop();
+//
+//            // Cancel jobs
+//            while(not cancelJobs.empty())
+//            {
+//                // Retrieve compute service and job to execute job termination.
+//                auto batch_service = *(this->getAvailableComputeServices<BatchComputeService>().begin());
+//                auto job_name = cancelJobs.front();
+//                try {
+//                    batch_service->terminateJob(job_list[job_name]);
+//                } catch (std::exception &e) {
+//                    cerr << "EXCEPTION: " << e.what() << "\n";
+//                }
+//
+//                // Remove from the map list of jobs
+//                job_list.erase(job_name);
+//
+//                // Lock the queue otherwise deadlocks might occur.
+//                queue_mutex.lock();
+//                cancelJobs.pop();
+//                queue_mutex.unlock();
+//            }
 
 
             // Moves time forward for requested time while adding any completed events to a queue.
@@ -120,7 +113,7 @@ namespace wrench {
                 }
             }
 
-            // Exits if server needs to stop
+            // Exits if wrench-daemon needs to stop
             if(stop)
                 break;
             // Sleep since no matter what we're in locked step with real time and don't want
@@ -131,12 +124,14 @@ namespace wrench {
     }
 
     /**
-     * @brief Sets the flag to stop the server since the web server and wms server run on two different threads.
+     * @brief Sets the flag to stop the wrench-daemon since the web wrench-daemon and simulation_controller wrench-daemon run on two different threads.
      */
-    void WorkflowManager::stopServer()
+    void SimulationController::stopServer()
     {
         stop = true;
     }
+
+
 
     /**
      * @brief Adds a job to the simulation
@@ -147,14 +142,13 @@ namespace wrench {
      * @param actual_duration How long the job will run in seconds.
      * @return std::string Name of job or empty string if failed to create.
      */
-    std::string WorkflowManager::addJob(const double& requested_duration,
-                                        const unsigned int& num_nodes,
-                                        const double &actual_duration)
+    std::string SimulationController::addJob(const double& requested_duration,
+                                             const unsigned int& num_nodes,
+                                             const double &actual_duration)
     {
         static long task_id = 0;
         // Check if valid number of nodes.
-        if(num_nodes > node_count)
-            return "";
+
 
 //        cerr << "requested " << requested_duration << "\n";
 //        cerr << "num_nodes " << num_nodes << "\n";
@@ -177,7 +171,7 @@ namespace wrench {
 
 //        WRENCH_INFO("SUBMITTING : -t = %s", service_specific_args["-t"].c_str());
 
-        // Lock the queue to prevent deadlock. Put into queue due to simulation and web server on separate threads.
+        // Lock the queue to prevent deadlock. Put into queue due to simulation and web wrench-daemon on separate threads.
         queue_mutex.lock();
         toSubmitJobs.push(std::make_pair(job, service_specific_args));
         queue_mutex.unlock();
@@ -189,41 +183,18 @@ namespace wrench {
     }
 
     /**
-     * @brief Cancels a running or queued job in simulation
-     * 
-     * @param job_name Name of job to cancel.
-     * @return true Successfully canceled.
-     * @return false Failed to cancel whether no permission or doesn't exist.
-     */
-    bool WorkflowManager::cancelJob(const std::string& job_name)
-    {
-        // Search in hashtable for the job
-        if(job_list[job_name] != nullptr)
-        {
-            // Insert into queue the job needed to be removed. Mutex needed due to
-            // web server and simulation on different threads.
-            queue_mutex.lock();
-            cancelJobs.push(job_name);
-            queue_mutex.unlock();
-            return true;
-        }
-        cerr << "RETURNING FROM cancelJob\n";
-        return false;
-    }
-
-    /**
      * @brief Retrieve the list of events for the specified time period.
      * 
      * @param statuses Queue to hold all statuses.
-     * @param time Expected server time in seconds.
+     * @param time Expected wrench-daemon time in seconds.
      */
-    void WorkflowManager::getEventStatuses(std::queue<std::string>& statuses, const time_t& time)
+    void SimulationController::getEventStatuses(std::queue<std::string>& statuses, const time_t& time)
     {
         // Keeps retrieving events while there are events and converts them to a string(temp) to return
         // to client.
         while(!events.empty())
         {
-            // Locks the mutex because event statuses are in a queue shared by web server thread and simulation thread.
+            // Locks the mutex because event statuses are in a queue shared by web wrench-daemon thread and simulation thread.
             queue_mutex.lock();
             auto event = events.front();
             std::shared_ptr<wrench::StandardJob> job;
@@ -265,10 +236,10 @@ namespace wrench {
 
     /**
      * @brief Retrieves statuses of all simulated jobs in the simulation.
-     * 
+     *
      * @return std::vector<std::string> List of job statuses with relevant information.
      */
-    std::vector<std::string> WorkflowManager::getQueue()
+    std::vector<std::string> SimulationController::getQueue()
     {
         std::vector<std::tuple<std::string,std::string,int,int,int,double,double>> i_queue;
         std::vector<std::string> queue;
@@ -300,5 +271,40 @@ namespace wrench {
         }
         return queue;
     }
+
+    /**
+     * @brief Create and start new service instance in response to a request
+     * @param service_spec: a json object
+     * @return the created service's name
+     */
+    std::string SimulationController::addNewService(json service_spec) {
+        std::string service_type = service_spec["service_type"];
+
+        if (service_type == "compute_baremetal") {
+            return this->addNewBareMetalComputeService(service_spec);
+        } else {
+            throw std::runtime_error("Unknown service type '" + service_type + "' - cannot create it");
+        }
+    }
+
+    /**
+    * @brief Create new BareMetalComputeService instance in response to a request
+    * @param service_spec: a json object
+    * @return the created service's name
+    */
+    std::string SimulationController::addNewBareMetalComputeService(json service_spec) {
+        std::string head_host = service_spec["head_host"];
+
+        // Create the new service
+        auto new_service = new BareMetalComputeService(head_host, {head_host}, "", {}, {});
+        // Start it
+        auto new_service_shared_ptr = this->simulation->startNewService(new_service);
+        // Add the service to the "database" of existing services
+        this->service_registry[new_service_shared_ptr->getName()] = new_service_shared_ptr;
+        // Return the service's name
+        return new_service_shared_ptr->getName();
+    }
+
+
 }
 

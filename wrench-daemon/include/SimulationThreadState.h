@@ -1,28 +1,30 @@
-#include "workflow_manager.h"
+#include "SimulationController.h"
 #include <unistd.h>
+#include <nlohmann/json.hpp>
+
 
 
 class SimulationThreadState {
 public:
-    std::shared_ptr<wrench::WorkflowManager> wms;
+    std::shared_ptr<wrench::SimulationController> simulation_controller;
     wrench::Simulation simulation;
 
-
-    ~SimulationThreadState() {}
+    ~SimulationThreadState() = default;
 
     void getEventStatuses(std::queue<std::string>& statuses, const time_t& time) const;
 
     std::string addJob(const double& requested_duration,
                        const unsigned int& num_nodes, const double& actual_duration) const;
 
-    bool cancelJob(const std::string& job_name) const;
+    std::string addService(json service_spec) const;
 
     void stopSimulation() const;
 
     std::vector<std::string> getQueue() const;
 
-    void createAndLaunchSimulation(int main_argc, char **main_argv, int num_nodes, int num_cores,
-                                          std::string tracefile_scheme);
+    void createAndLaunchSimulation(bool full_log,
+                                   std::string platform_file,
+                                   std::string controller_host);
 
     double getSimulationTime() const;
 };
