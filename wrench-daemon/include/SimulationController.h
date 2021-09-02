@@ -99,9 +99,9 @@ namespace wrench {
         std::map<std::string, std::shared_ptr<wrench::WorkflowJob>> job_list;
 
         /**
-         * @brief Server time in seconds due to how wrench uses number of seconds since simulation started.
+         * @brief Time horizon to reach, if any.
          */
-        double server_time = 0;
+        double time_horizon_to_reach = 0;
 
         std::mutex controller_mutex;
 

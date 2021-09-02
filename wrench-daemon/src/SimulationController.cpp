@@ -115,7 +115,7 @@ namespace wrench {
             // Moves time forward for requested time while adding any completed events to a queue.
             // Needs to be done this way because waiting for next event cannot be done on another thread.
 
-            double time_to_sleep = std::max<double>(0, server_time - wrench::Simulation::getCurrentSimulatedDate());
+            double time_to_sleep = std::max<double>(0, time_horizon_to_reach - wrench::Simulation::getCurrentSimulatedDate());
 
             if (time_to_sleep > 0.0) {
                 S4U_Simulation::sleep(time_to_sleep);
@@ -130,7 +130,7 @@ namespace wrench {
                 }
             }
 #if 0
-            while(this->simulationTime < server_time)
+            while(this->simulationTime < time_horizon_to_reach)
             {
                 // Retrieve event by going through sec increments.
                 auto event = this->waitForNextEvent(0.001);
@@ -221,13 +221,15 @@ namespace wrench {
 #endif
 
     void SimulationController::advanceSimulationTime(double seconds) {
-        // Simply advance the server_time variable so that
+        // Simply advance the time_horizon_to_reach variable so that
         // the Controller simply catches up
-        this->server_time = Simulation::getCurrentSimulatedDate() + seconds;
-        WRENCH_INFO("SERVER_TIME = %lf ", this->server_time);
+        this->time_horizon_to_reach = Simulation::getCurrentSimulatedDate() + seconds;
+        WRENCH_INFO("SERVER_TIME = %lf ", this->time_horizon_to_reach);
     }
 
     double SimulationController::getSimulationTime() {
+        // This is not called by the simulation thread, but getting the
+        // simulation time is fine. It doesn't change the state of the simulation
         return Simulation::getCurrentSimulatedDate();
     }
 
@@ -280,7 +282,7 @@ namespace wrench {
 
             controller_mutex.unlock();
         }
-        server_time = (double)time;
+        time_horizon_to_reach = (double)time;
     }
 
     /**
