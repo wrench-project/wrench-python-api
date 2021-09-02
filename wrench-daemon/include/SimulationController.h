@@ -8,7 +8,6 @@
 #include <mutex>
 
 #include <nlohmann/json.hpp>
-#include <boost/lockfree/spsc_queue.hpp>
 
 using json = nlohmann::json;
 
@@ -42,6 +41,8 @@ namespace wrench {
     private:
 
         std::map<std::string, std::shared_ptr<Service>> service_registry;
+
+        std::queue<wrench::ComputeService *> compute_services_to_start;
 
         int main() override;
 
@@ -98,7 +99,7 @@ namespace wrench {
          */
         double server_time = 0;
 
-        std::mutex queue_mutex;
+        std::mutex controller_mutex;
 
 
     };

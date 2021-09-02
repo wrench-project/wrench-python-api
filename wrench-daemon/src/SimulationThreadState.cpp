@@ -51,10 +51,10 @@ void SimulationThreadState::getEventStatuses(queue<std::string> &statuses, const
     this->simulation_controller->getEventStatuses(statuses, time);
 }
 
-std::string SimulationThreadState::addJob(const double& requested_duration,
-                                          const unsigned int& num_nodes, const double& actual_duration) const {
-    return this->simulation_controller->addJob(requested_duration, num_nodes, actual_duration);
-}
+//std::string SimulationThreadState::addJob(const double& requested_duration,
+//                                          const unsigned int& num_nodes, const double& actual_duration) const {
+//    return this->simulation_controller->addJob(requested_duration, num_nodes, actual_duration);
+//}
 
 std::string SimulationThreadState::addService(json service_spec) const {
     return this->simulation_controller->addNewService(service_spec);

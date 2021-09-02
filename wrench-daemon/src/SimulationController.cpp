@@ -3,7 +3,6 @@
 #include <random>
 #include <iostream>
 #include <unistd.h>
-#include <boost/lockfree/spsc_queue.hpp>
 
 
 WRENCH_LOG_CATEGORY(simulation_controller, "Log category for SimulationController");
@@ -25,7 +24,8 @@ namespace wrench {
                     {}, nullptr,
                     hostname,
                     "SimulationController"
-            ) { }
+            ) {
+    }
 
     /**
      * @brief Simulation controller's main method
@@ -47,6 +47,26 @@ namespace wrench {
         // Main control loop
         while(true)
         {
+
+            // Start compute services that should be started, if any
+            while (true) {
+//                WRENCH_INFO("IN SERVICE CREATION LOOP");
+                wrench::ComputeService *new_compute_service = nullptr;
+                controller_mutex.lock();
+//                WRENCH_INFO("EMPTUY: %d", this->compute_services_to_start.empty());
+                if (!this->compute_services_to_start.empty()) {
+                    new_compute_service = this->compute_services_to_start.front();
+                    this->compute_services_to_start.pop();
+                }
+                controller_mutex.unlock();
+                if (new_compute_service == nullptr) break;
+
+                // Start the new service
+                auto new_service_shared_ptr = this->simulation->startNewService(new_compute_service);
+                // Add the new service to the "database" of existing services, so that
+                // later we can look it up by name
+                this->service_registry[new_service_shared_ptr->getName()] = new_service_shared_ptr;
+            }
 
 //            // Add tasks onto the job_manager so it can begin processing them
 //            while (!this->toSubmitJobs.empty())
@@ -107,9 +127,9 @@ namespace wrench {
                     std::printf("Event Server Time: %f\n", this->simulation->getCurrentSimulatedDate());
                     std::printf("Event: %s\n", event->toString().c_str());
                     // Add job onto the event queue with locks to prevent deadlocks.
-                    queue_mutex.lock();
+                    controller_mutex.lock();
                     events.push(std::make_pair(this->simulation->getCurrentSimulatedDate(), event));
-                    queue_mutex.unlock();
+                    controller_mutex.unlock();
                 }
             }
 
@@ -132,7 +152,7 @@ namespace wrench {
     }
 
 
-
+#if 0
     /**
      * @brief Adds a job to the simulation
      * 
@@ -181,6 +201,7 @@ namespace wrench {
         job_list[job->getName()] = job;
         return job->getName();
     }
+#endif
 
     /**
      * @brief Retrieve the list of events for the specified time period.
@@ -195,7 +216,7 @@ namespace wrench {
         while(!events.empty())
         {
             // Locks the mutex because event statuses are in a queue shared by web wrench-daemon thread and simulation thread.
-            queue_mutex.lock();
+            controller_mutex.lock();
             auto event = events.front();
             std::shared_ptr<wrench::StandardJob> job;
 
@@ -229,7 +250,7 @@ namespace wrench {
             }
             events.pop();
 
-            queue_mutex.unlock();
+            controller_mutex.unlock();
         }
         server_time = (double)time;
     }
@@ -297,12 +318,15 @@ namespace wrench {
 
         // Create the new service
         auto new_service = new BareMetalComputeService(head_host, {head_host}, "", {}, {});
-        // Start it
-        auto new_service_shared_ptr = this->simulation->startNewService(new_service);
-        // Add the service to the "database" of existing services
-        this->service_registry[new_service_shared_ptr->getName()] = new_service_shared_ptr;
+        // Put in in the list of services to start (this is because this method is called
+        // by the server thread, and therefore, it will segfault horribly if it calls any
+        // SimGrid simulation methods.
+        this->controller_mutex.lock();
+        this->compute_services_to_start.push(new_service);
+        this->controller_mutex.unlock();
+
         // Return the service's name
-        return new_service_shared_ptr->getName();
+        return new_service->getName();
     }
 
 

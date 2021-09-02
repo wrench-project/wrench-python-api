@@ -175,10 +175,18 @@ void addTime(const Request& req, Response& res)
  */
 void addService(const Request& req, Response& res)
 {
-    json req_body = json::parse(req.body);
-    std::printf("Path: %s\nBody: %s\n\n", req.path.c_str(), req.body.c_str());
+    std::cerr << req.path << ": " << req.body << "\n";
+    json req_body;
+    try {
+        req_body = json::parse(req.body);
+    } catch (std::exception &e) {
+        throw;
+    }
 
-    json body = req_body;
+    std::string service_name = simulation_thread_state->addService(req_body);
+
+    json body;
+    body["service_name"] = service_name;
 
     res.set_header("access-control-allow-origin", "*");
     res.set_content(body.dump(), "application/json");
