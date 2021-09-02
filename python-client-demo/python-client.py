@@ -10,6 +10,49 @@ class WRENCHException(Exception):
     pass
 
 
+def submitStandardJob(job_name, cs_name):
+    submission_spec = {"job_name": job_name, "service_name": cs_name}
+    try:
+        r = requests.post("http://localhost:8101/api/submitStandardJob", data=json.dumps(submission_spec))
+    except requests.exceptions.ConnectionError:
+        sys.stderr.write("Cannot connect to WRENCH daemon... aborting\n");
+        exit(1)
+
+    response = r.json()
+    if (response["success"]):
+        return
+    else:
+        raise WRENCHException(response["failure_cause"])
+
+def getSimulationEvents():
+    try:
+        r = requests.get("http://localhost:8101/api/getSimulationEvents")
+    except requests.exceptions.ConnectionError:
+        sys.stderr.write("Cannot connect to WRENCH daemon... aborting\n");
+        exit(1)
+
+    print("R.TEXT = " + str(r.text))
+    response = r.json()
+    return response;
+
+
+
+def createStandardJob(task_name, task_flops, min_num_cores, max_num_cores):
+    task_spec = {"task_name": task_name, "task_flops": task_flops, "min_num_cores": min_num_cores, "max_num_cores": max_num_cores}
+    try:
+        r = requests.post("http://localhost:8101/api/createStandardJob", data=json.dumps(task_spec))
+    except requests.exceptions.ConnectionError:
+        sys.stderr.write("Cannot connect to WRENCH daemon... aborting\n");
+        exit(1)
+
+    response = r.json()
+    if (response["success"]):
+        return response["job_id"]
+    else:
+        raise WRENCHException(response["failure_cause"])
+
+
+
 def addTime(seconds):
     time_spec = {"increment": seconds}
     try:
@@ -86,8 +129,27 @@ if __name__ == "__main__":
     print("Was told that time is " + str(date))
    
 
+    print("Creating a standard job...")
+    job_name = createStandardJob("some_task", 100.0, 1, 1);
+    print("Created standard job has name " + job_name)
     
+    print("Submitting the standard job to the compute service...")
+    submitStandardJob(job_name, cs_name)
+    print("Job submitted")
+    
+    print("Sleeping for 1000 seconds...")
+    addTime(1000)
+    print("Done sleeping")
+
+    print("Asking what time it is...")
+    date = getSimulatedTime()
+    print("Was told that time is " + str(date))
    
+
+    print("Getting simulation events...")
+    events = getSimulationEvents()
+    for event in events:
+        print("EVENT: " + str(event))
    
-   
+       
 

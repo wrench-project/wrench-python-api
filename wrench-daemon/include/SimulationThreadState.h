@@ -11,10 +11,13 @@ public:
 
     ~SimulationThreadState() = default;
 
-    void getEventStatuses(std::queue<std::string>& statuses, const time_t& time) const;
+    void getEvents(std::vector<json> &events) const;
 
     std::string addJob(const double& requested_duration,
                        const unsigned int& num_nodes, const double& actual_duration) const;
+
+    std::string createStandardJob(json task_spec) const;
+    void submitStandardJob(json submission_spec) const;
 
     std::string addService(json service_spec) const;
     std::vector<std::string> getAllHostnames() const;

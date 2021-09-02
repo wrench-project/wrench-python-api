@@ -73,22 +73,16 @@ void getTime(const Request& req, Response& res)
 void getEvents(const Request& req, Response& res)
 {
     // Create queue to hold event statuses
-    std::queue<std::string> status;
-    std::vector<std::string> events;
+    std::vector<json> events;
 
     // Retrieves event statuses from servers and
-    simulation_thread_state->getEventStatuses(status, (get_time() - time_start) / 1000);
+    simulation_thread_state->getEvents(events);
 
-    while(!status.empty())
-    {
-        events.push_back(status.front());
-        status.pop();
-    }
-
+    std::cerr << "EVENTS " << events.size() << "\n";
     json body;
     auto event_list = events;
     body["time"] = get_time() - time_start;
-    body["events"] = event_list;
+    body["event_queue"] = event_list;
     res.set_header("Access-Control-Allow-Origin", "*");
     res.set_content(body.dump(), "application/json");
 }
@@ -142,7 +136,7 @@ void stop(const Request& req, Response& res)
  */
 void addTime(const Request& req, Response& res) {
     json req_body = json::parse(req.body);
-    double time_to_sleep = req_body["increment"].get<double>();
+    auto time_to_sleep = req_body["increment"].get<double>();
     simulation_thread_state->advanceSimulationTime(time_to_sleep);
 }
 
@@ -150,34 +144,15 @@ void addTime(const Request& req, Response& res) {
 
 void getSimulationEvents(const Request& req, Response& res)
 {
-    // TODO: WAS FORMERLY ADD TIME
     std::printf("Path: %s\nBody: %s\n\n", req.path.c_str(), req.body.c_str());
-    std::queue<std::string> status;
-    std::vector<std::string> events;
 
-    json req_body = json::parse(req.body);
-
-    time_start -= req_body["increment"].get<int>() * 1000;
-
-    // Retrieve the event statuses during the  skip period.
-    simulation_thread_state->getEventStatuses(status, (get_time() - time_start) / 1000);
-    cerr << "status.size() = " << status.size()  << "\n";
-
-    while(!status.empty())
-    {
-        events.push_back(status.front());
-        status.pop();
-    }
-
-    // Let the simulation catch up
-    while ((get_time() - time_start) / 1000 > simulation_thread_state->getSimulationTime()) {
-        usleep(1000);
-    }
+    std::vector<json> events;
+    // Retrieve the event statuses
+    simulation_thread_state->getEvents(events);
 
     json body;
     auto event_list = events;
-    body["time"] = get_time() - time_start;
-    body["events"] = event_list;
+    body["event_queue"] = event_list;
     res.set_header("access-control-allow-origin", "*");
     res.set_content(body.dump(), "application/json");
 }
@@ -212,19 +187,47 @@ void addService(const Request& req, Response& res)
     res.set_content(body.dump(), "application/json");
 }
 
-
 /**
- * @brief Path handling submiting a Job to some compute service.
- * 
+ * @brief Path handling submitting a job to the simulation.
+ *
  * @param req HTTP request object
  * @param res HTTP response object
  */
 void submitStandardJob(const Request& req, Response& res)
 {
-    json req_body = json::parse(req.body);
+    std::cerr << req.path << ": " << req.body << "\n";
+    json req_body;
+    try {
+        req_body = json::parse(req.body);
+    } catch (std::exception &e) {
+        throw;
+    }
+
+    json body;
+    try {
+        simulation_thread_state->submitStandardJob(req_body);
+        body["success"] = true;
+    } catch (std::exception &e) {
+        body["success"] = false;
+        body["failure_cause"] = e.what();
+    }
+
+    res.set_header("access-control-allow-origin", "*");
+    res.set_content(body.dump(), "application/json");
+}
+
+
+/**
+ * @brief Path handling creating a Job to some compute service.
+ * 
+ * @param req HTTP request object
+ * @param res HTTP response object
+ */
+void createStandardJob(const Request& req, Response& res)
+{
+//    json req_body = json::parse(req.body);
     std::printf("Path: %s\nBody: %s\n\n", req.path.c_str(), req.body.c_str());
 
-    throw std::runtime_error("submitStandardJob NOT IMPLEMENTED YET");
     // Retrieve job info from request body: TODO
 //    auto requested_duration = req_body["job"]["durationInSec"].get<double>();
 //    auto num_nodes = req_body["job"]["numNodes"].get<int>();
@@ -233,20 +236,14 @@ void submitStandardJob(const Request& req, Response& res)
     json body;
 
     // Pass parameters in to function to add a job.
-    //std::string jobID = simulation_thread_state->submitJob(TODO);
-
-//    // Retrieve the return value from adding ajob to determine if successful.
-//    if(!jobID.empty())
-//    {
-//        body["time"] = get_time() - time_start;
-//        body["jobID"] = jobID;
-//        body["success"] = true;
-//    }
-//    else
-//    {
-//        body["time"] = get_time() - time_start;
-//        body["success"] = false;
-//    }
+    try {
+        std::string jobID = simulation_thread_state->createStandardJob(body);
+        body["success"] = true;
+        body["job_id"] = jobID;
+    } catch (std::exception &e) {
+        body["success"] = false;
+        body["failure_cause"] = e.what();
+    }
 
     res.set_header("access-control-allow-origin", "*");
     res.set_content(body.dump(), "application/json");
@@ -359,10 +356,12 @@ int main(int argc, char **argv)
     server.Get("/api/getTime", getTime);
     server.Get("/api/getEvents", getEvents);
     server.Get("/api/getAllHostnames", getAllHostnames);
+    server.Get("/api/getSimulationEvents", getSimulationEvents);
 
     // Handle POST requests
     server.Post("/api/addTime", addTime);
     server.Post("/api/addService", addService);
+    server.Post("/api/createStandardJob", createStandardJob);
     server.Post("/api/submitStandardJob", submitStandardJob);
     server.Post("/api/stop", stop);
 

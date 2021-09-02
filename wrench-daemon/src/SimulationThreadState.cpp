@@ -51,8 +51,8 @@ void SimulationThreadState::advanceSimulationTime(double seconds) {
     this->simulation_controller->advanceSimulationTime(seconds);
 }
 
-void SimulationThreadState::getEventStatuses(queue<std::string> &statuses, const time_t &time) const {
-    this->simulation_controller->getEventStatuses(statuses, time);
+void SimulationThreadState::getEvents(std::vector<json> &events) const {
+    this->simulation_controller->getEvents(events);
 }
 
 //std::string SimulationThreadState::addJob(const double& requested_duration,
@@ -73,10 +73,15 @@ void SimulationThreadState::stopSimulation() const {
     this->simulation_controller->stopServer();
 }
 
-std::vector<std::string> SimulationThreadState::getQueue() const {
-    return this->simulation_controller->getQueue();
-}
 
 double SimulationThreadState::getSimulationTime() const {
     return this->simulation_controller->getSimulationTime();
+}
+
+std::string SimulationThreadState::createStandardJob(json task_spec) const {
+    return this->simulation_controller->createStandardJob(task_spec);
+}
+
+void SimulationThreadState::submitStandardJob(json submission_spec) const {
+    this->simulation_controller->submitStandardJob(submission_spec);
 }

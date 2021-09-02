@@ -1566,7 +1566,7 @@ inline ssize_t select_read(socket_t sock, time_t sec, time_t usec) {
 #ifdef CPPHTTPLIB_USE_POLL
   struct pollfd pfd_read;
   pfd_read.fd = sock;
-  pfd_read.events = POLLIN;
+  pfd_read.event_queue = POLLIN;
 
   auto timeout = static_cast<int>(sec * 1000 + usec / 1000);
 
@@ -1590,7 +1590,7 @@ inline ssize_t select_write(socket_t sock, time_t sec, time_t usec) {
 #ifdef CPPHTTPLIB_USE_POLL
   struct pollfd pfd_read;
   pfd_read.fd = sock;
-  pfd_read.events = POLLOUT;
+  pfd_read.event_queue = POLLOUT;
 
   auto timeout = static_cast<int>(sec * 1000 + usec / 1000);
 
@@ -1614,7 +1614,7 @@ inline bool wait_until_socket_is_ready(socket_t sock, time_t sec, time_t usec) {
 #ifdef CPPHTTPLIB_USE_POLL
   struct pollfd pfd_read;
   pfd_read.fd = sock;
-  pfd_read.events = POLLIN | POLLOUT;
+  pfd_read.event_queue = POLLIN | POLLOUT;
 
   auto timeout = static_cast<int>(sec * 1000 + usec / 1000);
 

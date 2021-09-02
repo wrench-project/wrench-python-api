@@ -34,9 +34,11 @@ namespace wrench {
 
         void advanceSimulationTime(double seconds);
 
-        void getEventStatuses(std::queue<std::string>& statuses, const time_t& time);
+        void getEvents(std::vector<json> &events);
 
         double getSimulationTime();
+        std::string createStandardJob(json task_spec);
+        void submitStandardJob(json submission_spec);
 
         void stopServer();
 
@@ -44,9 +46,10 @@ namespace wrench {
 
     private:
 
-        std::map<std::string, std::shared_ptr<Service>> service_registry;
+        std::map<std::string, std::shared_ptr<ComputeService>> compute_service_registry;
 
         std::queue<wrench::ComputeService *> compute_services_to_start;
+        std::queue< std::pair<std::shared_ptr<StandardJob>, std::shared_ptr<ComputeService>>> submissions_to_do;
 
         int main() override;
 
@@ -73,9 +76,9 @@ namespace wrench {
         bool stop = false;
 
         /**
-         * @brief Holds queue of events within the simulation to allow it to pass between web wrench-daemon and simulation threads.
+         * @brief Holds queue of event_queue within the simulation to allow it to pass between web wrench-daemon and simulation threads.
          */
-        std::queue<std::pair<double, std::shared_ptr<wrench::WorkflowExecutionEvent>>> events;
+        std::queue<std::pair<double, std::shared_ptr<wrench::WorkflowExecutionEvent>>> event_queue;
 
         /**
          * @brief Holds queue of jobs to cancel within the simulation to allow it to pass between web wrench-daemon and simulation threads.
@@ -88,15 +91,15 @@ namespace wrench {
          */
         std::queue<std::shared_ptr<wrench::WorkflowJob>> doneJobs;
 
-        /**
-         * @brief Holds queue of jobs to start within the simulation to allow it to pass between web wrench-daemon and simulation threads.
-         */
-        std::queue<std::pair<std::shared_ptr<wrench::StandardJob>, std::map<std::string, std::string>>> toSubmitJobs;
+//        /**
+//         * @brief Holds queue of jobs to start within the simulation to allow it to pass between web wrench-daemon and simulation threads.
+//         */
+//        std::queue<std::pair<std::shared_ptr<wrench::StandardJob>, std::map<std::string, std::string>>> toSubmitJobs;
 
         /**
-         * @brief Holds map of jobs started by the user.
+         * @brief Holds map of all jobs
          */
-        std::map<std::string, std::shared_ptr<wrench::WorkflowJob>> job_list;
+        std::map<std::string, std::shared_ptr<wrench::StandardJob>> job_registry;
 
         /**
          * @brief Time horizon to reach, if any.

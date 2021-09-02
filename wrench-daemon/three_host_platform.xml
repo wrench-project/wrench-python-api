@@ -22,28 +22,29 @@
 
         <!-- A network link -->
         <link id="network_link" bandwidth="50MBps" latency="20us"/>
-        <!-- ControllerHost's local "loopback" link -->
-        <link id="loopback_ControllerHost" bandwidth="1000EBps" latency="0us"/>
-        <!--BatchHeadNode's local "loopback" link -->
-        <link id="loopback_ComputeHost" bandwidth="1000EBps" latency="0us"/>
-        <!--ComputeHost's local "loopback" link -->
-        <link id="loopback_StorageHost" bandwidth="1000EBps" latency="0us"/>
+
+<!--        &lt;!&ndash; ControllerHost's local "loopback" link &ndash;&gt;-->
+<!--        <link id="loopback_ControllerHost" bandwidth="1000EBps" latency="0us"/>-->
+<!--        &lt;!&ndash;BatchHeadNode's local "loopback" link &ndash;&gt;-->
+<!--        <link id="loopback_ComputeHost" bandwidth="1000EBps" latency="0us"/>-->
+<!--        &lt;!&ndash;ComputeHost's local "loopback" link &ndash;&gt;-->
+<!--        <link id="loopback_StorageHost" bandwidth="1000EBps" latency="0us"/>-->
 
         <!-- The network link connects the two hosts -->
         <route src="ControllerHost" dst="ComputeHost"> <link_ctn id="network_link"/> </route>
         <route src="ControllerHost" dst="StorageHost"> <link_ctn id="network_link"/> </route>
         <route src="ComputeHost" dst="StorageHost"> <link_ctn id="network_link"/> </route>
 
-        <!-- Each loopback link connects each host to itself -->
-        <route src="ControllerHost" dst="ControllerHost">
-            <link_ctn id="loopback_ControllerHost"/>
-        </route>
-        <route src="ComputeHost" dst="ComputeHost">
-            <link_ctn id="loopback_ComputeHost"/>
-        </route>
-        <route src="StorageHost" dst="StorageHost">
-            <link_ctn id="loopback_StorageHost"/>
-        </route>
+<!--        &lt;!&ndash; Each loopback link connects each host to itself &ndash;&gt;-->
+<!--&lt;!&ndash;        <route src="ControllerHost" dst="ControllerHost">&ndash;&gt;-->
+<!--&lt;!&ndash;            <link_ctn id="loopback_ControllerHost"/>&ndash;&gt;-->
+<!--&lt;!&ndash;        </route>&ndash;&gt;-->
+<!--        <route src="ComputeHost" dst="ComputeHost">-->
+<!--            <link_ctn id="loopback_ComputeHost"/>-->
+<!--        </route>-->
+<!--        <route src="StorageHost" dst="StorageHost">-->
+<!--            <link_ctn id="loopback_StorageHost"/>-->
+<!--        </route>-->
 
     </zone>
 </platform>

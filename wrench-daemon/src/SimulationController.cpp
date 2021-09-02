@@ -4,6 +4,7 @@
 #include <iostream>
 #include <unistd.h>
 
+#define JOB_MANAGER_COMMUNICATION_TIMEOUT_VALUE 0.00000001
 
 WRENCH_LOG_CATEGORY(simulation_controller, "Log category for SimulationController");
 
@@ -48,12 +49,10 @@ namespace wrench {
         while(true)
         {
 
-            // Start compute services that should be started, if any
+            // Start compute compute services that should be started, if any
             while (true) {
-//                WRENCH_INFO("IN SERVICE CREATION LOOP");
                 wrench::ComputeService *new_compute_service = nullptr;
                 controller_mutex.lock();
-//                WRENCH_INFO("EMPTUY: %d", this->compute_services_to_start.empty());
                 if (!this->compute_services_to_start.empty()) {
                     new_compute_service = this->compute_services_to_start.front();
                     this->compute_services_to_start.pop();
@@ -62,10 +61,28 @@ namespace wrench {
                 if (new_compute_service == nullptr) break;
 
                 // Start the new service
+                WRENCH_INFO("Starting a new compute service...");
                 auto new_service_shared_ptr = this->simulation->startNewService(new_compute_service);
                 // Add the new service to the "database" of existing services, so that
                 // later we can look it up by name
-                this->service_registry[new_service_shared_ptr->getName()] = new_service_shared_ptr;
+                this->compute_service_registry[new_service_shared_ptr->getName()] = new_service_shared_ptr;
+            }
+
+            // Submit jobs that should be submitted
+            while (true) {
+                std::pair<std::shared_ptr<StandardJob>, std::shared_ptr<ComputeService>> submission_to_do;
+                controller_mutex.lock();
+                if (this->submissions_to_do.empty()) {
+                    controller_mutex.unlock();
+                    break;
+                } else {
+                    submission_to_do = this->submissions_to_do.front();
+                    this->submissions_to_do.pop();
+                    controller_mutex.unlock();
+                }
+                // Do the submission
+                WRENCH_INFO("Submitting a job...");
+                this->job_manager->submitJob(submission_to_do.first, submission_to_do.second, {});
             }
 
 //            // Add tasks onto the job_manager so it can begin processing them
@@ -97,13 +114,13 @@ namespace wrench {
 //                auto batch_service = *(this->getAvailableComputeServices<BatchComputeService>().begin());
 //                auto job_name = cancelJobs.front();
 //                try {
-//                    batch_service->terminateJob(job_list[job_name]);
+//                    batch_service->terminateJob(job_registry[job_name]);
 //                } catch (std::exception &e) {
 //                    cerr << "EXCEPTION: " << e.what() << "\n";
 //                }
 //
 //                // Remove from the map list of jobs
-//                job_list.erase(job_name);
+//                job_registry.erase(job_name);
 //
 //                // Lock the queue otherwise deadlocks might occur.
 //                queue_mutex.lock();
@@ -112,20 +129,19 @@ namespace wrench {
 //            }
 
 
-            // Moves time forward for requested time while adding any completed events to a queue.
+            // Moves time forward for requested time while adding any completed event_queue to a queue.
             // Needs to be done this way because waiting for next event cannot be done on another thread.
 
             double time_to_sleep = std::max<double>(0, time_horizon_to_reach - wrench::Simulation::getCurrentSimulatedDate());
 
             if (time_to_sleep > 0.0) {
+                WRENCH_INFO("Sleeping %.2lf seconds to catch up with the client", time_to_sleep);
                 S4U_Simulation::sleep(time_to_sleep);
-                // TODO: NOT SURE THIS BELOW WORKS FOR EVENTS, WOULD BE NICE (WE HAVE THE OLD CODE BELOW)
-                while (auto event = this->waitForNextEvent(0.0)) {
-                    std::printf("Event Server Time: %f\n", Simulation::getCurrentSimulatedDate());
+                while (auto event = this->waitForNextEvent(JOB_MANAGER_COMMUNICATION_TIMEOUT_VALUE)) {
                     std::printf("Event: %s\n", event->toString().c_str());
                     // Add job onto the event queue with locks to prevent deadlocks.
                     controller_mutex.lock();
-                    events.push(std::make_pair(this->simulation->getCurrentSimulatedDate(), event));
+                    event_queue.push(std::make_pair(Simulation::getCurrentSimulatedDate(), event));
                     controller_mutex.unlock();
                 }
             }
@@ -144,7 +160,7 @@ namespace wrench {
                     std::printf("Event: %s\n", event->toString().c_str());
                     // Add job onto the event queue with locks to prevent deadlocks.
                     controller_mutex.lock();
-                    events.push(std::make_pair(this->simulation->getCurrentSimulatedDate(), event));
+                    event_queue.push(std::make_pair(this->simulation->getCurrentSimulatedDate(), event));
                     controller_mutex.unlock();
                 }
             }
@@ -153,7 +169,7 @@ namespace wrench {
             // Exits if wrench-daemon needs to stop
             if(stop)
                 break;
-            // Sleep since no matter what we're in locked step with real time and don't want
+            // Sleep since no matter what we're in locked step with client time and don't want
             // to burn CPU cycles like crazy. Could probably sleep 1s...
             usleep(100);
         }
@@ -215,7 +231,7 @@ namespace wrench {
 
         // Flag that there is a job of this name created by the user needed for job cancellation. Mapping name string
         // to pointer of the job.
-        job_list[job->getName()] = job;
+        job_registry[job->getName()] = job;
         return job->getName();
     }
 #endif
@@ -234,100 +250,55 @@ namespace wrench {
     }
 
     /**
-     * @brief Retrieve the list of events for the specified time period.
+     * @brief Retrieve the list of event_queue accumulated to date.
      * 
      * @param statuses Queue to hold all statuses.
-     * @param time Expected wrench-daemon time in seconds.
      */
-    void SimulationController::getEventStatuses(std::queue<std::string>& statuses, const time_t& time)
-    {
-        // Keeps retrieving events while there are events and converts them to a string(temp) to return
+    void SimulationController::getEvents(std::vector<json> &events) {
+        // Keeps retrieving event_queue while there are event_queue and converts them to a string(temp) to return
         // to client.
-        while(!events.empty())
-        {
-            // Locks the mutex because event statuses are in a queue shared by web wrench-daemon thread and simulation thread.
-            controller_mutex.lock();
-            auto event = events.front();
+        controller_mutex.lock();
+        while(!event_queue.empty()) {
+            auto event = event_queue.front();
             std::shared_ptr<wrench::StandardJob> job;
+            json event_desc;
 
             // Casts jobs to JobFailed or JobComplete and extracts the job pointer containing information.
             // Cleans up by pushing done/failed jobs onto a queue for main thread to clean up.
             if(auto failed = std::dynamic_pointer_cast<wrench::StandardJobFailedEvent>(event.second))
             {
-                doneJobs.push(failed->standard_job);
+//                doneJobs.push(failed->standard_job);
+                event_desc["type"] = "job_failure";
+                event_desc["failure_cause"] = failed->failure_cause->toString();
                 job = failed->standard_job;
             }
             else if(auto complete = std::dynamic_pointer_cast<wrench::StandardJobCompletedEvent>(event.second))
             {
-                doneJobs.push(complete->standard_job);
+//                doneJobs.push(complete->standard_job);
+                event_desc["type"] = "job_completion";
                 job = complete->standard_job;
             }
 
-            // Check if jobs are ones submitted by user otherwise do not return anything to user.
-            if(job_list[job->getName()])
-            {
-                double submit_date = job->getSubmitDate();
-                double start_date = (*(job->getTasks().begin()))->getStartDate();
-                double end_date = (*(job->getTasks().begin()))->getEndDate();
-                if (end_date < 0) {
-                    end_date =  (*(job->getTasks().begin()))->getFailureDate();
-                }
-                statuses.push(std::to_string(event.first) + " " + event.second->toString() + " " +
-                              std::to_string(submit_date) + "|" +
-                              std::to_string(start_date) + "|" +
-                              std::to_string(end_date));
-                job_list.erase(job->getName());
-            }
-            events.pop();
+            // Construct the event object as JSON
 
-            controller_mutex.unlock();
+            event_desc["job_name"] = job->getName();
+            event_desc["submit_date"] = job->getSubmitDate();
+            event_desc["end_date"] = job->getEndDate();
+            events.push_back(event_desc);
+            job_registry.erase(job->getName());
+
+            event_queue.pop();
         }
-        time_horizon_to_reach = (double)time;
+
+        controller_mutex.unlock();
     }
 
-    /**
-     * @brief Retrieves statuses of all simulated jobs in the simulation.
-     *
-     * @return std::vector<std::string> List of job statuses with relevant information.
-     */
-    std::vector<std::string> SimulationController::getQueue()
-    {
-        std::vector<std::tuple<std::string,std::string,int,int,int,double,double>> i_queue;
-        std::vector<std::string> queue;
-        auto batch_services = this->getAvailableComputeServices<BatchComputeService>();
 
-        // Loops through all available batch services (should only be one supposedly in this case).
-        // and inserts into intermediary queue to extract the relevant information.
-        for(auto const bs : batch_services)
-        {
-            auto bs_queue = bs->getQueue();
-            i_queue.insert(i_queue.end(), bs_queue.begin(), bs_queue.end());
-        }
-
-        // Loops through intermediary queue and extracts the needed information to convert into a string
-        // before finally inserting into queue which needs to be returned. Front-end will handle parsing
-        // of informationi so information is passed as a comma-separated string.
-        for(auto const q : i_queue) {
-//            std::cerr << wrench::Simulation::getCurrentSimulatedDate() << "\n";
-//            std::cerr << std::get<0>(q) + ',' + std::get<1>(q) + ',' + std::to_string(std::get<2>(q)) +
-//                                         ',' + std::to_string(std::get<3>(q)) + ',' +
-//                                         ',' + std::to_string(std::get<4>(q)) + ',' +
-//                                         ',' + std::to_string(std::get<5>(q)) + ','
-//                                          + std::to_string(std::get<6>(q)) << "\n";
-            queue.push_back(std::get<0>(q) + ',' +
-                            std::get<1>(q) + ',' +
-                            std::to_string(std::get<2>(q)) + ',' +
-                            std::to_string(std::get<4>(q)) + ',' +
-                            std::to_string(std::get<6>(q)));
-        }
-        return queue;
-    }
-
-    /**
-     * @brief Create and start new service instance in response to a request
-     * @param service_spec: a json object
-     * @return the created service's name
-     */
+/**
+ * @brief Create and start new service instance in response to a request
+ * @param service_spec: a json object
+ * @return the created service's name
+ */
     std::string SimulationController::addNewService(json service_spec) {
         std::string service_type = service_spec["service_type"];
 
@@ -338,20 +309,20 @@ namespace wrench {
         }
     }
 
-    /**
-     * @brief Retrieve all hostnames
-     * @return a vector of hostnames
-     */
+/**
+ * @brief Retrieve all hostnames
+ * @return a vector of hostnames
+ */
     std::vector<std::string> SimulationController::getAllHostnames() {
         return Simulation::getHostnameList();
     }
 
 
-    /**
-    * @brief Create new BareMetalComputeService instance in response to a request
-    * @param service_spec: a json object
-    * @return the created service's name
-    */
+/**
+* @brief Create new BareMetalComputeService instance in response to a request
+* @param service_spec: a json object
+* @return the created service's name
+*/
     std::string SimulationController::addNewBareMetalComputeService(json service_spec) {
         std::string head_host = service_spec["head_host"];
 
@@ -366,6 +337,37 @@ namespace wrench {
 
         // Return the service's name
         return new_service->getName();
+    }
+
+/**
+ * @brief Create a new job
+ * @return
+ */
+    std::string SimulationController::createStandardJob(json task_spec) {
+        auto task = this->getWorkflow()->addTask(task_spec["task_name"], task_spec["task_flops"], task_spec["min_num_cores"], task_spec["max_num_cores"], 0.0);
+        auto job = this->job_manager->createStandardJob(task, {});
+        this->controller_mutex.lock();
+        this->job_registry[job->getName()] = job;
+        this->controller_mutex.unlock();
+        return job->getName();
+    }
+
+/**
+ * @brief Submit a standard job
+ */
+    void SimulationController::submitStandardJob(json submission_spec) {
+        std::string job_name = submission_spec["job_name"];
+        std::string service_name = submission_spec["service_name"];
+        if (this->job_registry.find(job_name) == this->job_registry.end()) {
+            throw std::runtime_error("Unknown job " + job_name);
+        }
+        if (this->compute_service_registry.find(service_name) == this->compute_service_registry.end()) {
+            throw std::runtime_error("Unknown service " + service_name);
+        }
+        this->controller_mutex.lock();
+        this->submissions_to_do.push(std::make_pair(this->job_registry[job_name], this->compute_service_registry[service_name])) ;
+        this->controller_mutex.unlock();
+
     }
 
 
