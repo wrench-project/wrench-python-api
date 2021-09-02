@@ -47,6 +47,10 @@ void SimulationThreadState::createAndLaunchSimulation(
     simulation.launch();
 }
 
+void SimulationThreadState::advanceSimulationTime(double seconds) {
+    this->simulation_controller->advanceSimulationTime(seconds);
+}
+
 void SimulationThreadState::getEventStatuses(queue<std::string> &statuses, const time_t &time) const {
     this->simulation_controller->getEventStatuses(statuses, time);
 }
@@ -60,6 +64,11 @@ std::string SimulationThreadState::addService(json service_spec) const {
     return this->simulation_controller->addNewService(service_spec);
 }
 
+std::vector<std::string> SimulationThreadState::getAllHostnames() const {
+    return this->simulation_controller->getAllHostnames();
+}
+
+
 void SimulationThreadState::stopSimulation() const {
     this->simulation_controller->stopServer();
 }
@@ -69,5 +78,5 @@ std::vector<std::string> SimulationThreadState::getQueue() const {
 }
 
 double SimulationThreadState::getSimulationTime() const {
-    return this->simulation_controller->simulationTime;
+    return this->simulation_controller->getSimulationTime();
 }

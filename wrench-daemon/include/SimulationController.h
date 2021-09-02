@@ -21,18 +21,22 @@ namespace wrench {
         double simulationTime = 0.0;
 
         // Constructor
-        SimulationController(
-            const std::string &hostname
-        );
+        explicit SimulationController(const std::string &hostname);
 
         std::string addNewService(json service_spec);
 
-        std::string addJob(const double& requested_duration,
-                     const unsigned int& num_nodes, const double& actual_duration);
+//        std::string addJob(const double& requested_duration,
+//                     const unsigned int& num_nodes, const double& actual_duration);
+
+        std::vector<std::string> getAllHostnames();
         
-        bool cancelJob(const std::string& job_name);
-        
+//        bool cancelJob(const std::string& job_name);
+
+        void advanceSimulationTime(double seconds);
+
         void getEventStatuses(std::queue<std::string>& statuses, const time_t& time);
+
+        double getSimulationTime();
 
         void stopServer();
 

@@ -17,6 +17,9 @@ public:
                        const unsigned int& num_nodes, const double& actual_duration) const;
 
     std::string addService(json service_spec) const;
+    std::vector<std::string> getAllHostnames() const;
+
+    void advanceSimulationTime(double seconds);
 
     void stopSimulation() const;
 

@@ -114,10 +114,26 @@ namespace wrench {
 
             // Moves time forward for requested time while adding any completed events to a queue.
             // Needs to be done this way because waiting for next event cannot be done on another thread.
+
+            double time_to_sleep = std::max<double>(0, server_time - wrench::Simulation::getCurrentSimulatedDate());
+
+            if (time_to_sleep > 0.0) {
+                S4U_Simulation::sleep(time_to_sleep);
+                // TODO: NOT SURE THIS BELOW WORKS FOR EVENTS, WOULD BE NICE (WE HAVE THE OLD CODE BELOW)
+                while (auto event = this->waitForNextEvent(0.0)) {
+                    std::printf("Event Server Time: %f\n", Simulation::getCurrentSimulatedDate());
+                    std::printf("Event: %s\n", event->toString().c_str());
+                    // Add job onto the event queue with locks to prevent deadlocks.
+                    controller_mutex.lock();
+                    events.push(std::make_pair(this->simulation->getCurrentSimulatedDate(), event));
+                    controller_mutex.unlock();
+                }
+            }
+#if 0
             while(this->simulationTime < server_time)
             {
                 // Retrieve event by going through sec increments.
-                auto event = this->waitForNextEvent(1.0);
+                auto event = this->waitForNextEvent(0.001);
                 WRENCH_INFO("TICK");
                 this->simulationTime = wrench::Simulation::getCurrentSimulatedDate();
 
@@ -132,6 +148,7 @@ namespace wrench {
                     controller_mutex.unlock();
                 }
             }
+#endif
 
             // Exits if wrench-daemon needs to stop
             if(stop)
@@ -202,6 +219,17 @@ namespace wrench {
         return job->getName();
     }
 #endif
+
+    void SimulationController::advanceSimulationTime(double seconds) {
+        // Simply advance the server_time variable so that
+        // the Controller simply catches up
+        this->server_time = Simulation::getCurrentSimulatedDate() + seconds;
+        WRENCH_INFO("SERVER_TIME = %lf ", this->server_time);
+    }
+
+    double SimulationController::getSimulationTime() {
+        return Simulation::getCurrentSimulatedDate();
+    }
 
     /**
      * @brief Retrieve the list of events for the specified time period.
@@ -307,6 +335,15 @@ namespace wrench {
             throw std::runtime_error("Unknown service type '" + service_type + "' - cannot create it");
         }
     }
+
+    /**
+     * @brief Retrieve all hostnames
+     * @return a vector of hostnames
+     */
+    std::vector<std::string> SimulationController::getAllHostnames() {
+        return Simulation::getHostnameList();
+    }
+
 
     /**
     * @brief Create new BareMetalComputeService instance in response to a request

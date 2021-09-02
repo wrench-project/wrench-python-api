@@ -30,8 +30,6 @@ namespace po = boost::program_options;
 
 httplib::Server server;
 
-bool simulation_has_been_launched = false;
-
 /**
  * @brief Time offset used to calculate simulation time.
  * 
@@ -60,22 +58,14 @@ void getTime(const Request& req, Response& res)
 
     json body;
 
-    double time_to_return;
-
-    if (!simulation_has_been_launched) {
-        time_to_return = 0.0;
-    } else {
-        time_to_return = simulation_thread_state->getSimulationTime();
-    }
-
     // Sets and returns the time.
-    body["time"] = time_to_return;
+    body["time"] = simulation_thread_state->getSimulationTime();
     res.set_header("access-control-allow-origin", "*");
     res.set_content(body.dump(), "application/json");
 }
 
 /**
- * @brief Path handling the retrieval of even statuses.
+ * @brief Path handling the retrieval of event statuses.
  * 
  * @param req HTTP request object
  * @param res HTTP response object
@@ -103,6 +93,22 @@ void getEvents(const Request& req, Response& res)
     res.set_content(body.dump(), "application/json");
 }
 
+/**
+ * @brief Path handling the retrieval of all hostnames.
+ *
+ * @param req HTTP request object
+ * @param res HTTP response object
+ */
+void getAllHostnames(const Request& req, Response& res)
+{
+    std::vector<std::string> hostnames = simulation_thread_state->getAllHostnames();
+    json body;
+    body["hostnames"] = hostnames;
+    std::cerr << body << "\n";
+
+    res.set_header("Access-Control-Allow-Origin", "*");
+    res.set_content(body.dump(), "application/json");
+}
 
 // POST PATHS
 
@@ -134,8 +140,17 @@ void stop(const Request& req, Response& res)
  * @param req HTTP request object
  * @param res HTTP response object
  */
-void addTime(const Request& req, Response& res)
+void addTime(const Request& req, Response& res) {
+    json req_body = json::parse(req.body);
+    double time_to_sleep = req_body["increment"].get<double>();
+    simulation_thread_state->advanceSimulationTime(time_to_sleep);
+}
+
+
+
+void getSimulationEvents(const Request& req, Response& res)
 {
+    // TODO: WAS FORMERLY ADD TIME
     std::printf("Path: %s\nBody: %s\n\n", req.path.c_str(), req.body.c_str());
     std::queue<std::string> status;
     std::vector<std::string> events;
@@ -183,10 +198,15 @@ void addService(const Request& req, Response& res)
         throw;
     }
 
-    std::string service_name = simulation_thread_state->addService(req_body);
-
     json body;
-    body["service_name"] = service_name;
+    try {
+        std::string service_name = simulation_thread_state->addService(req_body);
+        body["success"] = true;
+        body["service_name"] = service_name;
+    } catch (std::exception &e) {
+        body["success"] = false;
+        body["failure_cause"] = e.what();
+    }
 
     res.set_header("access-control-allow-origin", "*");
     res.set_content(body.dump(), "application/json");
@@ -298,14 +318,14 @@ int main(int argc, char **argv)
     desc.add_options()
             ("help", "Show this help message")
             ("wrench-full-log", po::bool_switch()->default_value(false),
-                    "Show full simulation log during execution")
+             "Show full simulation log during execution")
             ("platform", po::value<std::string>()->required(),
-                    "Path to the XML file that described the simulated platform")
+             "Path to the XML file that described the simulated platform")
             ("controller-host", po::value<std::string>()->required(),
-                    "Host in the (simulated) platform on which the controller process will be running")
+             "Host in the (simulated) platform on which the controller process will be running")
             ("port", po::value<int>()->default_value(8101)->notifier(
                     in(1024, 49151, "port")),
-                            "port number, between 1024 and 4951, on which this daemon will listen")
+             "port number, between 1024 and 4951, on which this daemon will listen")
             ;
 
     po::variables_map vm;
@@ -336,8 +356,9 @@ int main(int argc, char **argv)
     }
 
     // Handle GET requests
-    server.Get("/api/time", getTime);
+    server.Get("/api/getTime", getTime);
     server.Get("/api/getEvents", getEvents);
+    server.Get("/api/getAllHostnames", getAllHostnames);
 
     // Handle POST requests
     server.Post("/api/addTime", addTime);
