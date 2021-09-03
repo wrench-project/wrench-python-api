@@ -122,8 +122,7 @@ void waitForNextSimulationEvent(const Request &req, Response & res) {
  * @param req HTTP request object
  * @param res HTTP response object
  */
-void addService(const Request& req, Response& res)
-{
+void addService(const Request& req, Response& res) {
     std::cerr << req.path << " " << req.body << "\n";
 
     // Parse the request's body to json
@@ -146,8 +145,7 @@ void addService(const Request& req, Response& res)
 }
 
 
-void submitStandardJob(const Request& req, Response& res)
-{
+void submitStandardJob(const Request& req, Response& res) {
     std::cerr << req.path << " " << req.body << "\n";
 
     // Parse the request's body to json
@@ -169,8 +167,7 @@ void submitStandardJob(const Request& req, Response& res)
 }
 
 
-void createStandardJob(const Request& req, Response& res)
-{
+void createStandardJob(const Request& req, Response& res) {
     std::cerr << req.path << " " << req.body << "\n";
 
     // parse the request's answer to json
@@ -194,8 +191,7 @@ void createStandardJob(const Request& req, Response& res)
 }
 
 
-void error_handling(const Request& req, Response& res)
-{
+void error_handling(const Request& req, Response& res) {
     std::cerr << "[" << res.status << "]: " << req.path << " " << req.body << "\n";
 }
 
@@ -203,13 +199,13 @@ void error_handling(const Request& req, Response& res)
 /******************
  ** MAIN FUNCTION *
  ******************/
-int main(int argc, char **argv)
-{
 
-    // Generic lambda to check if a number is in some range
-    auto in = [](const auto &min, const auto &max, char const * const opt_name){
+int main(int argc, char **argv) {
+
+    // Generic lambda to check if a numeric argument is in some range
+    auto in = [](const auto &min, const auto &max, char const * const opt_name) {
         return [opt_name, min, max](const auto &v){
-            if(v < min || v > max){
+            if (v < min || v > max) {
                 throw po::validation_error
                         (po::validation_error::invalid_option_value,
                          opt_name, std::to_string(v));
@@ -259,13 +255,13 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    // Handle GET requests
+    // Set up GET request handlers
     server.Get("/api/getTime", getTime);
     server.Get("/api/getAllHostnames", getAllHostnames);
     server.Get("/api/getSimulationEvents", getSimulationEvents);
     server.Get("/api/waitForNextSimulationEvent", waitForNextSimulationEvent);
 
-    // Handle POST requests
+    // Set up POST request handlers
     server.Post("/api/addTime", addTime);
     server.Post("/api/addService", addService);
     server.Post("/api/createStandardJob", createStandardJob);
@@ -275,23 +271,14 @@ int main(int argc, char **argv)
     // Set some generic error handler
     server.set_error_handler(error_handling);
 
-    // Path is relative so if you build in a different directory, you will have to change the relative path.
-    // Currently set so that it can try find the client directory in any location. 
-    // Current implementation would have a security risk
-    // since any file in that directory can be loaded.
-    server.set_mount_point("/", "../../client");
-    server.set_mount_point("/", "../client");
-    server.set_mount_point("/", ".client");
-
     // Start the simulation in a separate thread
     simulation_thread_state = new SimulationThreadState();
     simulation_thread = std::thread(&SimulationThreadState::createAndLaunchSimulation, simulation_thread_state,
                                     full_log, platform_file, controller_host);
 
-    // Start the wrench-daemon
+    // Start the HTTP server
     std::printf("Listening on port: %d\n", port_number);
     server.listen("0.0.0.0", port_number);
 
     exit(0);
 }
-

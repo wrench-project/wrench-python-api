@@ -1,4 +1,3 @@
-import sys
 import requests
 import json
 
@@ -23,7 +22,7 @@ def wait_for_next_event():
     try:
         r = requests.get("http://localhost:8101/api/waitForNextSimulationEvent")
     except requests.exceptions.ConnectionError:
-        raise WRENCHException("Cannot connect to WRENCH daemon");
+        raise WRENCHException("Cannot connect to WRENCH daemon")
 
     response = r.json()
     return response["event"]
@@ -34,7 +33,7 @@ def submit_standard_job(job_name, cs_name):
     try:
         r = requests.post("http://localhost:8101/api/submitStandardJob", data=json.dumps(submission_spec))
     except requests.exceptions.ConnectionError:
-        raise WRENCHException("Cannot connect to WRENCH daemon");
+        raise WRENCHException("Cannot connect to WRENCH daemon")
 
     response = r.json()
     if response["success"]:
@@ -47,7 +46,7 @@ def get_simulation_events():
     try:
         r = requests.get("http://localhost:8101/api/getSimulationEvents")
     except requests.exceptions.ConnectionError:
-        raise WRENCHException("Cannot connect to WRENCH daemon");
+        raise WRENCHException("Cannot connect to WRENCH daemon")
 
     response = r.json()["events"]
     return response
@@ -59,7 +58,7 @@ def create_standard_job(task_name, task_flops, min_num_cores, max_num_cores):
     try:
         r = requests.post("http://localhost:8101/api/createStandardJob", data=json.dumps(task_spec))
     except requests.exceptions.ConnectionError:
-        raise WRENCHException("Cannot connect to WRENCH daemon");
+        raise WRENCHException("Cannot connect to WRENCH daemon")
 
     response = r.json()
     print(response)
@@ -74,7 +73,7 @@ def sleep(seconds):
     try:
         requests.post("http://localhost:8101/api/addTime", data=json.dumps(time_spec))
     except requests.exceptions.ConnectionError:
-        raise WRENCHException("Cannot connect to WRENCH daemon");
+        raise WRENCHException("Cannot connect to WRENCH daemon")
 
     return
 
@@ -83,7 +82,7 @@ def get_simulated_time():
     try:
         r = requests.get("http://localhost:8101/api/getTime")
     except requests.exceptions.ConnectionError:
-        raise WRENCHException("Cannot connect to WRENCH daemon");
+        raise WRENCHException("Cannot connect to WRENCH daemon")
 
     response = r.json()
     return response["time"]
@@ -94,7 +93,7 @@ def create_bare_metal_compute_service(hostname):
     try:
         r = requests.post("http://localhost:8101/api/addService", data=json.dumps(service_spec))
     except requests.exceptions.ConnectionError:
-        raise WRENCHException("Cannot connect to WRENCH daemon");
+        raise WRENCHException("Cannot connect to WRENCH daemon")
 
     response = r.json()
 
@@ -108,7 +107,7 @@ def get_all_hostnames():
     try:
         r = requests.get("http://localhost:8101/api/getAllHostnames")
     except requests.exceptions.ConnectionError:
-        raise WRENCHException("Cannot connect to WRENCH daemon");
+        raise WRENCHException("Cannot connect to WRENCH daemon")
 
     response = r.json()
 
