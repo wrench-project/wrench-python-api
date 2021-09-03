@@ -19,13 +19,13 @@ namespace wrench {
     SimulationController::SimulationController(
             const std::string &hostname, int sleep_us) :
             sleep_us(sleep_us), WMS(
-                    nullptr, nullptr,
-                    {},
-                    {},
-                    {}, nullptr,
-                    hostname,
-                    "SimulationController"
-            ) {
+            nullptr, nullptr,
+            {},
+            {},
+            {}, nullptr,
+            hostname,
+            "SimulationController"
+    ) {
     }
 
     /**

@@ -4,12 +4,10 @@
 
 #include <unistd.h>
 
-#include <cstdio>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <nlohmann/json.hpp>
 #include <wrench.h>
 
 void SimulationThreadState::createAndLaunchSimulation(

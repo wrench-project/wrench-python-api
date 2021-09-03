@@ -1,8 +1,6 @@
 #include "httplib.h"
 #include "SimulationThreadState.h"
 
-#include <unistd.h>
-
 #include <cstdio>
 #include <string>
 #include <vector>
