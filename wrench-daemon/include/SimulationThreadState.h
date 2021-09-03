@@ -11,10 +11,9 @@ public:
 
     ~SimulationThreadState() = default;
 
-    void getEvents(std::vector<json> &events) const;
+    void getSimulationEvents(std::vector<json> &events) const;
+    json waitForNextSimulationEvent() const;
 
-    std::string addJob(const double& requested_duration,
-                       const unsigned int& num_nodes, const double& actual_duration) const;
 
     std::string createStandardJob(json task_spec) const;
     void submitStandardJob(json submission_spec) const;

@@ -34,7 +34,8 @@ namespace wrench {
 
         void advanceSimulationTime(double seconds);
 
-        void getEvents(std::vector<json> &events);
+        void getSimulationEvents(std::vector<json> &events);
+        json waitForNextSimulationEvent();
 
         double getSimulationTime();
         std::string createStandardJob(json task_spec);
@@ -107,6 +108,7 @@ namespace wrench {
         double time_horizon_to_reach = 0;
 
         std::mutex controller_mutex;
+        std::condition_variable controller_condvar;
 
 
     };

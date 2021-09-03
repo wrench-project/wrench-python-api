@@ -51,14 +51,13 @@ void SimulationThreadState::advanceSimulationTime(double seconds) {
     this->simulation_controller->advanceSimulationTime(seconds);
 }
 
-void SimulationThreadState::getEvents(std::vector<json> &events) const {
-    this->simulation_controller->getEvents(events);
+void SimulationThreadState::getSimulationEvents(std::vector<json> &events) const {
+    this->simulation_controller->getSimulationEvents(events);
 }
 
-//std::string SimulationThreadState::addJob(const double& requested_duration,
-//                                          const unsigned int& num_nodes, const double& actual_duration) const {
-//    return this->simulation_controller->addJob(requested_duration, num_nodes, actual_duration);
-//}
+json SimulationThreadState::waitForNextSimulationEvent() const {
+    return this->simulation_controller->waitForNextSimulationEvent();
+}
 
 std::string SimulationThreadState::addService(json service_spec) const {
     return this->simulation_controller->addNewService(service_spec);

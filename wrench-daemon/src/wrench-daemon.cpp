@@ -76,7 +76,7 @@ void getEvents(const Request& req, Response& res)
     std::vector<json> events;
 
     // Retrieves event statuses from servers and
-    simulation_thread_state->getEvents(events);
+    simulation_thread_state->getSimulationEvents(events);
 
     std::cerr << "EVENTS " << events.size() << "\n";
     json body;
@@ -142,17 +142,28 @@ void addTime(const Request& req, Response& res) {
 
 
 
-void getSimulationEvents(const Request& req, Response& res)
-{
+void getSimulationEvents(const Request& req, Response& res) {
     std::printf("Path: %s\nBody: %s\n\n", req.path.c_str(), req.body.c_str());
 
     std::vector<json> events;
     // Retrieve the event statuses
-    simulation_thread_state->getEvents(events);
+    simulation_thread_state->getSimulationEvents(events);
 
     json body;
     auto event_list = events;
     body["event_queue"] = event_list;
+    res.set_header("access-control-allow-origin", "*");
+    res.set_content(body.dump(), "application/json");
+}
+
+void waitForNextSimulationEvent(const Request &req, Response & res) {
+
+    std::printf("Path: %s\nBody: %s\n\n", req.path.c_str(), req.body.c_str());
+
+    auto event = simulation_thread_state->waitForNextSimulationEvent();
+
+    json body = event;
+
     res.set_header("access-control-allow-origin", "*");
     res.set_content(body.dump(), "application/json");
 }
@@ -233,11 +244,17 @@ void createStandardJob(const Request& req, Response& res)
 //    auto num_nodes = req_body["job"]["numNodes"].get<int>();
 //    double actual_duration = (double)pp_seqwork + ((double)pp_parwork / num_nodes);
 
-    json body;
+    json req_body;
+    try {
+        req_body = json::parse(req.body);
+    } catch (std::exception &e) {
+        throw;
+    }
 
+    json body;
     // Pass parameters in to function to add a job.
     try {
-        std::string jobID = simulation_thread_state->createStandardJob(body);
+        std::string jobID = simulation_thread_state->createStandardJob(req_body);
         body["success"] = true;
         body["job_id"] = jobID;
     } catch (std::exception &e) {
@@ -357,6 +374,7 @@ int main(int argc, char **argv)
     server.Get("/api/getEvents", getEvents);
     server.Get("/api/getAllHostnames", getAllHostnames);
     server.Get("/api/getSimulationEvents", getSimulationEvents);
+    server.Get("/api/waitForNextSimulationEvent", waitForNextSimulationEvent);
 
     // Handle POST requests
     server.Post("/api/addTime", addTime);
