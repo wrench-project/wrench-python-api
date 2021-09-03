@@ -226,6 +226,9 @@ int main(int argc, char **argv) {
             ("port", po::value<int>()->default_value(8101)->notifier(
                     in(1024, 49151, "port")),
              "port number, between 1024 and 4951, on which this daemon will listen")
+            ("sleep-us", po::value<int>()->default_value(200)->notifier(
+                    in(0, 1000000, "sleep-us")),
+             "number of micro-seconds, between 0 and 1000000, that the simulation thread sleeps at each iteration of its main loop (smaller means faster simulation, larger means less CPU load)")
             ;
 
     po::variables_map vm;
@@ -247,6 +250,7 @@ int main(int argc, char **argv) {
     auto platform_file = vm["platform"].as<std::string>();
     auto controller_host = vm["controller-host"].as<std::string>();
     auto port_number = vm["port"].as<int>();
+    auto sleep_us = vm["sleep-us"].as<int>();
 
     // Check that platform file is available for reading
     ifstream my_file(platform_file);
@@ -274,7 +278,7 @@ int main(int argc, char **argv) {
     // Start the simulation in a separate thread
     simulation_thread_state = new SimulationThreadState();
     simulation_thread = std::thread(&SimulationThreadState::createAndLaunchSimulation, simulation_thread_state,
-                                    full_log, platform_file, controller_host);
+                                    full_log, platform_file, controller_host, sleep_us);
 
     // Start the HTTP server
     std::printf("Listening on port: %d\n", port_number);

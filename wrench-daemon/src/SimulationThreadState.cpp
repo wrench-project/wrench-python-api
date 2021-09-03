@@ -15,7 +15,8 @@
 void SimulationThreadState::createAndLaunchSimulation(
         bool full_log,
         std::string platform_file,
-        const std::string& controller_host) {
+        const std::string& controller_host,
+        int sleep_us) {
 
     int argc = (full_log ? 2 : 1);
     char **argv = (char **)calloc(argc, sizeof(char *));
@@ -36,7 +37,7 @@ void SimulationThreadState::createAndLaunchSimulation(
     }
 
     this->simulation_controller = simulation.add(
-            new wrench::SimulationController(controller_host));
+            new wrench::SimulationController(controller_host, sleep_us));
 
     // Add a bogus workflow to simulation_controller
     wrench::Workflow workflow;

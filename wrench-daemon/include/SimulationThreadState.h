@@ -26,7 +26,8 @@ public:
 
     void createAndLaunchSimulation(bool full_log,
                                    std::string platform_file,
-                                   const std::string& controller_host);
+                                   const std::string& controller_host,
+                                   int sleep_us);
 
     double getSimulationTime() const;
 };

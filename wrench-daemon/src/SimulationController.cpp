@@ -17,8 +17,8 @@ namespace wrench {
      * @param hostname String containing the name of the host on which this service runs
      */
     SimulationController::SimulationController(
-            const std::string &hostname) :
-            WMS(
+            const std::string &hostname, int sleep_us) :
+            sleep_us(sleep_us), WMS(
                     nullptr, nullptr,
                     {},
                     {},
@@ -107,7 +107,7 @@ namespace wrench {
 
             // Sleep since no matter what we're in locked step with client time and don't want
             // to burn CPU cycles like crazy. Could probably sleep 1s...
-            usleep(100);
+            usleep(sleep_us);
         }
         return 0;
     }

@@ -17,7 +17,7 @@ namespace wrench {
 
     public:
 
-        explicit SimulationController(const std::string &hostname);
+        explicit SimulationController(const std::string &hostname, int sleep_us);
 
         std::vector<std::string> getAllHostnames();
 
@@ -49,6 +49,8 @@ namespace wrench {
         bool keep_going = true;
 
         double time_horizon_to_reach = 0;
+
+        int sleep_us;
 
         std::mutex controller_mutex;
         std::condition_variable controller_condvar;
