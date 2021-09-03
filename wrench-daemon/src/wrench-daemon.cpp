@@ -3,7 +3,6 @@
 
 #include <unistd.h>
 
-#include <chrono>
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -12,15 +11,6 @@
 #include <boost/program_options.hpp>
 
 #include <nlohmann/json.hpp>
-#include <wrench.h>
-
-#include <sys/types.h>
-#include <sys/wait.h>
-
-#include <signal.h>
-
-// Define a long function which is used multiple times to retrieve the time
-#define get_time() (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count())
 
 using httplib::Request;
 using httplib::Response;
@@ -28,94 +18,49 @@ using json = nlohmann::json;
 
 namespace po = boost::program_options;
 
-httplib::Server server;
-
-/**
- * @brief Time offset used to calculate simulation time.
- * 
- * The time in milliseconds used to subtract from the current time to get the simulated time which starts at 0.
- */
-time_t time_start = 0;
-
-std::thread simulation_thread;
-SimulationThreadState *simulation_thread_state;
-
 /**
  * Ugly globals
  */
-int original_argc;
-char **original_argv;
+httplib::Server server;
+std::thread simulation_thread;
+SimulationThreadState *simulation_thread_state;
 
-/**
- * @brief Path handling the current wrench-daemon simulated time.
- * 
- * @param req HTTP request object
- * @param res HTTP response object
- */
-void getTime(const Request& req, Response& res)
-{
-    std::printf("Path: %s\n\n", req.path.c_str());
+/***********************
+ ** ALL PATH HANDLERS **
+ ***********************/
 
-    json body;
+void getTime(const Request& req, Response& res) {
+    std::cerr << req.path << " " << req.body << std::endl;
 
-    // Sets and returns the time.
-    body["time"] = simulation_thread_state->getSimulationTime();
+    // Retrieve simulated time from simulation thread
+    auto time = simulation_thread_state->getSimulationTime();
+
+    // Create json answer
+    json answer;
+    answer["time"] = time;
+
+    // Send answer back
     res.set_header("access-control-allow-origin", "*");
-    res.set_content(body.dump(), "application/json");
+    res.set_content(answer.dump(), "application/json");
 }
 
-/**
- * @brief Path handling the retrieval of event statuses.
- * 
- * @param req HTTP request object
- * @param res HTTP response object
- */
-void getEvents(const Request& req, Response& res)
-{
-    // Create queue to hold event statuses
-    std::vector<json> events;
+void getAllHostnames(const Request& req, Response& res) {
+    std::cerr << req.path << " " << req.body << std::endl;
 
-    // Retrieves event statuses from servers and
-    simulation_thread_state->getSimulationEvents(events);
-
-    std::cerr << "EVENTS " << events.size() << "\n";
-    json body;
-    auto event_list = events;
-    body["time"] = get_time() - time_start;
-    body["event_queue"] = event_list;
-    res.set_header("Access-Control-Allow-Origin", "*");
-    res.set_content(body.dump(), "application/json");
-}
-
-/**
- * @brief Path handling the retrieval of all hostnames.
- *
- * @param req HTTP request object
- * @param res HTTP response object
- */
-void getAllHostnames(const Request& req, Response& res)
-{
+    // Retrieve all hostnames from simulation thread
     std::vector<std::string> hostnames = simulation_thread_state->getAllHostnames();
-    json body;
-    body["hostnames"] = hostnames;
-    std::cerr << body << "\n";
 
+    // Create json answer
+    json answer;
+    answer["hostnames"] = hostnames;
+
+    // Send answer back
     res.set_header("Access-Control-Allow-Origin", "*");
-    res.set_content(body.dump(), "application/json");
+    res.set_content(answer.dump(), "application/json");
 }
 
-// POST PATHS
-
-
-/**
- * @brief Path handling the stopping of the simulation.
- * 
- * @param req HTTP request object
- * @param res HTTP response object
- */
-void stop(const Request& req, Response& res)
-{
-    std::printf("Path: %s\nBody: %s\n\n", req.path.c_str(), req.body.c_str());
+void stop(const Request& req, Response& res) {
+    std::cerr << req.path << " " << req.body << std::endl;
 
     // Stop the simulation thread and wait for it to have stopped
     simulation_thread_state->stopSimulation();
@@ -124,48 +69,51 @@ void stop(const Request& req, Response& res)
     // Erase the simulated state
     res.set_header("access-control-allow-origin", "*");
 
-    // Exit
+    // Terminate
     std::exit(0);
 }
 
-/**
- * @brief Path handling adding time to current wrench-daemon simulated time.
- *
- * @param req HTTP request object
- * @param res HTTP response object
- */
+
 void addTime(const Request& req, Response& res) {
-    json req_body = json::parse(req.body);
-    auto time_to_sleep = req_body["increment"].get<double>();
+    std::cerr << req.path << " " << req.body << std::endl;
+
+    // Get the time to sleep from the request
+    auto time_to_sleep = json::parse(req.body)["increment"].get<double>();
+
+    // Tell the simulation thread to advance simulation time
     simulation_thread_state->advanceSimulationTime(time_to_sleep);
 }
 
 
-
 void getSimulationEvents(const Request& req, Response& res) {
-    std::printf("Path: %s\nBody: %s\n\n", req.path.c_str(), req.body.c_str());
+    std::cerr << req.path << " " << req.body << std::endl;
 
+    // Get events from the simulation thread
     std::vector<json> events;
-    // Retrieve the event statuses
     simulation_thread_state->getSimulationEvents(events);
 
-    json body;
-    auto event_list = events;
-    body["event_queue"] = event_list;
+    // Create json answer
+    json answer;
+    answer["events"] = events;
+
+    // Send answer back
     res.set_header("access-control-allow-origin", "*");
-    res.set_content(body.dump(), "application/json");
+    res.set_content(answer.dump(), "application/json");
 }
 
 void waitForNextSimulationEvent(const Request &req, Response & res) {
+    std::cerr << req.path << " " << req.body << std::endl;
 
-    std::printf("Path: %s\nBody: %s\n\n", req.path.c_str(), req.body.c_str());
-
+    // Ask the simulation thread to wait until the next simulation event
     auto event = simulation_thread_state->waitForNextSimulationEvent();
 
-    json body = event;
+    // Create json answer
+    json answer;
+    answer["event"] = event;
 
+    // Send answer back
     res.set_header("access-control-allow-origin", "*");
-    res.set_content(body.dump(), "application/json");
+    res.set_content(answer.dump(), "application/json");
 }
 
 /**
@@ -176,145 +124,87 @@ void waitForNextSimulationEvent(const Request &req, Response & res) {
  */
 void addService(const Request& req, Response& res)
 {
-    std::cerr << req.path << ": " << req.body << "\n";
-    json req_body;
-    try {
-        req_body = json::parse(req.body);
-    } catch (std::exception &e) {
-        throw;
-    }
+    std::cerr << req.path << " " << req.body << "\n";
 
-    json body;
+    // Parse the request's body to json
+    auto req_body = json::parse(req.body);
+
+    // ask the simulation thread to add the service, and construct the json answer
+    json answer;
     try {
         std::string service_name = simulation_thread_state->addService(req_body);
-        body["success"] = true;
-        body["service_name"] = service_name;
+        answer["success"] = true;
+        answer["service_name"] = service_name;
     } catch (std::exception &e) {
-        body["success"] = false;
-        body["failure_cause"] = e.what();
+        answer["success"] = false;
+        answer["failure_cause"] = e.what();
     }
 
+    // Send answer back
     res.set_header("access-control-allow-origin", "*");
-    res.set_content(body.dump(), "application/json");
+    res.set_content(answer.dump(), "application/json");
 }
 
-/**
- * @brief Path handling submitting a job to the simulation.
- *
- * @param req HTTP request object
- * @param res HTTP response object
- */
+
 void submitStandardJob(const Request& req, Response& res)
 {
-    std::cerr << req.path << ": " << req.body << "\n";
-    json req_body;
-    try {
-        req_body = json::parse(req.body);
-    } catch (std::exception &e) {
-        throw;
-    }
+    std::cerr << req.path << " " << req.body << "\n";
 
-    json body;
+    // Parse the request's body to json
+    auto req_body = json::parse(req.body);
+
+    // Ask the simulation thread to submit the job, and construct json answer
+    json answer;
     try {
         simulation_thread_state->submitStandardJob(req_body);
-        body["success"] = true;
+        answer["success"] = true;
     } catch (std::exception &e) {
-        body["success"] = false;
-        body["failure_cause"] = e.what();
+        answer["success"] = false;
+        answer["failure_cause"] = e.what();
     }
 
+    // Send answer back
     res.set_header("access-control-allow-origin", "*");
-    res.set_content(body.dump(), "application/json");
+    res.set_content(answer.dump(), "application/json");
 }
 
 
-/**
- * @brief Path handling creating a Job to some compute service.
- * 
- * @param req HTTP request object
- * @param res HTTP response object
- */
 void createStandardJob(const Request& req, Response& res)
 {
-//    json req_body = json::parse(req.body);
-    std::printf("Path: %s\nBody: %s\n\n", req.path.c_str(), req.body.c_str());
+    std::cerr << req.path << " " << req.body << "\n";
 
-    // Retrieve job info from request body: TODO
-//    auto requested_duration = req_body["job"]["durationInSec"].get<double>();
-//    auto num_nodes = req_body["job"]["numNodes"].get<int>();
-//    double actual_duration = (double)pp_seqwork + ((double)pp_parwork / num_nodes);
+    // parse the request's answer to json
+    auto req_body = json::parse(req.body);
 
-    json req_body;
-    try {
-        req_body = json::parse(req.body);
-    } catch (std::exception &e) {
-        throw;
-    }
 
-    json body;
-    // Pass parameters in to function to add a job.
+    // Ask simulation thread to create standard job and construct json answer
+    json answer;
     try {
         std::string jobID = simulation_thread_state->createStandardJob(req_body);
-        body["success"] = true;
-        body["job_id"] = jobID;
+        answer["success"] = true;
+        answer["job_id"] = jobID;
     } catch (std::exception &e) {
-        body["success"] = false;
-        body["failure_cause"] = e.what();
+        answer["success"] = false;
+        answer["failure_cause"] = e.what();
     }
 
+    // Send answer back
     res.set_header("access-control-allow-origin", "*");
-    res.set_content(body.dump(), "application/json");
+    res.set_content(answer.dump(), "application/json");
 }
 
-///**
-// * @brief Path handling canceling a job from the simulated batch scheduler.
-// *
-// * @param req HTTP request object
-// * @param res HTTP response object
-// */
-//void cancelJob(const Request& req, Response& res)
-//{
-//    json req_body = json::parse(req.body);
-//    std::printf("Path: %s\nBody: %s\n\n", req.path.c_str(), req.body.c_str());
-//    json body;
-//    body["time"] = get_time() - time_start;
-//    body["success"] = false;
-//    // Send cancel job to simulation_controller and set success in job cancelation if can be done.
-//    if(simulation_thread_state->cancelJob(req_body["jobName"].get<std::string>()))
-//        body["success"] = true;
-//
-//    res.set_header("access-control-allow-origin", "*");
-//    res.set_content(body.dump(), "application/json");
-//}
 
-// ERROR HANDLING
-
-/**
- * @brief Generic path handling for errors.
- * 
- * @param req HTTP request object
- * @param res HTTP response object
- */
 void error_handling(const Request& req, Response& res)
 {
-    std::printf("%d: %s|%s\n", res.status, req.path.c_str(), req.body.c_str());
+    std::cerr << "[" << res.status << "]: " << req.path << " " << req.body << "\n";
 }
 
-/**
- * @brief Real main function
- * @param argc
- * @param argv
- * @return
- */
+
+/******************
+ ** MAIN FUNCTION *
+ ******************/
 int main(int argc, char **argv)
 {
-//    // Save the original command-line arguments
-//    original_argc = argc;
-//    original_argv = (char **) calloc(argc, sizeof(char *));
-//    for (int i = 0; i < argc; i++) {
-//        original_argv[i] = (char *)calloc(strlen(argv[i]) + 1, sizeof(char));
-//        strcpy(original_argv[i], argv[i]);
-//    }
 
     // Generic lambda to check if a number is in some range
     auto in = [](const auto &min, const auto &max, char const * const opt_name){
@@ -371,7 +261,6 @@ int main(int argc, char **argv)
 
     // Handle GET requests
     server.Get("/api/getTime", getTime);
-    server.Get("/api/getEvents", getEvents);
     server.Get("/api/getAllHostnames", getAllHostnames);
     server.Get("/api/getSimulationEvents", getSimulationEvents);
     server.Get("/api/waitForNextSimulationEvent", waitForNextSimulationEvent);

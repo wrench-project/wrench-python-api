@@ -203,7 +203,6 @@ namespace wrench {
     json SimulationController::waitForNextSimulationEvent() {
 
         // Set the time horizon to -1, to signify the "wait for next"
-        std::cerr << "SETTING TIME HORIZON TO -1\n";
         time_horizon_to_reach = -1.0;
         // Acquire the lock
         std::unique_lock<std::mutex> mlock(this->controller_mutex);

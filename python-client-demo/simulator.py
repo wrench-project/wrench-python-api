@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
     print("Getting simulation events that have occurred while I slept...")
     events = pywrench.get_simulation_events()
-    for event in events["event_queue"]:
+    for event in events:
         print("EVENT: " + str(event))
 
     print("Creating another standard job...")

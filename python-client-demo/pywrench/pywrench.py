@@ -26,7 +26,7 @@ def wait_for_next_event():
         raise WRENCHException("Cannot connect to WRENCH daemon");
 
     response = r.json()
-    return response
+    return response["event"]
 
 
 def submit_standard_job(job_name, cs_name):
@@ -49,8 +49,7 @@ def get_simulation_events():
     except requests.exceptions.ConnectionError:
         raise WRENCHException("Cannot connect to WRENCH daemon");
 
-    print("R.TEXT = " + str(r.text))
-    response = r.json()
+    response = r.json()["events"]
     return response
 
 
