@@ -6,6 +6,7 @@
 
 #include <cstdio>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <nlohmann/json.hpp>
@@ -14,7 +15,7 @@
 void SimulationThreadState::createAndLaunchSimulation(
         bool full_log,
         std::string platform_file,
-        std::string controller_host) {
+        const std::string& controller_host) {
 
     int argc = (full_log ? 2 : 1);
     char **argv = (char **)calloc(argc, sizeof(char *));
@@ -27,7 +28,7 @@ void SimulationThreadState::createAndLaunchSimulation(
     simulation.init(&argc, argv);
 
     // Instantiate Simulated Platform
-    simulation.instantiatePlatform(platform_file);
+    simulation.instantiatePlatform(std::move(platform_file));
 
     // Check that the controller host exists
     if (not wrench::Simulation::doesHostExist(controller_host)) {
@@ -47,7 +48,7 @@ void SimulationThreadState::createAndLaunchSimulation(
     simulation.launch();
 }
 
-void SimulationThreadState::advanceSimulationTime(double seconds) {
+void SimulationThreadState::advanceSimulationTime(double seconds) const {
     this->simulation_controller->advanceSimulationTime(seconds);
 }
 
@@ -60,13 +61,12 @@ json SimulationThreadState::waitForNextSimulationEvent() const {
 }
 
 std::string SimulationThreadState::addService(json service_spec) const {
-    return this->simulation_controller->addNewService(service_spec);
+    return this->simulation_controller->addNewService(std::move(service_spec));
 }
 
 std::vector<std::string> SimulationThreadState::getAllHostnames() const {
     return this->simulation_controller->getAllHostnames();
 }
-
 
 void SimulationThreadState::stopSimulation() const {
     this->simulation_controller->stopSimulation();
@@ -78,9 +78,9 @@ double SimulationThreadState::getSimulationTime() const {
 }
 
 std::string SimulationThreadState::createStandardJob(json task_spec) const {
-    return this->simulation_controller->createStandardJob(task_spec);
+    return this->simulation_controller->createStandardJob(std::move(task_spec));
 }
 
 void SimulationThreadState::submitStandardJob(json submission_spec) const {
-    this->simulation_controller->submitStandardJob(submission_spec);
+    this->simulation_controller->submitStandardJob(std::move(submission_spec));
 }

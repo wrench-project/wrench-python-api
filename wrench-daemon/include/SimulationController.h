@@ -43,10 +43,6 @@ namespace wrench {
         std::queue<wrench::ComputeService *> compute_services_to_start;
         std::queue< std::pair<std::shared_ptr<StandardJob>, std::shared_ptr<ComputeService>>> submissions_to_do;
 
-        int main() override;
-
-        std::string addNewBareMetalComputeService(json service_spec);
-
         std::shared_ptr<JobManager> job_manager;
         std::shared_ptr<DataMovementManager> data_movement_manager;
 
@@ -56,6 +52,11 @@ namespace wrench {
 
         std::mutex controller_mutex;
         std::condition_variable controller_condvar;
+
+        int main() override;
+        std::string addNewBareMetalComputeService(json service_spec);
+        json eventToJSON(std::shared_ptr<wrench::WorkflowExecutionEvent> event);
+
     };
 }
 

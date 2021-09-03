@@ -10,6 +10,7 @@ WRENCH_LOG_CATEGORY(simulation_controller, "Log category for SimulationControlle
 
 namespace wrench {
 
+
     /**
      * @brief Construct a new SimulationController object
      * 
@@ -32,16 +33,14 @@ namespace wrench {
      * 
      * @return exit code
      */
-    int SimulationController::main()
-    {
+    int SimulationController::main() {
         // Setup
-        wrench::TerminalOutput::setThisProcessLoggingColor(TerminalOutput::COLOR_RED);
-        WRENCH_INFO("Starting");
+        wrench::TerminalOutput::setThisProcessLoggingColor(TerminalOutput::COLOR_RED);WRENCH_INFO("Starting");
         this->job_manager = this->createJobManager();
         this->data_movement_manager = this->createDataMovementManager();
 
         // Main control loop
-        while(keep_going) {
+        while (keep_going) {
 
             // Start compute compute services that should be started, if any
             while (true) {
@@ -93,10 +92,10 @@ namespace wrench {
 
             // Moves time forward if needed (because the client has done a sleep),
             // And then add all events that occurred to the event queue
-            double time_to_sleep = std::max<double>(0, time_horizon_to_reach - wrench::Simulation::getCurrentSimulatedDate());
+            double time_to_sleep = std::max<double>(0, time_horizon_to_reach -
+                                                       wrench::Simulation::getCurrentSimulatedDate());
 
-            if (time_to_sleep > 0.0) {
-                WRENCH_INFO("Sleeping %.2lf seconds", time_to_sleep);
+            if (time_to_sleep > 0.0) { WRENCH_INFO("Sleeping %.2lf seconds", time_to_sleep);
                 S4U_Simulation::sleep(time_to_sleep);
                 while (auto event = this->waitForNextEvent(JOB_MANAGER_COMMUNICATION_TIMEOUT_VALUE)) {
                     // Add job onto the event queue with locks to prevent deadlocks.
@@ -116,8 +115,7 @@ namespace wrench {
     /**
      * @brief Sets the flag to stop this service
      */
-    void SimulationController::stopSimulation()
-    {
+    void SimulationController::stopSimulation() {
         keep_going = false;
     }
 
@@ -141,35 +139,23 @@ namespace wrench {
         return Simulation::getCurrentSimulatedDate();
     }
 
+
     /**
-     * @brief Wait for the next event
-     * @return the event
+     * @brief Construct a json description of a workflow execution event
+     * @param event workflow execution event
+     * @return json description
      */
-    json SimulationController::waitForNextSimulationEvent() {
-
-        // Set the time horizon to -1, to signify the "wait for next event" to the controller
-        time_horizon_to_reach = -1.0;
-        // Acquire the lock
-        std::unique_lock<std::mutex> mlock(this->controller_mutex);
-        // Wait until there is some event
-        while (this->event_queue.empty()) {
-            controller_condvar.wait(mlock);
-        }
-        // Grab the first event
-        auto event = event_queue.front();
-        event_queue.pop();
-        mlock.unlock();
-
+    json SimulationController::eventToJSON(std::shared_ptr<wrench::WorkflowExecutionEvent> event) {
         // Construct the json event description
         std::shared_ptr<wrench::StandardJob> job;
         json event_desc;
 
         // Deal with the different event types
-        if (auto failed = std::dynamic_pointer_cast<wrench::StandardJobFailedEvent>(event.second)) {
+        if (auto failed = std::dynamic_pointer_cast<wrench::StandardJobFailedEvent>(event)) {
             event_desc["type"] = "job_failure";
             event_desc["failure_cause"] = failed->failure_cause->toString();
             job = failed->standard_job;
-        } else if (auto complete = std::dynamic_pointer_cast<wrench::StandardJobCompletedEvent>(event.second)) {
+        } else if (auto complete = std::dynamic_pointer_cast<wrench::StandardJobCompletedEvent>(event)) {
             event_desc["type"] = "job_completion";
             job = complete->standard_job;
         }
@@ -178,9 +164,33 @@ namespace wrench {
         event_desc["submit_date"] = job->getSubmitDate();
         event_desc["end_date"] = job->getEndDate();
 
+        return event_desc;
+    }
+
+    /**
+     * @brief Wait for the next event
+     * @return the event
+     */
+    json SimulationController::waitForNextSimulationEvent() {
+
+        // Set the time horizon to -1, to signify the "wait for next event" to the controller
+        time_horizon_to_reach = -1.0;
+        // Wait for and grab the next event
+        std::unique_lock<std::mutex> mlock(this->controller_mutex);
+        while (this->event_queue.empty()) {
+            controller_condvar.wait(mlock);
+        }
+        auto event = event_queue.front();
+        event_queue.pop();
+        mlock.unlock();
+
+        // Construct the json event description
+        std::shared_ptr<wrench::StandardJob> job;
+        json event_desc = eventToJSON(event.second);
+
         // Remove the job from the event registry (this may not be a good idea, will see what semantics
         // we want the client API to show)
-        job_registry.erase(job->getName());
+        job_registry.erase(event_desc["job_name"]);
 
         return event_desc;
     }
@@ -193,37 +203,18 @@ namespace wrench {
      */
     void SimulationController::getSimulationEvents(std::vector<json> &events) {
 
-        // Acquire the lock
-        std::unique_lock<std::mutex> mlock(this->controller_mutex);
         // Deal with all events
-        while(!event_queue.empty()) {
+        std::unique_lock<std::mutex> mlock(this->controller_mutex);
+        while (!event_queue.empty()) {
             auto event = event_queue.front();
             event_queue.pop();
 
             std::shared_ptr<wrench::StandardJob> job;
-            json event_desc;
-
-            // Construct the json event description
-            if(auto failed = std::dynamic_pointer_cast<wrench::StandardJobFailedEvent>(event.second))
-            {
-                event_desc["type"] = "job_failure";
-                event_desc["failure_cause"] = failed->failure_cause->toString();
-                job = failed->standard_job;
-            }
-            else if(auto complete = std::dynamic_pointer_cast<wrench::StandardJobCompletedEvent>(event.second))
-            {
-                event_desc["type"] = "job_completion";
-                job = complete->standard_job;
-            }
-
-            event_desc["job_name"] = job->getName();
-            event_desc["submit_date"] = job->getSubmitDate();
-            event_desc["end_date"] = job->getEndDate();
-            events.push_back(event_desc);
+            json event_desc = eventToJSON(event.second);
 
             // Remove the job from the event registry (this may not be a good idea, will see what semantics
             // we want the client API to show)
-            job_registry.erase(job->getName());
+            job_registry.erase(event_desc["job_name"]);
         }
 
         mlock.unlock();
@@ -311,7 +302,8 @@ namespace wrench {
             throw std::runtime_error("Unknown service " + service_name);
         }
         std::unique_lock<std::mutex> mlock(this->controller_mutex);
-        this->submissions_to_do.push(std::make_pair(this->job_registry[job_name], this->compute_service_registry[service_name])) ;
+        this->submissions_to_do.push(
+                std::make_pair(this->job_registry[job_name], this->compute_service_registry[service_name]));
         mlock.unlock();
     }
 

@@ -2,9 +2,8 @@
 #include <unistd.h>
 #include <nlohmann/json.hpp>
 
-
-
 class SimulationThreadState {
+
 public:
     std::shared_ptr<wrench::SimulationController> simulation_controller;
     wrench::Simulation simulation;
@@ -21,15 +20,13 @@ public:
     std::string addService(json service_spec) const;
     std::vector<std::string> getAllHostnames() const;
 
-    void advanceSimulationTime(double seconds);
+    void advanceSimulationTime(double seconds) const;
 
     void stopSimulation() const;
 
-    std::vector<std::string> getQueue() const;
-
     void createAndLaunchSimulation(bool full_log,
                                    std::string platform_file,
-                                   std::string controller_host);
+                                   const std::string& controller_host);
 
     double getSimulationTime() const;
 };
