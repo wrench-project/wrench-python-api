@@ -31,12 +31,13 @@ include_directories(src/ include/ ${Boost_INCLUDE_DIR} ${SimGrid_INCLUDE_DIR}/in
 
 # Add source to this project's executable.
 add_executable (wrench-daemon
-    "src/wrench-daemon.cpp"
-    "src/SimulationThreadState.cpp"
-    "include/SimulationThreadState.h"
-    "include/httplib.h"
-    "include/SimulationController.h"
-    "src/SimulationController.cpp")
+        src/wrench-daemon.cpp
+        src/SimulationThreadState.cpp
+        include/SimulationThreadState.h
+        include/httplib.h
+        include/SimulationController.h
+        src/SimulationController.cpp
+        include/BlockingQueue.h)
 
 
 # Add pthreads
@@ -44,24 +45,24 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 if (ENABLE_BATSCHED)
-target_link_libraries(wrench-daemon
-        PRIVATE Threads::Threads
-        ${WRENCH_LIBRARY}
-        ${WRENCH_PEGASUS_WORKFLOW_PARSER_LIBRARY}
-        ${SimGrid_LIBRARY}
-        ${PUGIXML_LIBRARY}
-        ${Boost_LIBRARIES}
-        ${ZMQ_LIBRARY}
-        )
+    target_link_libraries(wrench-daemon
+            PRIVATE Threads::Threads
+            ${WRENCH_LIBRARY}
+            ${WRENCH_PEGASUS_WORKFLOW_PARSER_LIBRARY}
+            ${SimGrid_LIBRARY}
+            ${PUGIXML_LIBRARY}
+            ${Boost_LIBRARIES}
+            ${ZMQ_LIBRARY}
+            )
 else()
-target_link_libraries(wrench-daemon
-        PRIVATE Threads::Threads
-        ${WRENCH_LIBRARY}
-        ${WRENCH_PEGASUS_WORKFLOW_PARSER_LIBRARY}
-        ${SimGrid_LIBRARY}
-        ${PUGIXML_LIBRARY}
-        ${Boost_LIBRARIES}
-        )
+    target_link_libraries(wrench-daemon
+            PRIVATE Threads::Threads
+            ${WRENCH_LIBRARY}
+            ${WRENCH_PEGASUS_WORKFLOW_PARSER_LIBRARY}
+            ${SimGrid_LIBRARY}
+            ${PUGIXML_LIBRARY}
+            ${Boost_LIBRARIES}
+            )
 endif()
 
 

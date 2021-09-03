@@ -1,5 +1,5 @@
-#ifndef SIMULATION_CONTROLLER_H
-#define SIMULATION_CONTROLLER_H
+#ifndef WRENCH_CSSI_POC_SIMULATION_CONTROLLER_H
+#define WRENCH_CSSI_POC_SIMULATION_CONTROLLER_H
 
 #include <wrench-dev.h>
 #include <map>
@@ -8,6 +8,8 @@
 #include <mutex>
 
 #include <nlohmann/json.hpp>
+
+#include "BlockingQueue.h"
 
 using json = nlohmann::json;
 
@@ -38,28 +40,29 @@ namespace wrench {
 
         std::map<std::string, std::shared_ptr<wrench::StandardJob>> job_registry;
         std::map<std::string, std::shared_ptr<ComputeService>> compute_service_registry;
-        std::queue<std::pair<double, std::shared_ptr<wrench::WorkflowExecutionEvent>>> event_queue;
 
-        std::queue<wrench::ComputeService *> compute_services_to_start;
-        std::queue< std::pair<std::shared_ptr<StandardJob>, std::shared_ptr<ComputeService>>> submissions_to_do;
 
+        // Thread safe queues of things for the server thread and the simulation thread to communicate
+        BlockingQueue<std::pair<double, std::shared_ptr<wrench::WorkflowExecutionEvent>>> event_queue;
+        BlockingQueue<wrench::ComputeService *> compute_services_to_start;
+        BlockingQueue<std::pair<std::shared_ptr<StandardJob>, std::shared_ptr<ComputeService>>> submissions_to_do;
+
+        // The two useful managers
         std::shared_ptr<JobManager> job_manager;
         std::shared_ptr<DataMovementManager> data_movement_manager;
 
+
         bool keep_going = true;
-
         double time_horizon_to_reach = 0;
-
         int sleep_us;
 
         std::mutex controller_mutex;
-        std::condition_variable controller_condvar;
 
         int main() override;
         std::string addNewBareMetalComputeService(json service_spec);
-        json eventToJSON(std::shared_ptr<wrench::WorkflowExecutionEvent> event);
+        static json eventToJSON(double date, const std::shared_ptr<wrench::WorkflowExecutionEvent>& event);
 
     };
 }
 
-#endif // SIMULATION_CONTROLLER_H
+#endif // WRENCH_CSSI_POC_SIMULATION_CONTROLLER_H

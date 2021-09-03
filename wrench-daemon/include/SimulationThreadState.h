@@ -1,3 +1,6 @@
+#ifndef WRENCH_CSSI_POC_SIMULATION_THREAD_STATE_H
+#define WRENCH_CSSI_POC_SIMULATION_THREAD_STATE_H
+
 #include "SimulationController.h"
 #include <unistd.h>
 #include <nlohmann/json.hpp>
@@ -31,3 +34,5 @@ public:
 
     double getSimulationTime() const;
 };
+
+#endif // WRENCH_CSSI_POC_SIMULATION_THREAD_STATE_H
