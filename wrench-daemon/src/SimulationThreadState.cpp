@@ -69,7 +69,7 @@ std::vector<std::string> SimulationThreadState::getAllHostnames() const {
 
 
 void SimulationThreadState::stopSimulation() const {
-    this->simulation_controller->stopServer();
+    this->simulation_controller->stopSimulation();
 }
 
 

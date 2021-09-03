@@ -1,5 +1,5 @@
-#ifndef WORKFLOW_MANAGER_H
-#define WORKFLOW_MANAGER_H
+#ifndef SIMULATION_CONTROLLER_H
+#define SIMULATION_CONTROLLER_H
 
 #include <wrench-dev.h>
 #include <map>
@@ -11,43 +11,34 @@
 
 using json = nlohmann::json;
 
-
 namespace wrench {
 
     class SimulationController : public WMS {
 
     public:
 
-        double simulationTime = 0.0;
-
-        // Constructor
         explicit SimulationController(const std::string &hostname);
+
+        std::vector<std::string> getAllHostnames();
 
         std::string addNewService(json service_spec);
 
-//        std::string addJob(const double& requested_duration,
-//                     const unsigned int& num_nodes, const double& actual_duration);
+        std::string createStandardJob(json task_spec);
+        void submitStandardJob(json submission_spec);
 
-        std::vector<std::string> getAllHostnames();
-        
-//        bool cancelJob(const std::string& job_name);
-
+        double getSimulationTime();
         void advanceSimulationTime(double seconds);
 
         void getSimulationEvents(std::vector<json> &events);
         json waitForNextSimulationEvent();
 
-        double getSimulationTime();
-        std::string createStandardJob(json task_spec);
-        void submitStandardJob(json submission_spec);
-
-        void stopServer();
-
-        std::vector<std::string> getQueue();
+        void stopSimulation();
 
     private:
 
+        std::map<std::string, std::shared_ptr<wrench::StandardJob>> job_registry;
         std::map<std::string, std::shared_ptr<ComputeService>> compute_service_registry;
+        std::queue<std::pair<double, std::shared_ptr<wrench::WorkflowExecutionEvent>>> event_queue;
 
         std::queue<wrench::ComputeService *> compute_services_to_start;
         std::queue< std::pair<std::shared_ptr<StandardJob>, std::shared_ptr<ComputeService>>> submissions_to_do;
@@ -56,62 +47,16 @@ namespace wrench {
 
         std::string addNewBareMetalComputeService(json service_spec);
 
-        /**
-         * @brief Holds the job manager
-         */
         std::shared_ptr<JobManager> job_manager;
-
-        /**
-         * @brief Holds the data_movement manager
-         */
         std::shared_ptr<DataMovementManager> data_movement_manager;
 
-        /**
-         * @brief Flag value to determine whether an event check needs to be executed.
-         */
-        bool check_event = false;
+        bool keep_going = true;
 
-        /**
-         * @brief Flag value to determine if the simulation needs to end.
-         */
-        bool stop = false;
-
-        /**
-         * @brief Holds queue of event_queue within the simulation to allow it to pass between web wrench-daemon and simulation threads.
-         */
-        std::queue<std::pair<double, std::shared_ptr<wrench::WorkflowExecutionEvent>>> event_queue;
-
-        /**
-         * @brief Holds queue of jobs to cancel within the simulation to allow it to pass between web wrench-daemon and simulation threads.
-         */
-        std::queue<std::string> cancelJobs;
-
-        /**
-         * @brief Holds queue of completed jobs within the simulation in order to clean up
-         * to allow it to pass between web wrench-daemon and simulation threads.
-         */
-        std::queue<std::shared_ptr<wrench::WorkflowJob>> doneJobs;
-
-//        /**
-//         * @brief Holds queue of jobs to start within the simulation to allow it to pass between web wrench-daemon and simulation threads.
-//         */
-//        std::queue<std::pair<std::shared_ptr<wrench::StandardJob>, std::map<std::string, std::string>>> toSubmitJobs;
-
-        /**
-         * @brief Holds map of all jobs
-         */
-        std::map<std::string, std::shared_ptr<wrench::StandardJob>> job_registry;
-
-        /**
-         * @brief Time horizon to reach, if any.
-         */
         double time_horizon_to_reach = 0;
 
         std::mutex controller_mutex;
         std::condition_variable controller_condvar;
-
-
     };
 }
 
-#endif // WORKFLOW_MANAGER_H
+#endif // SIMULATION_CONTROLLER_H
