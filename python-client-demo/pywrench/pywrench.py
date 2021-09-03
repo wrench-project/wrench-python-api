@@ -29,7 +29,7 @@ def wait_for_next_event():
 
 
 def submit_standard_job(job_name, cs_name):
-    submission_spec = {"job_name": job_name, "service_name": cs_name}
+    submission_spec = {"job_name": job_name, "compute_service_name": cs_name}
     try:
         r = requests.post("http://localhost:8101/api/submitStandardJob", data=json.dumps(submission_spec))
     except requests.exceptions.ConnectionError:
@@ -98,7 +98,7 @@ def create_bare_metal_compute_service(hostname):
     response = r.json()
 
     if response["success"]:
-        return response["service_name"]
+        return response["compute_service_name"]
     else:
         raise WRENCHException(response["failure_cause"])
 

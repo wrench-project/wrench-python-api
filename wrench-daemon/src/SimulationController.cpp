@@ -50,7 +50,7 @@ namespace wrench {
                     WRENCH_INFO("Starting a new compute service...");
                     auto new_service_shared_ptr = this->simulation->startNewService(new_compute_service);
                     // Add the new service to the registry of existing services, so that later we can look it up by name
-                    this->compute_service_registry[new_service_shared_ptr->getName()] = new_service_shared_ptr;
+                    this->compute_service_registry.insert(new_service_shared_ptr->getName(), new_service_shared_ptr);
                 } else {
                     break;
                 }
@@ -143,6 +143,7 @@ namespace wrench {
             job = complete->standard_job;
         }
 
+        event_desc["compute_service_name"] = job->getParentComputeService()->getName();
         event_desc["job_name"] = job->getName();
         event_desc["submit_date"] = job->getSubmitDate();
         event_desc["end_date"] = job->getEndDate();
@@ -168,10 +169,7 @@ namespace wrench {
 
         // Remove the job from the event registry (this may not be a good idea, will see what semantics
         // we want the client API to show)
-        {
-            std::unique_lock<std::mutex> mlock(this->controller_mutex);
-            job_registry.erase(event_desc["job_name"]);
-        }
+        this->job_registry.remove(event_desc["job_name"]);
 
         return event_desc;
     }
@@ -192,10 +190,7 @@ namespace wrench {
             json event_desc = eventToJSON(event.first, event.second);
             // Remove the job from the event registry (this may not be a good idea, will see what semantics
             // we want the client API to show)
-            {
-                std::unique_lock<std::mutex> mlock(this->controller_mutex);
-                job_registry.erase(event_desc["job_name"]);
-            }
+            this->job_registry.remove(event_desc["job_name"]);
         }
     }
 
@@ -256,10 +251,7 @@ namespace wrench {
                                                  task_spec["max_num_cores"],
                                                  0.0);
         auto job = this->job_manager->createStandardJob(task, {});
-        {
-            std::unique_lock<std::mutex> mlock(this->controller_mutex);
-            this->job_registry[job->getName()] = job;
-        }
+        this->job_registry.insert(job->getName(), job);
         return job->getName();
     }
 
@@ -270,30 +262,22 @@ namespace wrench {
      * @param submission_spec Job submission specification
      */
     void SimulationController::submitStandardJob(json submission_spec) {
-        std::shared_ptr<StandardJob> job;
-        std::shared_ptr<ComputeService> cs;
 
         std::string job_name = submission_spec["job_name"];
-        std::string service_name = submission_spec["service_name"];
+        std::string cs_name = submission_spec["compute_service_name"];
 
-        {
-            std::unique_lock<std::mutex> mlock(this->controller_mutex);
-            if (this->job_registry.find(job_name) == this->job_registry.end()) {
-                throw std::runtime_error("Unknown job " + job_name);
-            }
-            job = this->job_registry[job_name];
-        }
-        {
-            if (this->compute_service_registry.find(service_name) == this->compute_service_registry.end()) {
-                throw std::runtime_error("Unknown service " + service_name);
-            }
-            cs = this->compute_service_registry[service_name];
+        std::shared_ptr<StandardJob> job;
+        if (not this->job_registry.lookup(job_name, job)) {
+            throw std::runtime_error("Unknown job " + job_name);
         }
 
-        this->submissions_to_do.push(
-                std::make_pair(job, cs));
+        std::shared_ptr<ComputeService> cs;
+        if (not this->compute_service_registry.lookup(cs_name, cs)) {
+            throw std::runtime_error("Unknown service " + cs_name);
+        }
+
+        this->submissions_to_do.push(std::make_pair(job, cs));
     }
-
 
 }
 

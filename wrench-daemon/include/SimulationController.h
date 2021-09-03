@@ -10,6 +10,7 @@
 #include <nlohmann/json.hpp>
 
 #include "BlockingQueue.h"
+#include "KeyValueStore.h"
 
 using json = nlohmann::json;
 
@@ -38,8 +39,8 @@ namespace wrench {
 
     private:
 
-        std::map<std::string, std::shared_ptr<wrench::StandardJob>> job_registry;
-        std::map<std::string, std::shared_ptr<ComputeService>> compute_service_registry;
+        KeyValueStore<std::shared_ptr<wrench::StandardJob>> job_registry;
+        KeyValueStore<std::shared_ptr<ComputeService>> compute_service_registry;
 
 
         // Thread safe queues of things for the server thread and the simulation thread to communicate

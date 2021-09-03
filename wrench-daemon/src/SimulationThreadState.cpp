@@ -81,5 +81,6 @@ std::string SimulationThreadState::createStandardJob(json task_spec) const {
 }
 
 void SimulationThreadState::submitStandardJob(json submission_spec) const {
+    std::cerr << "WTF\n";
     this->simulation_controller->submitStandardJob(std::move(submission_spec));
 }

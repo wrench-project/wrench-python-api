@@ -6,8 +6,7 @@
 
 template<typename T> class BlockingQueue {
 public:
-    void push(T const& _data)
-    {
+    void push(T const& _data) {
         {
             std::lock_guard<std::mutex> lock(guard);
             queue.push(_data);
@@ -15,14 +14,7 @@ public:
         signal.notify_one();
     }
 
-//    bool empty() const
-//    {
-//        std::lock_guard<std::mutex> lock(guard);
-//        return queue.empty();
-//    }
-
-    bool tryPop(T& _value)
-    {
+    bool tryPop(T& _value) {
         std::lock_guard<std::mutex> lock(guard);
         if (queue.empty())
         {
@@ -34,8 +26,7 @@ public:
         return true;
     }
 
-    void waitAndPop(T& _value)
-    {
+    void waitAndPop(T& _value) {
         std::unique_lock<std::mutex> lock(guard);
         while (queue.empty())
         {

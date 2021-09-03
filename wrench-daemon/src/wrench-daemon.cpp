@@ -131,7 +131,7 @@ void addService(const Request& req, Response& res) {
     try {
         std::string service_name = simulation_thread_state->addService(req_body);
         answer["success"] = true;
-        answer["service_name"] = service_name;
+        answer["compute_service_name"] = service_name;
     } catch (std::exception &e) {
         answer["success"] = false;
         answer["failure_cause"] = e.what();

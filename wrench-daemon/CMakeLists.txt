@@ -37,7 +37,9 @@ add_executable (wrench-daemon
         include/httplib.h
         include/SimulationController.h
         src/SimulationController.cpp
-        include/BlockingQueue.h)
+        include/BlockingQueue.h
+        include/KeyValueStore.h
+        )
 
 
 # Add pthreads
