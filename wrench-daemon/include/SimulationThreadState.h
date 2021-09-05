@@ -28,7 +28,7 @@ public:
     void stopSimulation() const;
 
     void createAndLaunchSimulation(bool full_log,
-                                   std::string platform_file,
+                                   const std::string& platform_xml,
                                    const std::string& controller_host,
                                    int sleep_us);
 

@@ -79,9 +79,10 @@ namespace wrench {
             double time_to_sleep = std::max<double>(0, time_horizon_to_reach -
                                                        wrench::Simulation::getCurrentSimulatedDate());
 
-            if (time_to_sleep > 0.0) { WRENCH_INFO("Sleeping %.2lf seconds", time_to_sleep);
+            if (time_to_sleep > 0.0) {
+                WRENCH_INFO("Sleeping %.2lf seconds", time_to_sleep);
                 S4U_Simulation::sleep(time_to_sleep);
-                while (auto event = this->waitForNextEvent(JOB_MANAGER_COMMUNICATION_TIMEOUT_VALUE)) {
+                while (auto event = this->waitForNextEvent(10*JOB_MANAGER_COMMUNICATION_TIMEOUT_VALUE)) {
                     // Add job onto the event queue
                     event_queue.push(std::make_pair(Simulation::getCurrentSimulatedDate(), event));
                 }
@@ -188,6 +189,7 @@ namespace wrench {
         while (this->event_queue.tryPop(event)) {
             std::shared_ptr<wrench::StandardJob> job;
             json event_desc = eventToJSON(event.first, event.second);
+            events.push_back(event_desc);
             // Remove the job from the event registry (this may not be a good idea, will see what semantics
             // we want the client API to show)
             this->job_registry.remove(event_desc["job_name"]);

@@ -2,8 +2,6 @@
 #include "SimulationThreadState.h"
 #include "SimulationController.h"
 
-#include <unistd.h>
-
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,7 +10,7 @@
 
 void SimulationThreadState::createAndLaunchSimulation(
         bool full_log,
-        std::string platform_file,
+        const std::string& platform_xml,
         const std::string& controller_host,
         int sleep_us) {
 
@@ -26,8 +24,19 @@ void SimulationThreadState::createAndLaunchSimulation(
     // Let WRENCH grab its own command-line arguments, if any
     simulation.init(&argc, argv);
 
+    // Create tmp XML platform file
+    std::string platform_file_path = "/tmp/wrench_daemon_platform_file_" + std::to_string(getpid()) + ".xml";
+    std::ofstream platform_file(platform_file_path);
+    platform_file << platform_xml;
+    platform_file.close();
+
     // Instantiate Simulated Platform
-    simulation.instantiatePlatform(std::move(platform_file));
+    simulation.instantiatePlatform(platform_file_path);
+
+    // Erase the XML platform file
+//    remove(platform_file_path.c_str());
+
+    std::cerr << "PLATFOMRINSTANTIATED\n";
 
     // Check that the controller host exists
     if (not wrench::Simulation::doesHostExist(controller_host)) {
@@ -81,6 +90,5 @@ std::string SimulationThreadState::createStandardJob(json task_spec) const {
 }
 
 void SimulationThreadState::submitStandardJob(json submission_spec) const {
-    std::cerr << "WTF\n";
     this->simulation_controller->submitStandardJob(std::move(submission_spec));
 }

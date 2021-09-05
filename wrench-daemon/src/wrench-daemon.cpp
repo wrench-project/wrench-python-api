@@ -22,69 +22,151 @@ namespace po = boost::program_options;
 httplib::Server server;
 std::thread simulation_thread;
 SimulationThreadState *simulation_thread_state;
+bool full_log;
+int port_number;
+int sleep_us;
 
 /***********************
  ** ALL PATH HANDLERS **
  ***********************/
 
+void displayRequest(const Request &req) {
+    int max_line_length = 120;
+    std::cerr << req.path << " " << req.body.substr(0, max_line_length) << (req.body.length() > max_line_length ? "..." : "") << std::endl;
+}
+
+void setJSONResponse(Response& res, json& answer) {
+    res.set_header("access-control-allow-origin", "*");
+    res.set_content(answer.dump(), "application/json");
+}
+
+bool simulationHasStarted(Response &res) {
+    if (simulation_thread_state != nullptr) {
+        return true;
+    }
+
+    json answer;
+    answer["success"] = false;
+    answer["failure_cause"] = "Simulation has not been started";
+    setJSONResponse(res, answer);
+    return false;
+}
+
+void alive(const Request& req, Response& res) {
+    displayRequest(req);
+    if (not simulationHasStarted(res))
+        return;
+
+    // Create json answer
+    json answer;
+    answer["success"] = true;
+    answer["alive"] = true;
+
+    setJSONResponse(res, answer);
+}
+
+
+void startSimulation(const Request& req, Response& res) {
+    displayRequest(req);
+    json body = json::parse(req.body);
+
+    // Create json answer
+    json answer;
+
+    if (simulation_thread_state != nullptr) {
+        answer["success"] = false;
+        answer["failure_cause"] = "Simulation is already started...";
+    } else {
+        // Start the simulation in a separate thread
+        simulation_thread_state = new SimulationThreadState();
+        try {
+            simulation_thread = std::thread(&SimulationThreadState::createAndLaunchSimulation, simulation_thread_state,
+                                            full_log, body["platform_xml"], body["controller_hostname"], sleep_us);
+            answer["success"] = true;
+        } catch (std::exception &e) {
+            answer["success"] = false;
+            answer["failure_cause"] = std::string(e.what());
+        }
+    }
+
+    setJSONResponse(res, answer);
+}
+
+
 void getTime(const Request& req, Response& res) {
-    std::cerr << req.path << " " << req.body << std::endl;
+    displayRequest(req);
+    if (not simulationHasStarted(res))
+        return;
 
     // Retrieve simulated time from simulation thread
     auto time = simulation_thread_state->getSimulationTime();
 
     // Create json answer
     json answer;
+    answer["success"] = true;
     answer["time"] = time;
 
-    // Send answer back
-    res.set_header("access-control-allow-origin", "*");
-    res.set_content(answer.dump(), "application/json");
+    setJSONResponse(res, answer);
 }
 
 void getAllHostnames(const Request& req, Response& res) {
-    std::cerr << req.path << " " << req.body << std::endl;
+    displayRequest(req);
+    if (not simulationHasStarted(res))
+        return;
 
     // Retrieve all hostnames from simulation thread
     std::vector<std::string> hostnames = simulation_thread_state->getAllHostnames();
 
     // Create json answer
     json answer;
+    answer["success"] = true;
     answer["hostnames"] = hostnames;
 
-    // Send answer back
-    res.set_header("Access-Control-Allow-Origin", "*");
-    res.set_content(answer.dump(), "application/json");
+    setJSONResponse(res, answer);
 }
 
-void stop(const Request& req, Response& res) {
-    std::cerr << req.path << " " << req.body << std::endl;
+void terminateSimulation(const Request& req, Response& res) {
+    displayRequest(req);
+    if (not simulationHasStarted(res))
+        return;
 
     // Stop the simulation thread and wait for it to have stopped
     simulation_thread_state->stopSimulation();
     simulation_thread.join();
 
-    // Erase the simulated state
-    res.set_header("access-control-allow-origin", "*");
+    // Create an json answer
+    json answer;
+    answer["success"] = true;
 
-    // Terminate
-    std::exit(0);
+    setJSONResponse(res, answer);
+
+    // exit in 1 second
+    server.stop();
+    exit(1);
 }
 
 
 void addTime(const Request& req, Response& res) {
-    std::cerr << req.path << " " << req.body << std::endl;
+    displayRequest(req);
+    if (not simulationHasStarted(res))
+        return;
 
     // Get the time to sleep from the request
     auto time_to_sleep = json::parse(req.body)["increment"].get<double>();
 
     // Tell the simulation thread to advance simulation time
     simulation_thread_state->advanceSimulationTime(time_to_sleep);
+
+    json answer;
+    answer["success"] = true;
+    setJSONResponse(res, answer);
 }
 
 
 void getSimulationEvents(const Request& req, Response& res) {
-    std::cerr << req.path << " " << req.body << std::endl;
+    displayRequest(req);
+    if (not simulationHasStarted(res))
+        return;
 
     // Get events from the simulation thread
     std::vector<json> events;
@@ -92,26 +174,26 @@ void getSimulationEvents(const Request& req, Response& res) {
 
     // Create json answer
     json answer;
+    answer["success"] = true;
     answer["events"] = events;
 
-    // Send answer back
-    res.set_header("access-control-allow-origin", "*");
-    res.set_content(answer.dump(), "application/json");
+    setJSONResponse(res, answer);
 }
 
 void waitForNextSimulationEvent(const Request &req, Response & res) {
-    std::cerr << req.path << " " << req.body << std::endl;
+    displayRequest(req);
+    if (not simulationHasStarted(res))
+        return;
 
     // Ask the simulation thread to wait until the next simulation event
     auto event = simulation_thread_state->waitForNextSimulationEvent();
 
     // Create json answer
     json answer;
+    answer["success"] = true;
     answer["event"] = event;
 
-    // Send answer back
-    res.set_header("access-control-allow-origin", "*");
-    res.set_content(answer.dump(), "application/json");
+    setJSONResponse(res, answer);
 }
 
 /**
@@ -121,7 +203,9 @@ void waitForNextSimulationEvent(const Request &req, Response & res) {
  * @param res HTTP response object
  */
 void addService(const Request& req, Response& res) {
-    std::cerr << req.path << " " << req.body << "\n";
+    displayRequest(req);
+    if (not simulationHasStarted(res))
+        return;
 
     // Parse the request's body to json
     auto req_body = json::parse(req.body);
@@ -137,14 +221,14 @@ void addService(const Request& req, Response& res) {
         answer["failure_cause"] = e.what();
     }
 
-    // Send answer back
-    res.set_header("access-control-allow-origin", "*");
-    res.set_content(answer.dump(), "application/json");
+    setJSONResponse(res, answer);
 }
 
 
 void submitStandardJob(const Request& req, Response& res) {
-    std::cerr << req.path << " " << req.body << "\n";
+    displayRequest(req);
+    if (not simulationHasStarted(res))
+        return;
 
     // Parse the request's body to json
     auto req_body = json::parse(req.body);
@@ -159,14 +243,14 @@ void submitStandardJob(const Request& req, Response& res) {
         answer["failure_cause"] = e.what();
     }
 
-    // Send answer back
-    res.set_header("access-control-allow-origin", "*");
-    res.set_content(answer.dump(), "application/json");
+    setJSONResponse(res, answer);
 }
 
 
 void createStandardJob(const Request& req, Response& res) {
-    std::cerr << req.path << " " << req.body << "\n";
+    displayRequest(req);
+    if (not simulationHasStarted(res))
+        return;
 
     // parse the request's answer to json
     auto req_body = json::parse(req.body);
@@ -183,9 +267,7 @@ void createStandardJob(const Request& req, Response& res) {
         answer["failure_cause"] = e.what();
     }
 
-    // Send answer back
-    res.set_header("access-control-allow-origin", "*");
-    res.set_content(answer.dump(), "application/json");
+    setJSONResponse(res, answer);
 }
 
 
@@ -217,10 +299,6 @@ int main(int argc, char **argv) {
             ("help", "Show this help message")
             ("wrench-full-log", po::bool_switch()->default_value(false),
              "Show full simulation log during execution")
-            ("platform", po::value<std::string>()->required(),
-             "Path to the XML file that described the simulated platform")
-            ("controller-host", po::value<std::string>()->required(),
-             "Host in the (simulated) platform on which the controller process will be running")
             ("port", po::value<int>()->default_value(8101)->notifier(
                     in(1024, 49151, "port")),
              "port number, between 1024 and 4951, on which this daemon will listen")
@@ -244,20 +322,12 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    auto full_log = vm["wrench-full-log"].as<bool>();
-    auto platform_file = vm["platform"].as<std::string>();
-    auto controller_host = vm["controller-host"].as<std::string>();
-    auto port_number = vm["port"].as<int>();
-    auto sleep_us = vm["sleep-us"].as<int>();
-
-    // Check that platform file is available for reading
-    ifstream my_file(platform_file);
-    if (not my_file.good()) {
-        cerr << "Platform file \"" + platform_file + "\" not found or unreadable\n";
-        return 1;
-    }
+    full_log = vm["wrench-full-log"].as<bool>();
+    port_number = vm["port"].as<int>();
+    sleep_us = vm["sleep-us"].as<int>();
 
     // Set up GET request handlers
+    server.Get("/api/alive", alive);
     server.Get("/api/getTime", getTime);
     server.Get("/api/getAllHostnames", getAllHostnames);
     server.Get("/api/getSimulationEvents", getSimulationEvents);
@@ -268,19 +338,22 @@ int main(int argc, char **argv) {
     server.Post("/api/addService", addService);
     server.Post("/api/createStandardJob", createStandardJob);
     server.Post("/api/submitStandardJob", submitStandardJob);
-    server.Post("/api/stop", stop);
+    server.Post("/api/startSimulation", startSimulation);
+    server.Post("/api/terminateSimulation", terminateSimulation);
 
     // Set some generic error handler
     server.set_error_handler(error_handling);
 
-    // Start the simulation in a separate thread
-    simulation_thread_state = new SimulationThreadState();
-    simulation_thread = std::thread(&SimulationThreadState::createAndLaunchSimulation, simulation_thread_state,
-                                    full_log, platform_file, controller_host, sleep_us);
-
-    // Start the HTTP server
-    std::printf("Listening on port: %d\n", port_number);
-    server.listen("0.0.0.0", port_number);
-
-    exit(0);
+    while (true) {
+        auto pid = fork();
+        if (!pid) { // child
+            // Start the HTTP server
+            simulation_thread_state = nullptr;
+            std::printf("Listening on port: %d\n", port_number);
+            server.listen("0.0.0.0", port_number);
+        } else { // parent
+            int stat_loc;
+            waitpid(pid, &stat_loc, 0);
+        }
+    }
 }
