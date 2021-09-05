@@ -14,7 +14,7 @@ There are many design decisions to be made to implement the above architecture, 
 
 # How to run it
 
-  - Start the daemon: `./wrench-daemon/build/wrench-daemon --platform wrench-daemon/three_host_platform.xml --controller-host ControllerHost --wrench-full-log`
+  - Start the daemon: `./wrench-daemon/build/wrench-daemon --wrench-full-log`
 
   - Run the Python simulator: `./python-client-demo/simulator.py`
 
