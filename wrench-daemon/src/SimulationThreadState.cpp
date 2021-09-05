@@ -34,9 +34,7 @@ void SimulationThreadState::createAndLaunchSimulation(
     simulation.instantiatePlatform(platform_file_path);
 
     // Erase the XML platform file
-//    remove(platform_file_path.c_str());
-
-    std::cerr << "PLATFOMRINSTANTIATED\n";
+    remove(platform_file_path.c_str());
 
     // Check that the controller host exists
     if (not wrench::Simulation::doesHostExist(controller_host)) {

@@ -30,10 +30,10 @@ class WRENCHSimulation:
         spec = {"platform_xml": xml, "controller_hostname": controller_hostname}
         r = requests.post(self.daemon_url + "/startSimulation", data=json.dumps(spec))
         response = r.json()
+        self.terminated = False
         if not response["success"]:
             raise WRENCHException(response["failure_cause"])
 
-        self.terminated = False
 
     def __del__(self):
         """

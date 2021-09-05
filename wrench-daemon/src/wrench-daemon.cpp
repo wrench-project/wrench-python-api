@@ -47,7 +47,7 @@ bool simulationHasStarted(Response &res) {
 
     json answer;
     answer["success"] = false;
-    answer["failure_cause"] = "Simulation has not been started";
+    answer["failure_cause"] = "Simulation has not been started or has been terminated";
     setJSONResponse(res, answer);
     return false;
 }
