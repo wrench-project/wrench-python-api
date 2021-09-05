@@ -1,0 +1,50 @@
+<?xml version='1.0'?>
+<!DOCTYPE platform SYSTEM "http://simgrid.gforge.inria.fr/simgrid/simgrid.dtd">
+<platform version="4.1">
+    <zone id="AS0" routing="Full">
+
+        <host id="ControllerHost" speed="1f" core="1">
+            <disk id="hard_drive" read_bw="100MBps" write_bw="100MBps">
+                <prop id="size" value="5000GiB"/>
+                <prop id="mount" value="/"/>
+            </disk>
+        </host>
+
+        <host id="ComputeHost" speed="1f" core="10">
+        </host>
+
+        <host id="StorageHost" speed="1f" core="1">
+            <disk id="hard_drive" read_bw="100MBps" write_bw="100MBps">
+                <prop id="size" value="5000GiB"/>
+                <prop id="mount" value="/"/>
+            </disk>
+        </host>
+
+        <!-- A network link -->
+        <link id="network_link" bandwidth="50MBps" latency="20us"/>
+
+<!--        &lt;!&ndash; ControllerHost's local "loopback" link &ndash;&gt;-->
+<!--        <link id="loopback_ControllerHost" bandwidth="1000EBps" latency="0us"/>-->
+<!--        &lt;!&ndash;BatchHeadNode's local "loopback" link &ndash;&gt;-->
+<!--        <link id="loopback_ComputeHost" bandwidth="1000EBps" latency="0us"/>-->
+<!--        &lt;!&ndash;ComputeHost's local "loopback" link &ndash;&gt;-->
+<!--        <link id="loopback_StorageHost" bandwidth="1000EBps" latency="0us"/>-->
+
+        <!-- The network link connects the two hosts -->
+        <route src="ControllerHost" dst="ComputeHost"> <link_ctn id="network_link"/> </route>
+        <route src="ControllerHost" dst="StorageHost"> <link_ctn id="network_link"/> </route>
+        <route src="ComputeHost" dst="StorageHost"> <link_ctn id="network_link"/> </route>
+
+<!--        &lt;!&ndash; Each loopback link connects each host to itself &ndash;&gt;-->
+<!--&lt;!&ndash;        <route src="ControllerHost" dst="ControllerHost">&ndash;&gt;-->
+<!--&lt;!&ndash;            <link_ctn id="loopback_ControllerHost"/>&ndash;&gt;-->
+<!--&lt;!&ndash;        </route>&ndash;&gt;-->
+<!--        <route src="ComputeHost" dst="ComputeHost">-->
+<!--            <link_ctn id="loopback_ComputeHost"/>-->
+<!--        </route>-->
+<!--        <route src="StorageHost" dst="StorageHost">-->
+<!--            <link_ctn id="loopback_StorageHost"/>-->
+<!--        </route>-->
+
+    </zone>
+</platform>
