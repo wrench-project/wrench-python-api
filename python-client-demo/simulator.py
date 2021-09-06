@@ -36,6 +36,10 @@ if __name__ == "__main__":
     for event in events:
         print("EVENT: " + str(event))
 
+    import os
+    import sys
+    os.system("sleep " + sys.argv[1])
+    
     print("Creating another standard job...")
     job_name = simulation.create_standard_job("some_other_task", 100.0, 1, 1)
     print("Created standard job has name " + job_name)

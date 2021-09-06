@@ -30,10 +30,12 @@ class WRENCHSimulation:
         spec = {"platform_xml": xml, "controller_hostname": controller_hostname}
         r = requests.post(self.daemon_url + "/startSimulation", data=json.dumps(spec))
         response = r.json()
-        self.terminated = False
         if not response["success"]:
+            self.terminated = True
             raise WRENCHException(response["failure_cause"])
-
+        self.daemon_port = response["port_number"]
+        self.daemon_url = "http://" + daemon_host + ":" + str(self.daemon_port) + "/api"
+        # print("===> " + self.daemon_url)
 
     def __del__(self):
         """
@@ -41,7 +43,7 @@ class WRENCHSimulation:
 
         :return:
         """
-        if not self.terminated:
+        if hasattr(self, "terminated") and not self.terminated:
             self.terminate()
 
     def terminate(self):

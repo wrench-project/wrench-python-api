@@ -33,6 +33,9 @@ public:
                                    int sleep_us);
 
     double getSimulationTime() const;
+
+    int simulation_launch_error_code = 0;
+
 };
 
 #endif // WRENCH_CSSI_POC_SIMULATION_THREAD_STATE_H

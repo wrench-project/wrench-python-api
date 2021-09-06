@@ -8,14 +8,29 @@
 
 #include <wrench.h>
 
+/**
+ * @brief Method to create and launch the simulation, which is called in a thread inside a child process.
+ *        To be able to notify the parent process of the nature of an error, if any, this method
+ *        simple sets a variable (simulation_launch_error_code) to one of the following codes:
+ *          - 1: cannot instantiate platform due to invalid XML
+ *          - 2: controller host does not exist in the XML platform
+ *          - 3: error launching the simulation
+ *
+ * @param full_log: whether to show all simulation log
+ * @param platform_xml: XML platform description (an XML string - not a file path)
+ * @param controller_host: hostname of the host that will run the controller
+ * @param sleep_us: number of microseconds to sleep at each iteration of the main loop
+ */
 void SimulationThreadState::createAndLaunchSimulation(
         bool full_log,
         const std::string& platform_xml,
         const std::string& controller_host,
         int sleep_us) {
 
+    this->simulation_launch_error_code = 0;
+
     int argc = (full_log ? 2 : 1);
-    char **argv = (char **)calloc(argc, sizeof(char *));
+    char **argv = (char **) calloc(argc, sizeof(char *));
     argv[0] = strdup("wrench-daemon-simulation");
     if (argc > 1) {
         argv[1] = strdup("--wrench-full-log");
@@ -31,27 +46,37 @@ void SimulationThreadState::createAndLaunchSimulation(
     platform_file.close();
 
     // Instantiate Simulated Platform
-    simulation.instantiatePlatform(platform_file_path);
+    try {
+        simulation.instantiatePlatform(platform_file_path);
+    } catch (std::exception &e) {
+        this->simulation_launch_error_code = 1;
+        return;
+    }
 
     // Erase the XML platform file
     remove(platform_file_path.c_str());
 
     // Check that the controller host exists
     if (not wrench::Simulation::doesHostExist(controller_host)) {
-        throw std::runtime_error("There should be a host called " + controller_host + " in the XML platform file");
+        this->simulation_launch_error_code = 2;
+        return;
     }
 
-    this->simulation_controller = simulation.add(
-            new wrench::SimulationController(controller_host, sleep_us));
+    try {
+        this->simulation_controller = simulation.add(
+                new wrench::SimulationController(controller_host, sleep_us));
 
-    // Add a bogus workflow to simulation_controller
-    wrench::Workflow workflow;
-    this->simulation_controller->addWorkflow(&workflow);
+        // Add a bogus workflow to simulation_controller
+        wrench::Workflow workflow;
+        this->simulation_controller->addWorkflow(&workflow);
 
-    // Start the simulation. Currently cannot start the simulation in a different thread or else it will
-    // seg fault. Most likely related to how simgrid handles threads so the web wrench-daemon has to started
-    // on a different thread.
-    simulation.launch();
+        // Start the simulation.
+        simulation.launch();
+    } catch (std::exception &e) {
+        this->simulation_launch_error_code = 3;
+        return;
+    }
+
 }
 
 void SimulationThreadState::advanceSimulationTime(double seconds) const {
