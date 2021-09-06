@@ -9,6 +9,7 @@
 #include <nlohmann/json.hpp>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/shm.h>
 
 
 using httplib::Request;
@@ -263,14 +264,23 @@ void startSimulation(const Request& req, Response& res) {
     // Increment the port number (TODO: LIKELY IMPLEMENT A LIMITED RANGE OF PORTS)
     port_number++;
 
+    // Create a shared memory segment, to which an error message will be written
+    // in case of a simulation creation failure
+    auto shm_segment_id_top = shmget(IPC_PRIVATE, 2048, IPC_CREAT | SHM_R | SHM_W);
+
     // Create a child process
     auto child_pid = fork();
+
     if (!child_pid) {
 
-        auto grand_child_pid = fork();
+//        // Create a shared memory segment,
+//        auto shm_segment_id_middle = shmget(IPC_PRIVATE, 2048, IPC_CREAT | SHM_R | SHM_W);
+
         // The child process creates a grand child, that will be adopted by
         // pid 1 (the well-known "if I create a child that creates a grand-child
         // and I kill the child, then my grand-child will never become a zombie)
+        auto grand_child_pid = fork();
+
         if (! grand_child_pid) {
             simulation_thread_state = new SimulationThreadState();
             // Start the simulation in a separate thread
@@ -282,9 +292,13 @@ void startSimulation(const Request& req, Response& res) {
             // This is pretty ugly, but will do for now
             usleep(100000);
 
-            if (simulation_thread_state->simulation_launch_error_code) {
+            if (simulation_thread_state->simulation_launch_error) {
                 simulation_thread.join(); // THIS IS NECESSARY, otherwise the exit silently segfaults!
-                exit(simulation_thread_state->simulation_launch_error_code);
+                char *shm_segment = (char *)shmat(shm_segment_id_top, nullptr, 0);
+                const char *to_copy = simulation_thread_state->simulation_launch_error_message.c_str();
+                strcpy(shm_segment, to_copy);
+                shmdt(shm_segment);
+                exit((simulation_thread_state->simulation_launch_error ? 1 : 0));
             }
 
             // Set up GET request handlers
@@ -311,6 +325,12 @@ void startSimulation(const Request& req, Response& res) {
             usleep(200000);
             int stat_loc = 0;
             waitpid(grand_child_pid, &stat_loc, WNOHANG);
+//            char *shm_segment_top = (char *)shmat(shm_segment_id_top, nullptr, 0);
+//            char *shm_segment_middle = (char *)shmat(shm_segment_id_middle, nullptr, 0);
+//            strcpy(shm_segment_top,shm_segment_middle);
+//            shmdt(shm_segment_middle);
+//            shmdt(shm_segment_top);
+//            shmctl(shm_segment_id_middle, IPC_RMID, NULL);
             exit(WEXITSTATUS(stat_loc)); // propagate grand-child's exit code (or 0 if it hasn't exited yet) up
         }
     }
@@ -319,6 +339,7 @@ void startSimulation(const Request& req, Response& res) {
     int stat_loc;
     waitpid(child_pid, &stat_loc, 0);
 
+    char *shm_segment_top = (char *)shmat(shm_segment_id_top, nullptr, 0);
     // Create json answer that will inform the client of success or failure
     json answer;
     if (WEXITSTATUS(stat_loc) == 0) {
@@ -326,21 +347,12 @@ void startSimulation(const Request& req, Response& res) {
         answer["port_number"] = port_number;
     } else {
         answer["success"] = false;
-        switch(WEXITSTATUS(stat_loc)) {
-            case 1:
-                answer["failure_cause"] = "Cannot instantiate platform due to invalid XML";
-                break;
-            case 2:
-                answer["failure_cause"] = "Controller host does not exist in the XML platform";
-                break;
-            case 3:
-                answer["failure_cause"] = "Error launching the simulation";
-                break;
-            default:
-                answer["failure_cause"] = "Unknown internal error";
-                break;
-        }
+        answer["failure_cause"] = std::string(shm_segment_top);
     }
+    shmdt(shm_segment_top);
+    shmctl(shm_segment_id_top, IPC_RMID, NULL);
+
+
 
     setJSONResponse(res, answer);
 }

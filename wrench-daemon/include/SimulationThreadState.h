@@ -34,7 +34,8 @@ public:
 
     double getSimulationTime() const;
 
-    int simulation_launch_error_code = 0;
+    bool simulation_launch_error = false;
+    std::string simulation_launch_error_message;
 
 };
 

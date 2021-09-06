@@ -11,10 +11,7 @@
 /**
  * @brief Method to create and launch the simulation, which is called in a thread inside a child process.
  *        To be able to notify the parent process of the nature of an error, if any, this method
- *        simple sets a variable (simulation_launch_error_code) to one of the following codes:
- *          - 1: cannot instantiate platform due to invalid XML
- *          - 2: controller host does not exist in the XML platform
- *          - 3: error launching the simulation
+ *        simple sets an error message variable and returns
  *
  * @param full_log: whether to show all simulation log
  * @param platform_xml: XML platform description (an XML string - not a file path)
@@ -27,42 +24,42 @@ void SimulationThreadState::createAndLaunchSimulation(
         const std::string& controller_host,
         int sleep_us) {
 
-    this->simulation_launch_error_code = 0;
-
-    int argc = (full_log ? 2 : 1);
-    char **argv = (char **) calloc(argc, sizeof(char *));
-    argv[0] = strdup("wrench-daemon-simulation");
-    if (argc > 1) {
-        argv[1] = strdup("--wrench-full-log");
-    }
-
-    // Let WRENCH grab its own command-line arguments, if any
-    simulation.init(&argc, argv);
-
-    // Create tmp XML platform file
-    std::string platform_file_path = "/tmp/wrench_daemon_platform_file_" + std::to_string(getpid()) + ".xml";
-    std::ofstream platform_file(platform_file_path);
-    platform_file << platform_xml;
-    platform_file.close();
-
-    // Instantiate Simulated Platform
-    try {
-        simulation.instantiatePlatform(platform_file_path);
-    } catch (std::exception &e) {
-        this->simulation_launch_error_code = 1;
-        return;
-    }
-
-    // Erase the XML platform file
-    remove(platform_file_path.c_str());
-
-    // Check that the controller host exists
-    if (not wrench::Simulation::doesHostExist(controller_host)) {
-        this->simulation_launch_error_code = 2;
-        return;
-    }
+    this->simulation_launch_error = false;
 
     try {
+
+        int argc = (full_log ? 2 : 1);
+        char **argv = (char **) calloc(argc, sizeof(char *));
+        argv[0] = strdup("wrench-daemon-simulation");
+        if (argc > 1) {
+            argv[1] = strdup("--wrench-full-log");
+        }
+
+        // Let WRENCH grab its own command-line arguments, if any
+        simulation.init(&argc, argv);
+
+        // Create tmp XML platform file
+        std::string platform_file_path = "/tmp/wrench_daemon_platform_file_" + std::to_string(getpid()) + ".xml";
+        std::ofstream platform_file(platform_file_path);
+        platform_file << platform_xml;
+        platform_file.close();
+
+        // Instantiate Simulated Platform
+        try {
+            simulation.instantiatePlatform(platform_file_path);
+            // Erase the XML platform file
+            remove(platform_file_path.c_str());
+        } catch (std::exception &e) {
+            // Erase the XML platform file
+            remove(platform_file_path.c_str());
+            throw std::runtime_error(e.what());
+        }
+
+        // Check that the controller host exists
+        if (not wrench::Simulation::doesHostExist(controller_host)) {
+            throw std::runtime_error("The platform does not contain a controller host with name " + controller_host);
+        }
+
         this->simulation_controller = simulation.add(
                 new wrench::SimulationController(controller_host, sleep_us));
 
@@ -72,8 +69,11 @@ void SimulationThreadState::createAndLaunchSimulation(
 
         // Start the simulation.
         simulation.launch();
+
     } catch (std::exception &e) {
-        this->simulation_launch_error_code = 3;
+
+        this->simulation_launch_error = true;
+        this->simulation_launch_error_message = std::string(e.what());
         return;
     }
 
