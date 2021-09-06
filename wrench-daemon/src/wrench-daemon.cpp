@@ -17,6 +17,9 @@ using httplib::Response;
 using json = nlohmann::json;
 namespace po = boost::program_options;
 
+#define PORT_MIN 10000
+#define PORT_MAX 20000
+
 /**
  * Ugly globals
  */
@@ -28,20 +31,27 @@ bool daemon_log;
 int port_number;
 int sleep_us;
 
-//
-//bool port_in_use(unsigned short port) {
-//    using namespace boost::asio;
-//    using ip::tcp;
-//
-//    io_service svc;
-//    tcp::acceptor a(svc);
-//
-//    boost::system::error_code ec;
-//    a.open(tcp::v4(), ec) || a.bind({ tcp::v4(), port }, ec);
-//
-//    return ec == error::address_in_use;
-//}
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+
+bool isPortTaken(int port) {
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    struct sockaddr_in address;
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons( port );
+    int ret_value = ::bind(sockfd, (struct sockaddr *)&address, sizeof(address));
+
+    if (ret_value == 0) {
+        close(sockfd);
+        return false;
+    } else if (errno == EADDRINUSE) {
+        return true;
+    } else {
+        throw std::runtime_error("isPortTaken(): port should be either taken or not taken");
+    }
+}
 
 /***********************
  ** ALL PATH HANDLERS **
@@ -264,11 +274,11 @@ void createStandardJob(const Request& req, Response& res) {
 void startSimulation(const Request& req, Response& res) {
     displayRequest(req);
     json body = json::parse(req.body);
-    static int port_number = 10000;  // port number used by the next child process simulation
-    // TODO: MAKE THIS MORE ROBUST (IN CASE PORT IS TAKEN)
 
-    // Increment the port number (TODO: LIKELY IMPLEMENT A LIMITED RANGE OF PORTS)
-    port_number++;
+
+    // Find an available port number
+    int port_number;
+    while (isPortTaken(port_number = PORT_MIN + rand() % (PORT_MAX - PORT_MIN)));
 
     // Create a shared memory segment, to which an error message will be written
     // in case of a simulation creation failure
