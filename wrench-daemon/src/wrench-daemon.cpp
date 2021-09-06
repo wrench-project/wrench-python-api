@@ -23,7 +23,8 @@ namespace po = boost::program_options;
 httplib::Server server;
 std::thread simulation_thread;
 SimulationThreadState *simulation_thread_state;
-bool full_log;
+bool simulation_log;
+bool daemon_log;
 int port_number;
 int sleep_us;
 
@@ -48,7 +49,10 @@ int sleep_us;
 
 void displayRequest(const Request &req) {
     unsigned long max_line_length = 120;
-    std::cerr << req.path << " " << req.body.substr(0, max_line_length) << (req.body.length() > max_line_length ? "..." : "") << std::endl;
+    if (daemon_log) {
+        std::cerr << req.path << " " << req.body.substr(0, max_line_length)
+                  << (req.body.length() > max_line_length ? "..." : "") << std::endl;
+    }
 }
 
 void setJSONResponse(Response& res, json& answer) {
@@ -131,7 +135,9 @@ void terminateSimulation(const Request& req, Response& res) {
     setJSONResponse(res, answer);
 
     server.stop();
-    std::cerr << " PID " << getpid() << " terminated.\n";
+    if (daemon_log) {
+        std::cerr << " PID " << getpid() << " terminated.\n";
+    }
     exit(1);
 }
 
@@ -266,15 +272,12 @@ void startSimulation(const Request& req, Response& res) {
 
     // Create a shared memory segment, to which an error message will be written
     // in case of a simulation creation failure
-    auto shm_segment_id_top = shmget(IPC_PRIVATE, 2048, IPC_CREAT | SHM_R | SHM_W);
+    auto shm_segment_id = shmget(IPC_PRIVATE, 2048, IPC_CREAT | SHM_R | SHM_W);
 
     // Create a child process
     auto child_pid = fork();
 
     if (!child_pid) {
-
-//        // Create a shared memory segment,
-//        auto shm_segment_id_middle = shmget(IPC_PRIVATE, 2048, IPC_CREAT | SHM_R | SHM_W);
 
         // The child process creates a grand child, that will be adopted by
         // pid 1 (the well-known "if I create a child that creates a grand-child
@@ -282,24 +285,30 @@ void startSimulation(const Request& req, Response& res) {
         auto grand_child_pid = fork();
 
         if (! grand_child_pid) {
+
+            // The grand-child creates the simulation state
             simulation_thread_state = new SimulationThreadState();
             // Start the simulation in a separate thread
             simulation_thread = std::thread(&SimulationThreadState::createAndLaunchSimulation,
                                             simulation_thread_state,
-                                            full_log, body["platform_xml"], body["controller_hostname"], sleep_us);
+                                            simulation_log, body["platform_xml"], body["controller_hostname"], sleep_us);
 
             // Wait a little bit and check whether the simulation was launched successfully
             // This is pretty ugly, but will do for now
             usleep(100000);
 
+            // If there was a simulation launch error, then put the error message in the
+            // shared memory segment before exiting
             if (simulation_thread_state->simulation_launch_error) {
                 simulation_thread.join(); // THIS IS NECESSARY, otherwise the exit silently segfaults!
-                char *shm_segment = (char *)shmat(shm_segment_id_top, nullptr, 0);
+                char *shm_segment = (char *)shmat(shm_segment_id, nullptr, 0);
                 const char *to_copy = simulation_thread_state->simulation_launch_error_message.c_str();
                 strcpy(shm_segment, to_copy);
                 shmdt(shm_segment);
-                exit((simulation_thread_state->simulation_launch_error ? 1 : 0));
+                exit(1);
             }
+
+            // At this point, we know the simulation has been launched
 
             // Set up GET request handlers
             server.Get("/api/alive", alive);
@@ -316,22 +325,18 @@ void startSimulation(const Request& req, Response& res) {
             server.Post("/api/terminateSimulation", terminateSimulation);
 
             server.stop(); // stop the server that was listening on the main WRENCH daemon port
-            std::cerr << " PID " << getpid() << " listening on port " << port_number << "\n";
+            if (daemon_log) {
+                std::cerr << " PID " << getpid() << " listening on port " << port_number << "\n";
+            }
             server.listen("0.0.0.0", port_number);
             exit(0);
         } else {
-            // Very ugly sleep, but we have to check if the grand child has exited "right away"
+            // Very ugly sleep, but we have to check if the grand child has exited prematurely
             // (which means it's an error), or whether it is happily running
             usleep(200000);
             int stat_loc = 0;
             waitpid(grand_child_pid, &stat_loc, WNOHANG);
-//            char *shm_segment_top = (char *)shmat(shm_segment_id_top, nullptr, 0);
-//            char *shm_segment_middle = (char *)shmat(shm_segment_id_middle, nullptr, 0);
-//            strcpy(shm_segment_top,shm_segment_middle);
-//            shmdt(shm_segment_middle);
-//            shmdt(shm_segment_top);
-//            shmctl(shm_segment_id_middle, IPC_RMID, NULL);
-            exit(WEXITSTATUS(stat_loc)); // propagate grand-child's exit code (or 0 if it hasn't exited yet) up
+            exit(WEXITSTATUS(stat_loc)); // propagate grand-child's exit code (0 or 1) up
         }
     }
 
@@ -339,7 +344,6 @@ void startSimulation(const Request& req, Response& res) {
     int stat_loc;
     waitpid(child_pid, &stat_loc, 0);
 
-    char *shm_segment_top = (char *)shmat(shm_segment_id_top, nullptr, 0);
     // Create json answer that will inform the client of success or failure
     json answer;
     if (WEXITSTATUS(stat_loc) == 0) {
@@ -347,13 +351,16 @@ void startSimulation(const Request& req, Response& res) {
         answer["port_number"] = port_number;
     } else {
         answer["success"] = false;
+        // Grab the error message from the shared memory segment
+        char *shm_segment_top = (char *)shmat(shm_segment_id, nullptr, 0);
         answer["failure_cause"] = std::string(shm_segment_top);
+        shmdt(shm_segment_top);
     }
-    shmdt(shm_segment_top);
-    shmctl(shm_segment_id_top, IPC_RMID, NULL);
 
+    // Destroy the shared memory segment
+    shmctl(shm_segment_id, IPC_RMID, NULL);
 
-
+    // Prepare the response to the client
     setJSONResponse(res, answer);
 }
 
@@ -384,6 +391,8 @@ int main(int argc, char **argv) {
             ("help", "Show this help message")
             ("enable-simulation-logging", po::bool_switch()->default_value(false),
              "Show full simulation log during execution")
+            ("enable-daemon-logging", po::bool_switch()->default_value(false),
+             "Show full daemon log during execution")
             ("port", po::value<int>()->default_value(8101)->notifier(
                     in(1024, 49151, "port")),
              "port number, between 1024 and 4951, on which this daemon will listen")
@@ -408,7 +417,8 @@ int main(int argc, char **argv) {
     }
 
     // Set some globals based on command-line arguments
-    full_log = vm["enable-simulation-logging"].as<bool>();
+    simulation_log = vm["enable-simulation-logging"].as<bool>();
+    daemon_log = vm["enable-daemon-logging"].as<bool>();
     port_number = vm["port"].as<int>();
     sleep_us = vm["sleep-us"].as<int>();
 
@@ -421,6 +431,12 @@ int main(int argc, char **argv) {
     server.set_error_handler(error_handling);
 
     // Start the web server
-    std::printf("WRENCH daemon listening on port %d...\n", port_number);
-    server.listen("0.0.0.0", port_number);
+    if (daemon_log) {
+        std::cerr << "WRENCH daemon listening on port" << port_number << "...\n";
+    }
+    while (true) {
+        // This is in a while loop because, on Linux, the main process seems to return
+        // from the listen() call below, not sure why...
+        server.listen("0.0.0.0", port_number);
+    }
 }
