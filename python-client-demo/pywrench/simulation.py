@@ -24,18 +24,21 @@ class WRENCHSimulation:
             platform_file = open(platform_file_path, "r")
             xml = platform_file.read()
             platform_file.close()
-        except OSError:
-            raise WRENCHException("Cannot read platform file '" + platform_file_path + "'")
+        except Exception as e:
+            raise WRENCHException("Cannot read platform file '" + platform_file_path + "' (" + str(e) + ")")
 
         spec = {"platform_xml": xml, "controller_hostname": controller_hostname}
-        r = requests.post(self.daemon_url + "/startSimulation", data=json.dumps(spec))
+        try:
+            r = requests.post(self.daemon_url + "/startSimulation", data=json.dumps(spec))
+        except Exception:
+            raise WRENCHException("Cannot connect to WRENCH daemon. Perhaps it needs to be started?")
+
         response = r.json()
         if not response["success"]:
             self.terminated = True
             raise WRENCHException(response["failure_cause"])
         self.daemon_port = response["port_number"]
         self.daemon_url = "http://" + daemon_host + ":" + str(self.daemon_port) + "/api"
-        # print("===> " + self.daemon_url)
 
     def __del__(self):
         """
