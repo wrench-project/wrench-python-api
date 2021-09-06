@@ -84,7 +84,6 @@ void SimulationDaemon::getTime(const Request& req, Response& res) {
     answer["success"] = true;
     answer["time"] = time;
 
-    std::cerr << answer << "\n";
     setJSONResponse(res, answer);
 }
 
