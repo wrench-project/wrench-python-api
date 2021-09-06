@@ -1,4 +1,3 @@
-#include "httplib.h"
 #include "SimulationThreadState.h"
 
 #include <cstdio>
@@ -11,9 +10,8 @@
 #include <sys/wait.h>
 #include <sys/shm.h>
 
+#include "WRENCHDaemon.h"
 
-using httplib::Request;
-using httplib::Response;
 using json = nlohmann::json;
 namespace po = boost::program_options;
 
@@ -26,10 +24,17 @@ namespace po = boost::program_options;
 httplib::Server server;
 std::thread simulation_thread;
 SimulationThreadState *simulation_thread_state;
-bool simulation_log;
-bool daemon_log;
-int port_number;
-int sleep_us;
+
+
+WRENCHDaemon::WRENCHDaemon(bool simulation_logging,
+             bool daemon_logging,
+             int port_number,
+             int sleep_us) :
+             simulation_logging(simulation_logging),
+             daemon_logging(daemon_logging),
+             port_number(port_number),
+             sleep_us(sleep_us) {
+}
 
 
 #include <sys/socket.h>
@@ -57,9 +62,9 @@ bool isPortTaken(int port) {
  ** ALL PATH HANDLERS **
  ***********************/
 
-void displayRequest(const Request &req) {
+void WRENCHDaemon::displayRequest(const Request &req) {
     unsigned long max_line_length = 120;
-    if (daemon_log) {
+    if (daemon_logging) {
         std::cerr << req.path << " " << req.body.substr(0, max_line_length)
                   << (req.body.length() > max_line_length ? "..." : "") << std::endl;
     }
@@ -82,8 +87,8 @@ bool simulationHasStarted(Response &res) {
     return false;
 }
 
-void alive(const Request& req, Response& res) {
-    displayRequest(req);
+void WRENCHDaemon::alive(const Request& req, Response& res) {
+    WRENCHDaemon::displayRequest(req);
     if (not simulationHasStarted(res))
         return;
 
@@ -97,8 +102,8 @@ void alive(const Request& req, Response& res) {
 
 
 
-void getTime(const Request& req, Response& res) {
-    displayRequest(req);
+void WRENCHDaemon::getTime(const Request& req, Response& res) {
+    this->displayRequest(req);
     if (not simulationHasStarted(res))
         return;
 
@@ -113,8 +118,8 @@ void getTime(const Request& req, Response& res) {
     setJSONResponse(res, answer);
 }
 
-void getAllHostnames(const Request& req, Response& res) {
-    displayRequest(req);
+void WRENCHDaemon::getAllHostnames(const Request& req, Response& res) {
+    WRENCHDaemon::displayRequest(req);
     if (not simulationHasStarted(res))
         return;
 
@@ -129,7 +134,7 @@ void getAllHostnames(const Request& req, Response& res) {
     setJSONResponse(res, answer);
 }
 
-void terminateSimulation(const Request& req, Response& res) {
+void WRENCHDaemon::terminateSimulation(const Request& req, Response& res) {
     displayRequest(req);
     if (not simulationHasStarted(res))
         return;
@@ -145,15 +150,15 @@ void terminateSimulation(const Request& req, Response& res) {
     setJSONResponse(res, answer);
 
     server.stop();
-    if (daemon_log) {
+    if (daemon_logging) {
         std::cerr << " PID " << getpid() << " terminated.\n";
     }
     exit(1);
 }
 
 
-void addTime(const Request& req, Response& res) {
-    displayRequest(req);
+void WRENCHDaemon::addTime(const Request& req, Response& res) {
+    this->displayRequest(req);
     if (not simulationHasStarted(res))
         return;
 
@@ -169,7 +174,7 @@ void addTime(const Request& req, Response& res) {
 }
 
 
-void getSimulationEvents(const Request& req, Response& res) {
+void WRENCHDaemon::getSimulationEvents(const Request& req, Response& res) {
     displayRequest(req);
     if (not simulationHasStarted(res))
         return;
@@ -186,8 +191,8 @@ void getSimulationEvents(const Request& req, Response& res) {
     setJSONResponse(res, answer);
 }
 
-void waitForNextSimulationEvent(const Request &req, Response & res) {
-    displayRequest(req);
+void WRENCHDaemon::waitForNextSimulationEvent(const Request &req, Response & res) {
+    this->displayRequest(req);
     if (not simulationHasStarted(res))
         return;
 
@@ -202,8 +207,8 @@ void waitForNextSimulationEvent(const Request &req, Response & res) {
     setJSONResponse(res, answer);
 }
 
-void addService(const Request& req, Response& res) {
-    displayRequest(req);
+void WRENCHDaemon::addService(const Request& req, Response& res) {
+    this->displayRequest(req);
     if (not simulationHasStarted(res))
         return;
 
@@ -225,8 +230,8 @@ void addService(const Request& req, Response& res) {
 }
 
 
-void submitStandardJob(const Request& req, Response& res) {
-    displayRequest(req);
+void WRENCHDaemon::submitStandardJob(const Request& req, Response& res) {
+    this->displayRequest(req);
     if (not simulationHasStarted(res))
         return;
 
@@ -247,8 +252,8 @@ void submitStandardJob(const Request& req, Response& res) {
 }
 
 
-void createStandardJob(const Request& req, Response& res) {
-    displayRequest(req);
+void WRENCHDaemon::createStandardJob(const Request& req, Response& res) {
+    this->displayRequest(req);
     if (not simulationHasStarted(res))
         return;
 
@@ -271,7 +276,7 @@ void createStandardJob(const Request& req, Response& res) {
 }
 
 
-void startSimulation(const Request& req, Response& res) {
+void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
     displayRequest(req);
     json body = json::parse(req.body);
 
@@ -301,7 +306,7 @@ void startSimulation(const Request& req, Response& res) {
             // Start the simulation in a separate thread
             simulation_thread = std::thread(&SimulationThreadState::createAndLaunchSimulation,
                                             simulation_thread_state,
-                                            simulation_log, body["platform_xml"], body["controller_hostname"], sleep_us);
+                                            simulation_logging, body["platform_xml"], body["controller_hostname"], sleep_us);
 
             // Wait a little bit and check whether the simulation was launched successfully
             // This is pretty ugly, but will do for now
@@ -321,21 +326,22 @@ void startSimulation(const Request& req, Response& res) {
             // At this point, we know the simulation has been launched
 
             // Set up GET request handlers
-            server.Get("/api/alive", alive);
-            server.Get("/api/getTime", getTime);
-            server.Get("/api/getAllHostnames", getAllHostnames);
-            server.Get("/api/getSimulationEvents", getSimulationEvents);
-            server.Get("/api/waitForNextSimulationEvent", waitForNextSimulationEvent);
+//            server.Get("/api/alive", alive);
+            server.Get("/api/alive", [this] (const Request& req, Response& res) { alive(req, res);});
+            server.Get("/api/getTime", [this](const Request& req, Response& res) { getTime(req, res);});
+            server.Get("/api/getAllHostnames", [this](const Request& req, Response& res) { getAllHostnames(req, res);});
+            server.Get("/api/getSimulationEvents", [this](const Request& req, Response& res) { getSimulationEvents(req, res);});
+            server.Get("/api/waitForNextSimulationEvent", [this](const Request& req, Response& res) { waitForNextSimulationEvent(req, res);});
 
             // Set up POST request handlers
-            server.Post("/api/addTime", addTime);
-            server.Post("/api/addService", addService);
-            server.Post("/api/createStandardJob", createStandardJob);
-            server.Post("/api/submitStandardJob", submitStandardJob);
-            server.Post("/api/terminateSimulation", terminateSimulation);
+            server.Post("/api/addTime", [this](const Request& req, Response& res) { addTime(req, res);});
+            server.Post("/api/addService", [this](const Request& req, Response& res) { addService(req, res);});
+            server.Post("/api/createStandardJob", [this](const Request& req, Response& res) { createStandardJob(req, res);});
+            server.Post("/api/submitStandardJob", [this](const Request& req, Response& res) { submitStandardJob(req, res);});
+            server.Post("/api/terminateSimulation", [this](const Request& req, Response& res) { terminateSimulation(req, res);});
 
             server.stop(); // stop the server that was listening on the main WRENCH daemon port
-            if (daemon_log) {
+            if (daemon_logging) {
                 std::cerr << " PID " << getpid() << " listening on port " << port_number << "\n";
             }
             server.listen("0.0.0.0", port_number);
@@ -378,70 +384,18 @@ void error_handling(const Request& req, Response& res) {
     std::cerr << "[" << res.status << "]: " << req.path << " " << req.body << "\n";
 }
 
-/******************
- ** MAIN FUNCTION *
- ******************/
 
-int main(int argc, char **argv) {
-
-    // Generic lambda to check if a numeric argument is in some range
-    auto in = [](const auto &min, const auto &max, char const * const opt_name) {
-        return [opt_name, min, max](const auto &v){
-            if (v < min || v > max) {
-                throw po::validation_error
-                        (po::validation_error::invalid_option_value,
-                         opt_name, std::to_string(v));
-            }
-        };
-    };
-
-    // Parse command-line arguments
-    po::options_description desc("Allowed options");
-    desc.add_options()
-            ("help", "Show this help message")
-            ("enable-simulation-logging", po::bool_switch()->default_value(false),
-             "Show full simulation log during execution")
-            ("enable-daemon-logging", po::bool_switch()->default_value(false),
-             "Show full daemon log during execution")
-            ("port", po::value<int>()->default_value(8101)->notifier(
-                    in(1024, 49151, "port")),
-             "port number, between 1024 and 4951, on which this daemon will listen")
-            ("sleep-us", po::value<int>()->default_value(200)->notifier(
-                    in(0, 1000000, "sleep-us")),
-             "number of micro-seconds, between 0 and 1000000, that the simulation thread sleeps at each iteration of its main loop (smaller means faster simulation, larger means less CPU load)")
-            ;
-
-    po::variables_map vm;
-    try {
-        po::store(po::parse_command_line(argc, argv, desc), vm);
-        // Print help message and exit if needed
-        if (vm.count("help")) {
-            cout << desc << "\n";
-            exit(0);
-        }
-        // Throw whatever exception in case argument values are erroneous
-        po::notify(vm);
-    } catch (std::exception &e) {
-        cerr << "Error: " << e.what() << "\n";
-        exit(1);
-    }
-
-    // Set some globals based on command-line arguments
-    simulation_log = vm["enable-simulation-logging"].as<bool>();
-    daemon_log = vm["enable-daemon-logging"].as<bool>();
-    port_number = vm["port"].as<int>();
-    sleep_us = vm["sleep-us"].as<int>();
-
+void WRENCHDaemon::run() {
 
     // Only set up POST request handler for "/api/startSimulation" since
     // all other API paths will be handled by a child process instead
-    server.Post("/api/startSimulation", startSimulation);
+    server.Post("/api/startSimulation", [this] (const Request& req, Response& res) { this->startSimulation(req, res); });
 
     // Set some generic error handler
     server.set_error_handler(error_handling);
 
     // Start the web server
-    if (daemon_log) {
+    if (daemon_logging) {
         std::cerr << "WRENCH daemon listening on port" << port_number << "...\n";
     }
     while (true) {
