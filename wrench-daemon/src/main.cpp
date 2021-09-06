@@ -1,15 +1,9 @@
 #include "httplib.h"
-#include "SimulationThreadState.h"
 
-#include <cstdio>
 #include <string>
 #include <vector>
-#include <thread>
 #include <boost/program_options.hpp>
 #include <nlohmann/json.hpp>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/shm.h>
 #include <WRENCHDaemon.h>
 
 namespace po = boost::program_options;
@@ -58,11 +52,12 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
+    // Create and run the WRENCH daemon
     WRENCHDaemon daemon(vm["enable-simulation-logging"].as<bool>(),
                         vm["enable-daemon-logging"].as<bool>(),
                         vm["port"].as<int>(),
                         vm["sleep-us"].as<int>());
-
     daemon.run();
-
+    // Should never return
+    exit(0);
 }
