@@ -16,12 +16,20 @@
 #include <SimulationDaemon.h>
 
 using json = nlohmann::json;
-namespace po = boost::program_options;
 
+// Range of ports that simulation daemons can listen on
 #define PORT_MIN 10000
 #define PORT_MAX 20000
 
 
+/**
+ * @brief Constructor
+ * @param simulation_logging true if simulation logging should be printed
+ * @param daemon_logging true if daemon logging should be printed
+ * @param port_number port number on which to listen
+ * @param sleep_us number of micro-seconds or real time that the simulation daemon's simulation controller
+ *        thread should sleep at each iteration
+ */
 WRENCHDaemon::WRENCHDaemon(bool simulation_logging,
              bool daemon_logging,
              int port_number,
@@ -33,6 +41,11 @@ WRENCHDaemon::WRENCHDaemon(bool simulation_logging,
 }
 
 
+/**
+ * @brief Helper method to check whether a port is available for binding/listening
+ * @param port the port number
+ * @return true if the port is taken, false if it is available
+ */
 bool WRENCHDaemon::isPortTaken(int port) {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in address;
@@ -84,8 +97,9 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
 
         if (! grand_child_pid) {
 
-            // The grand-child creates the simulation state
+            // Create the simulation state
             auto simulation_thread_state = new SimulationThreadState();
+
             // Start the simulation in a separate thread
             auto simulation_thread = std::thread(&SimulationThreadState::createAndLaunchSimulation,
                                             simulation_thread_state,
@@ -99,15 +113,21 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
             // shared memory segment before exiting
             if (simulation_thread_state->simulation_launch_error) {
                 simulation_thread.join(); // THIS IS NECESSARY, otherwise the exit silently segfaults!
+                // Put the error message in shared memory
                 char *shm_segment = (char *)shmat(shm_segment_id, nullptr, 0);
                 const char *to_copy = simulation_thread_state->simulation_launch_error_message.c_str();
                 strcpy(shm_segment, to_copy);
                 shmdt(shm_segment);
+                // Terminate with a non-zero error code
                 exit(1);
             }
 
             // At this point, we know the simulation has been launched, so we can launch the simulation daemon
-            server.stop(); // stop the server that was listening on the main WRENCH daemon port
+
+            // Stop the server that was listening on the main WRENCH daemon port
+            server.stop();
+
+            // Create the simulation daemon and call its run() method
             auto simulation_daemon = new SimulationDaemon(
                     daemon_logging, simulation_port_number,
                     simulation_thread_state, simulation_thread);
@@ -120,11 +140,12 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
             usleep(200000);
             int stat_loc = 0;
             waitpid(grand_child_pid, &stat_loc, WNOHANG);
-            exit(WEXITSTATUS(stat_loc)); // propagate grand-child's exit code (0 or 1) up
+            // propagate grand-child's exit code (whether 0 or non-zero) up to the parent
+            exit(WEXITSTATUS(stat_loc));
         }
     }
 
-    // Get the child's exit code
+    // Wait for the child to finish and get its exit code
     int stat_loc;
     waitpid(child_pid, &stat_loc, 0);
 
@@ -149,11 +170,19 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
     res.set_content(answer.dump(), "application/json");
 }
 
+/**
+ * @brief A generic error handler that simply prints some information
+ * @param req the HTTP request
+ * @param res the HTTP response
+ */
 void WRENCHDaemon::error_handling(const Request& req, Response& res) {
     std::cerr << "[" << res.status << "]: " << req.path << " " << req.body << "\n";
 }
 
 
+/**
+ * @brief The WRENCH daemon's "main" method
+ */
 void WRENCHDaemon::run() {
 
     // Only set up POST request handler for "/api/startSimulation" since

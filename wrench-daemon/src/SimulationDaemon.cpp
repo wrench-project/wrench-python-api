@@ -11,6 +11,9 @@
 
 using json = nlohmann::json;
 
+/**
+ * @brief The Simulation Daemon's "main" method
+ */
 void SimulationDaemon::run() {
 
     // Set up GET request handlers
@@ -34,6 +37,14 @@ void SimulationDaemon::run() {
     exit(0);
 }
 
+/**
+ * @brief Constructor
+ *
+ * @param daemon_logging true if daemon logging should be printed
+ * @param simulation_port_number port number on which this daemon is listening
+ * @param simulation_thread_state the simulation state
+ * @param simulation_thread the simulation thread
+ */
 SimulationDaemon::SimulationDaemon(
         bool daemon_logging,
         int simulation_port_number,
