@@ -63,8 +63,6 @@ namespace wrench {
         double time_horizon_to_reach = 0;
         int sleep_us;
 
-        std::mutex controller_mutex;
-
         int main() override;
         std::string addNewBareMetalComputeService(json service_spec);
         static json eventToJSON(double date, const std::shared_ptr<wrench::WorkflowExecutionEvent>& event);
