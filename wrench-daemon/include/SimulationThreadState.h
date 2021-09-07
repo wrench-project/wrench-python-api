@@ -5,6 +5,9 @@
 #include <unistd.h>
 #include <nlohmann/json.hpp>
 
+/**
+ * @brief A class that handles all simulation changes and holds all simulation state.
+ */
 class SimulationThreadState {
 
 public:

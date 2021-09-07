@@ -4,6 +4,11 @@
 #include <mutex>
 #include <condition_variable>
 
+/**
+ * @brief A thread-safe, blocking queue generic data structure
+ *
+ * @tparam T queue element type
+ */
 template<typename T> class BlockingQueue {
 public:
     void push(T const& _data) {

@@ -4,6 +4,10 @@
 #include <mutex>
 #include <condition_variable>
 
+/**
+ * @brief A thread-safe key-value store data structure, where keys are strings
+ * @tparam T value type
+ */
 template<typename T> class KeyValueStore {
 public:
     void insert(const std::string& _key, T const& _value) {

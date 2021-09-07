@@ -2,21 +2,20 @@
 
 The objective of this repo is to implement a tiny "hello world" proof-of-concept of the envisioned system architecture for the WRENCH (re-?)implementation as part of the NSF-funded CSSI grant. The key ideas are:
 
-  - A "WRENCH daemon" process runs in the background with two threads:
-    1. A simulation thread that runs the simulation
-    2. A server thread that interacts passes client requests to the simulation thread an simulation state/event back to the the client
-  - The client (i.e., the simulator implemented by the user) places REST API calls
-    to interact with the WRENCH daemon
-  - The client and the daemon as in locked-step w.r.t. the simulation clock
+# Current Design
 
-There are many design decisions to be made to implement the above architecture, and this permanently work-in-progress repo explores these decisions. 
-
+  - A simulation consists of a "client" (in this repo a Python client) that interacts with a "WRENCH daemon" process. 
+  - The "WRENCH daemon" process, when asked to run a simulation starts a 2-thread process:
+      1. A "Simulation Daemon" thread that handles all communication with the client
+      2. A simulation thread that runs the WRENCH simulation
+  -  The reason for the two threads is that all SimGrid calls must be placed by the same thread. So the Simulation Daemon thread, which has to acts as an HTTP server, places "please do this" requests in some thread-safe data structure that the simulation thread will then execute via WRENCH calls. 
+ - The client, simulation daemon, and the simulation thread operate in locked-step w.r.t. the simulation clock.
 
 # How to run it
 
-  - Start the daemon: `./wrench-daemon/build/wrench-daemon --wrench-full-log`
+  - Start the daemon: `./wrench-daemon/build/wrench-daemon` (use `--help` for all options)
 
-  - Run the Python simulator: `./python-client-demo/simulator.py`
+  - Run the Python simulator: `./python-client-demo/simulator.py` 
 
 
 

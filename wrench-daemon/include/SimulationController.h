@@ -16,6 +16,12 @@ using json = nlohmann::json;
 
 namespace wrench {
 
+    /**
+     * @brief A class that implements the Simulation Controller as a WMS. This is the key
+     * WRENCH service that controls the simulation, handling all interaction with a
+     * Simulation Daemon (which itself was spawned by wrench-daemon, and which handles
+     * all interaction with the simulation client).
+     */
     class SimulationController : public WMS {
 
     public:

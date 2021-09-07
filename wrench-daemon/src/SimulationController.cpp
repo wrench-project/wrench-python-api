@@ -4,21 +4,21 @@
 #include <iostream>
 #include <unistd.h>
 
+// The timeout use when the SimulationController receives a message
+// from the job manager. Can't be zero, but can be very small.
 #define JOB_MANAGER_COMMUNICATION_TIMEOUT_VALUE 0.00000001
 
 WRENCH_LOG_CATEGORY(simulation_controller, "Log category for SimulationController");
 
 namespace wrench {
 
-
     /**
      * @brief Construct a new SimulationController object
      * 
-     * @param hostname String containing the name of the host on which this service runs
+     * @param hostname string containing the name of the host on which this service runs
      */
     SimulationController::SimulationController(
             const std::string &hostname, int sleep_us) :
-
             WMS(
                     nullptr, nullptr,
                     {},
@@ -35,7 +35,7 @@ namespace wrench {
      * @return exit code
      */
     int SimulationController::main() {
-        // Setup
+        // Initial setup
         wrench::TerminalOutput::setThisProcessLoggingColor(TerminalOutput::COLOR_RED);WRENCH_INFO("Starting");
         this->job_manager = this->createJobManager();
         this->data_movement_manager = this->createDataMovementManager();
@@ -76,9 +76,7 @@ namespace wrench {
 
             // Moves time forward if needed (because the client has done a sleep),
             // And then add all events that occurred to the event queue
-            double time_to_sleep = std::max<double>(0, time_horizon_to_reach -
-                                                       wrench::Simulation::getCurrentSimulatedDate());
-
+            double time_to_sleep = std::max<double>(0, time_horizon_to_reach - wrench::Simulation::getCurrentSimulatedDate());
             if (time_to_sleep > 0.0) {
                 WRENCH_INFO("Sleeping %.2lf seconds", time_to_sleep);
                 S4U_Simulation::sleep(time_to_sleep);
@@ -126,7 +124,7 @@ namespace wrench {
     /**
      * @brief Construct a json description of a workflow execution event
      * @param event workflow execution event
-     * @return json description
+     * @return json description of the event
      */
     json SimulationController::eventToJSON(double date, const std::shared_ptr<wrench::WorkflowExecutionEvent>& event) {
         // Construct the json event description

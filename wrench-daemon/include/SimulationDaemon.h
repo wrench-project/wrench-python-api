@@ -16,6 +16,9 @@ using httplib::Response;
 using json = nlohmann::json;
 
 
+/**
+ * @brief A class that implements a Simulation Daemon process (in the run() method)
+ */
 class SimulationDaemon {
 
 public:

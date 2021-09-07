@@ -15,6 +15,9 @@ using httplib::Response;
 
 using json = nlohmann::json;
 
+/**
+ * @brief A class that implements a the main wrench-daemon process (in the run() method)
+ */
 class WRENCHDaemon {
 
 public:

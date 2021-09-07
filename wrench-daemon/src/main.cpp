@@ -8,6 +8,12 @@
 
 namespace po = boost::program_options;
 
+/**
+ * @brief main method of wrench-daemon
+ * @param argc number of command-line arguments
+ * @param argv command-line arguments
+ * @return exit code
+ */
 int main(int argc, char **argv) {
 
     // Generic lambda to check if a numeric argument is in some range
@@ -21,7 +27,7 @@ int main(int argc, char **argv) {
         };
     };
 
-    // Parse command-line arguments
+    // Define command-line argument options
     po::options_description desc("Allowed options");
     desc.add_options()
             ("help", "Show this help message")
@@ -37,6 +43,7 @@ int main(int argc, char **argv) {
              "number of micro-seconds, between 0 and 1000000, that the simulation thread sleeps at each iteration of its main loop (smaller means faster simulation, larger means less CPU load)")
             ;
 
+    // Parse command-line arguments
     po::variables_map vm;
     try {
         po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -57,7 +64,8 @@ int main(int argc, char **argv) {
                         vm["enable-daemon-logging"].as<bool>(),
                         vm["port"].as<int>(),
                         vm["sleep-us"].as<int>());
-    daemon.run();
-    // Should never return
+
+    daemon.run(); // Should never return
+
     exit(0);
 }
