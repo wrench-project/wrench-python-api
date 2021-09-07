@@ -37,7 +37,7 @@ if __name__ == "__main__":
         print("Getting simulation events that have occurred while I slept...")
         events = simulation.get_simulation_events()
         for event in events:
-            print("EVENT: " + str(event))
+            print("  - Event: " + str(event))
 
         import os
         import sys
@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
         print("Synchronously waiting for the next simulation event...")
         event = simulation.wait_for_next_event()
-        print("EVENT: " + str(event))
+        print("  - Event: " + str(event))
 
         print("Time is " + str(simulation.get_simulated_time()))
 
