@@ -61,6 +61,6 @@ if __name__ == "__main__":
         simulation.terminate()
 
     except WRENCHException as e:
-        print(e.message)
+        print("Error: " + str(e))
         exit(1)
 
