@@ -33,7 +33,11 @@ void SimulationDaemon::run() {
     if (daemon_logging) {
         std::cerr << " PID " << getpid() << " listening on port " << simulation_port_number << "\n";
     }
-    server.listen("0.0.0.0", simulation_port_number);
+    while (true) {
+        // This is in a while loop because, on Linux, it seems that sometimes the
+        // server returns from the listen() call below, not sure why...
+        server.listen("0.0.0.0", simulation_port_number);
+    }
     exit(0);
 }
 
