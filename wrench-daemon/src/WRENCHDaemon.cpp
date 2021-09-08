@@ -69,20 +69,28 @@ bool WRENCHDaemon::isPortTaken(int port) {
  ** ALL PATH HANDLERS **
  ***********************/
 
+/**
+ * @brief Method to handle /api/startSimulation path
+ * @param req HTTP request
+ * @param res answer
+ */
 void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
+    // Print some logging
     unsigned long max_line_length = 120;
     if (daemon_logging) {
         std::cerr << req.path << " " << req.body.substr(0, max_line_length)
                   << (req.body.length() > max_line_length ? "..." : "") << std::endl;
     }
 
+    // Parse the HTTP request's data
     json body = json::parse(req.body);
 
-    // Find an available port number
+    // Find an available port number on which the simulation daemon will be able to run
     int simulation_port_number;
     while (isPortTaken(simulation_port_number = PORT_MIN + rand() % (PORT_MAX - PORT_MIN)));
 
-    // Create a shared memory segment, to which an error message will be written
+    // Create a shared memory segment, to which an error message will be written by
+    // the child process (the simuation daemon) in case it fails on startup
     // in case of a simulation creation failure
     auto shm_segment_id = shmget(IPC_PRIVATE, 2048, IPC_CREAT | SHM_R | SHM_W);
     if (shm_segment_id == -1) {
@@ -99,11 +107,14 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
 
     if (!child_pid) {
 
+        // Stop the server that was listening on the main WRENCH daemon port
+        server.stop();
+
         // The child process creates a grand child, that will be adopted by
         // pid 1 (the well-known "if I create a child that creates a grand-child
         // and I kill the child, then my grand-child will never become a zombie" trick). 
         // This trick is a life-saver here, since setting up a SIGCHLD handler
-        // to teap children will get in the way of what we need to do in the code hereafter.
+        // to reap children would get in the way of what we need to do in the code hereafter.
         auto grand_child_pid = fork();
         if (grand_child_pid == -1) {
             perror("fork()");
@@ -121,7 +132,8 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
                                             simulation_logging, body["platform_xml"], body["controller_hostname"], sleep_us);
 
             // Wait a little bit and check whether the simulation was launched successfully
-            // This is pretty ugly, but will do for now
+            // This is pretty ugly, but will do for now. It's a bit hard to do it in a different
+            // wait, especially because the call to launch() could fail (or perhaps not?) in createAndLaunchSimulation()
             usleep(100000);
 
             // If there was a simulation launch error, then put the error message in the
@@ -140,12 +152,8 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
                 exit(1);
             }
 
-            // At this point, we know the simulation has been launched, so we can launch the simulation daemon
-
-            // Stop the server that was listening on the main WRENCH daemon port
-            server.stop();
-
-            // Create the simulation daemon and call its run() method
+            // Create the simulation daemon and call its run() method, which will launch the
+            // HTTP server for this new simulation
             auto simulation_daemon = new SimulationDaemon(
                     daemon_logging, simulation_port_number,
                     simulation_thread_state, simulation_thread);
@@ -154,8 +162,10 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
 
         } else {
             // Very ugly sleep, but we have to check if the grand child has exited prematurely
-            // (which means it's an error), or whether it is happily running
+            // (which means it's an error), or whether it is happily running.
             usleep(200000);
+            // Check the status of the grand-child, but non-blockingly, so that
+            // if it is indeed happily running we dont get stuck here!
             int stat_loc = 0;
             if (waitpid(grand_child_pid, &stat_loc, WNOHANG) == -1) {
                 perror("waitpid()");
@@ -173,7 +183,8 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         exit(1);
     }
 
-    // Create json answer that will inform the client of success or failure
+    // Create json answer that will inform the client of success or failure, based on
+    // child's exit code (which was relayed to this process from the grand-child
     json answer;
     if (WEXITSTATUS(stat_loc) == 0) {
         answer["success"] = true;
@@ -189,8 +200,9 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         }
     }
 
-    // Destroy the shared memory segment
-    if (shmctl(shm_segment_id, IPC_RMID, NULL) == -1) {
+    // Destroy the shared memory segment (important, since there is a limited
+    // number of them we can create, and besides we should clean-up after ourselves)
+    if (shmctl(shm_segment_id, IPC_RMID, nullptr) == -1) {
         perror("shmctl()");
         exit(1);
     }
@@ -216,7 +228,7 @@ void WRENCHDaemon::error_handling(const Request& req, Response& res) {
 void WRENCHDaemon::run() {
 
     // Only set up POST request handler for "/api/startSimulation" since
-    // all other API paths will be handled by a child process instead
+    // all other API paths will be handled by a simulation daemon instead
     server.Post("/api/startSimulation", [this] (const Request& req, Response& res) { this->startSimulation(req, res); });
 
     // Set some generic error handler
@@ -228,7 +240,8 @@ void WRENCHDaemon::run() {
     }
     while (true) {
         // This is in a while loop because, on Linux, the main process seems to return
-        // from the listen() call below, not sure why...
+        // from the listen() call below, not sure why... perhaps this while loop
+        // could be removed, but it likely doesn't hurt
         server.listen("0.0.0.0", port_number);
     }
 }

@@ -64,6 +64,10 @@ SimulationDaemon::SimulationDaemon(
  ** ALL PATH HANDLERS **
  ***********************/
 
+/**
+ * @brief Helper method for logging
+ * @param req HTTP request
+ */
 void SimulationDaemon::displayRequest(const Request &req) {
     unsigned long max_line_length = 120;
     if (daemon_logging) {
@@ -72,6 +76,11 @@ void SimulationDaemon::displayRequest(const Request &req) {
     }
 }
 
+/**
+ * @brief Helper method to reduce code duplication
+ * @param res HTTP request
+ * @param answer reply
+ */
 void setJSONResponse(Response& res, json& answer) {
     res.set_header("access-control-allow-origin", "*");
     res.set_content(answer.dump(), "application/json");
@@ -238,4 +247,3 @@ void SimulationDaemon::createStandardJob(const Request& req, Response& res) {
 
     setJSONResponse(res, answer);
 }
-
