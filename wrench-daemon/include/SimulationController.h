@@ -45,16 +45,16 @@ namespace wrench {
 
     private:
 
+        // Thread-safe key value stores
         KeyValueStore<std::shared_ptr<wrench::StandardJob>> job_registry;
         KeyValueStore<std::shared_ptr<ComputeService>> compute_service_registry;
 
-
-        // Thread safe queues of things for the server thread and the simulation thread to communicate
+        // Thread-safe queues for the server thread and the simulation thread to communicate
         BlockingQueue<std::pair<double, std::shared_ptr<wrench::WorkflowExecutionEvent>>> event_queue;
         BlockingQueue<wrench::ComputeService *> compute_services_to_start;
         BlockingQueue<std::pair<std::shared_ptr<StandardJob>, std::shared_ptr<ComputeService>>> submissions_to_do;
 
-        // The two useful managers
+        // The two managers
         std::shared_ptr<JobManager> job_manager;
         std::shared_ptr<DataMovementManager> data_movement_manager;
 

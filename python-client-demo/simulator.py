@@ -1,8 +1,13 @@
 #!/usr/bin/env python3  
 from pywrench import pywrench
 from pywrench.exception import WRENCHException
+import sys
 
 if __name__ == "__main__":
+
+    if len(sys.argv) != 2:
+        sys.stderr.write("Usage: " + sys.argv[0] + " <# seconds of real time to sleep during simulation>\n");
+        exit(1)
 
     try:
         simulation = pywrench.start_simulation("./three_host_platform.xml", "ControllerHost")

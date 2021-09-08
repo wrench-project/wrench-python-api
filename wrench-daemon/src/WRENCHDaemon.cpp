@@ -47,17 +47,18 @@ WRENCHDaemon::WRENCHDaemon(bool simulation_logging,
  * @return true if the port is taken, false if it is available
  */
 bool WRENCHDaemon::isPortTaken(int port) {
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in address;
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons( port );
-    int ret_value = ::bind(sockfd, (struct sockaddr *)&address, sizeof(address));
+    int ret_value = ::bind(sock, (struct sockaddr *)&address, sizeof(address));
 
     if (ret_value == 0) {
-        close(sockfd);
+        close(sock);
         return false;
     } else if (errno == EADDRINUSE) {
+        close(sock);
         return true;
     } else {
         throw std::runtime_error("isPortTaken(): port should be either taken or not taken");
@@ -84,18 +85,32 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
     // Create a shared memory segment, to which an error message will be written
     // in case of a simulation creation failure
     auto shm_segment_id = shmget(IPC_PRIVATE, 2048, IPC_CREAT | SHM_R | SHM_W);
+    if (shm_segment_id == -1) {
+        perror("shmget()");
+        exit(1);
+    }
 
     // Create a child process
     auto child_pid = fork();
+    if (child_pid == -1) {
+        perror("fork()");
+        exit(1);
+    }
 
     if (!child_pid) {
 
         // The child process creates a grand child, that will be adopted by
         // pid 1 (the well-known "if I create a child that creates a grand-child
-        // and I kill the child, then my grand-child will never become a zombie)
+        // and I kill the child, then my grand-child will never become a zombie" trick). 
+        // This trick is a life-saver here, since setting up a SIGCHLD handler
+        // to teap children will get in the way of what we need to do in the code hereafter.
         auto grand_child_pid = fork();
+        if (grand_child_pid == -1) {
+            perror("fork()");
+            exit(1);
+        }
 
-        if (! grand_child_pid) {
+        if (!grand_child_pid) {
 
             // Create the simulation state
             auto simulation_thread_state = new SimulationThreadState();
@@ -117,7 +132,10 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
                 char *shm_segment = (char *)shmat(shm_segment_id, nullptr, 0);
                 const char *to_copy = simulation_thread_state->simulation_launch_error_message.c_str();
                 strcpy(shm_segment, to_copy);
-                shmdt(shm_segment);
+                if (shmdt(shm_segment) == -1) {
+                    perror("shmdt()");
+                    exit(1);
+                }
                 // Terminate with a non-zero error code
                 exit(1);
             }
@@ -139,7 +157,10 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
             // (which means it's an error), or whether it is happily running
             usleep(200000);
             int stat_loc = 0;
-            waitpid(grand_child_pid, &stat_loc, WNOHANG);
+            if (waitpid(grand_child_pid, &stat_loc, WNOHANG) == -1) {
+                perror("waitpid()");
+                exit(1);
+            }
             // propagate grand-child's exit code (whether 0 or non-zero) up to the parent
             exit(WEXITSTATUS(stat_loc));
         }
@@ -147,7 +168,10 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
 
     // Wait for the child to finish and get its exit code
     int stat_loc;
-    waitpid(child_pid, &stat_loc, 0);
+    if (waitpid(child_pid, &stat_loc, 0) == -1) {
+        perror("waitpid()");
+        exit(1);
+    }
 
     // Create json answer that will inform the client of success or failure
     json answer;
@@ -159,11 +183,17 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         // Grab the error message from the shared memory segment
         char *shm_segment_top = (char *)shmat(shm_segment_id, nullptr, 0);
         answer["failure_cause"] = std::string(shm_segment_top);
-        shmdt(shm_segment_top);
+        if (shmdt(shm_segment_top) == -1) {
+            perror("shmdt()");
+            exit(1);
+        }
     }
 
     // Destroy the shared memory segment
-    shmctl(shm_segment_id, IPC_RMID, NULL);
+    if (shmctl(shm_segment_id, IPC_RMID, NULL) == -1) {
+        perror("shmctl()");
+        exit(1);
+    }
 
     // Prepare the response to the client
     res.set_header("access-control-allow-origin", "*");
