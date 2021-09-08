@@ -36,7 +36,8 @@ namespace wrench {
      */
     int SimulationController::main() {
         // Initial setup
-        wrench::TerminalOutput::setThisProcessLoggingColor(TerminalOutput::COLOR_RED);WRENCH_INFO("Starting");
+        wrench::TerminalOutput::setThisProcessLoggingColor(TerminalOutput::COLOR_RED);
+        WRENCH_INFO("Starting");
         this->job_manager = this->createJobManager();
         this->data_movement_manager = this->createDataMovementManager();
 
@@ -254,7 +255,6 @@ namespace wrench {
         this->job_registry.insert(job->getName(), job);
         return job->getName();
     }
-
 
     /**
      * @brief Submit a standard job

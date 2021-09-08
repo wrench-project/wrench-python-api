@@ -17,18 +17,21 @@ using json = nlohmann::json;
 void SimulationDaemon::run() {
 
     // Set up GET request handlers
-    server.Get("/api/alive", [this] (const Request& req, Response& res) { alive(req, res);});
-    server.Get("/api/getTime", [this](const Request& req, Response& res) { getTime(req, res);});
-    server.Get("/api/getAllHostnames", [this](const Request& req, Response& res) { getAllHostnames(req, res);});
-    server.Get("/api/getSimulationEvents", [this](const Request& req, Response& res) { getSimulationEvents(req, res);});
-    server.Get("/api/waitForNextSimulationEvent", [this](const Request& req, Response& res) { waitForNextSimulationEvent(req, res);});
+    server.Get("/api/alive", [this](const Request &req, Response &res) { alive(req, res); });
+    server.Get("/api/getTime", [this](const Request &req, Response &res) { getTime(req, res); });
+    server.Get("/api/getAllHostnames", [this](const Request &req, Response &res) { getAllHostnames(req, res); });
+    server.Get("/api/getSimulationEvents",
+               [this](const Request &req, Response &res) { getSimulationEvents(req, res); });
+    server.Get("/api/waitForNextSimulationEvent",
+               [this](const Request &req, Response &res) { waitForNextSimulationEvent(req, res); });
 
     // Set up POST request handlers
-    server.Post("/api/addTime", [this](const Request& req, Response& res) { addTime(req, res);});
-    server.Post("/api/addService", [this](const Request& req, Response& res) { addService(req, res);});
-    server.Post("/api/createStandardJob", [this](const Request& req, Response& res) { createStandardJob(req, res);});
-    server.Post("/api/submitStandardJob", [this](const Request& req, Response& res) { submitStandardJob(req, res);});
-    server.Post("/api/terminateSimulation", [this](const Request& req, Response& res) { terminateSimulation(req, res);});
+    server.Post("/api/addTime", [this](const Request &req, Response &res) { addTime(req, res); });
+    server.Post("/api/addService", [this](const Request &req, Response &res) { addService(req, res); });
+    server.Post("/api/createStandardJob", [this](const Request &req, Response &res) { createStandardJob(req, res); });
+    server.Post("/api/submitStandardJob", [this](const Request &req, Response &res) { submitStandardJob(req, res); });
+    server.Post("/api/terminateSimulation",
+                [this](const Request &req, Response &res) { terminateSimulation(req, res); });
 
     if (daemon_logging) {
         std::cerr << " PID " << getpid() << " listening on port " << simulation_port_number << "\n";
@@ -38,7 +41,7 @@ void SimulationDaemon::run() {
         // server returns from the listen() call below, not sure why...
         server.listen("0.0.0.0", simulation_port_number);
     }
-    exit(0);
+//    exit(0);
 }
 
 /**
@@ -53,16 +56,13 @@ SimulationDaemon::SimulationDaemon(
         bool daemon_logging,
         int simulation_port_number,
         SimulationThreadState *simulation_thread_state,
-        std::thread& simulation_thread) :
+        std::thread &simulation_thread) :
         daemon_logging(daemon_logging),
-        simulation_port_number(simulation_port_number) ,
+        simulation_port_number(simulation_port_number),
         simulation_thread_state(simulation_thread_state),
         simulation_thread(simulation_thread) {
 }
 
-/***********************
- ** ALL PATH HANDLERS **
- ***********************/
 
 /**
  * @brief Helper method for logging
@@ -81,12 +81,12 @@ void SimulationDaemon::displayRequest(const Request &req) {
  * @param res HTTP request
  * @param answer reply
  */
-void setJSONResponse(Response& res, json& answer) {
+void setJSONResponse(Response &res, json &answer) {
     res.set_header("access-control-allow-origin", "*");
     res.set_content(answer.dump(), "application/json");
 }
 
-void SimulationDaemon::alive(const Request& req, Response& res) {
+void SimulationDaemon::alive(const Request &req, Response &res) {
     SimulationDaemon::displayRequest(req);
 
     // Create json answer
@@ -97,7 +97,11 @@ void SimulationDaemon::alive(const Request& req, Response& res) {
     setJSONResponse(res, answer);
 }
 
-void SimulationDaemon::getTime(const Request& req, Response& res) {
+/***********************
+ ** ALL PATH HANDLERS **
+ ***********************/
+
+void SimulationDaemon::getTime(const Request &req, Response &res) {
     this->displayRequest(req);
 
     // Retrieve simulated time from simulation thread
@@ -111,7 +115,7 @@ void SimulationDaemon::getTime(const Request& req, Response& res) {
     setJSONResponse(res, answer);
 }
 
-void SimulationDaemon::getAllHostnames(const Request& req, Response& res) {
+void SimulationDaemon::getAllHostnames(const Request &req, Response &res) {
     SimulationDaemon::displayRequest(req);
 
     // Retrieve all hostnames from simulation thread
@@ -125,7 +129,7 @@ void SimulationDaemon::getAllHostnames(const Request& req, Response& res) {
     setJSONResponse(res, answer);
 }
 
-void SimulationDaemon::terminateSimulation(const Request& req, Response& res) {
+void SimulationDaemon::terminateSimulation(const Request &req, Response &res) {
     displayRequest(req);
 
     // Stop the simulation thread and wait for it to have stopped
@@ -145,7 +149,7 @@ void SimulationDaemon::terminateSimulation(const Request& req, Response& res) {
     exit(1);
 }
 
-void SimulationDaemon::addTime(const Request& req, Response& res) {
+void SimulationDaemon::addTime(const Request &req, Response &res) {
     this->displayRequest(req);
 
     // Get the time to sleep from the request
@@ -159,7 +163,7 @@ void SimulationDaemon::addTime(const Request& req, Response& res) {
     setJSONResponse(res, answer);
 }
 
-void SimulationDaemon::getSimulationEvents(const Request& req, Response& res) {
+void SimulationDaemon::getSimulationEvents(const Request &req, Response &res) {
     displayRequest(req);
 
     // Get events from the simulation thread
@@ -174,7 +178,7 @@ void SimulationDaemon::getSimulationEvents(const Request& req, Response& res) {
     setJSONResponse(res, answer);
 }
 
-void SimulationDaemon::waitForNextSimulationEvent(const Request &req, Response & res) {
+void SimulationDaemon::waitForNextSimulationEvent(const Request &req, Response &res) {
     this->displayRequest(req);
 
     // Ask the simulation thread to wait until the next simulation event
@@ -188,7 +192,7 @@ void SimulationDaemon::waitForNextSimulationEvent(const Request &req, Response &
     setJSONResponse(res, answer);
 }
 
-void SimulationDaemon::addService(const Request& req, Response& res) {
+void SimulationDaemon::addService(const Request &req, Response &res) {
     this->displayRequest(req);
 
     // Parse the request's body to json
@@ -208,7 +212,7 @@ void SimulationDaemon::addService(const Request& req, Response& res) {
     setJSONResponse(res, answer);
 }
 
-void SimulationDaemon::submitStandardJob(const Request& req, Response& res) {
+void SimulationDaemon::submitStandardJob(const Request &req, Response &res) {
     this->displayRequest(req);
 
     // Parse the request's body to json
@@ -227,12 +231,11 @@ void SimulationDaemon::submitStandardJob(const Request& req, Response& res) {
     setJSONResponse(res, answer);
 }
 
-void SimulationDaemon::createStandardJob(const Request& req, Response& res) {
+void SimulationDaemon::createStandardJob(const Request &req, Response &res) {
     this->displayRequest(req);
 
     // parse the request's answer to json
     auto req_body = json::parse(req.body);
-
 
     // Ask simulation thread to create standard job and construct json answer
     json answer;
