@@ -60,18 +60,18 @@ void SimulationThreadState::createAndLaunchSimulation(
             throw std::runtime_error("The platform does not contain a controller host with name " + controller_host);
         }
 
-        this->simulation_controller = simulation.add(
+        this->controller = simulation.add(
                 new wrench::SimulationController(controller_host, sleep_us));
 
-        // Add a bogus workflow to simulation_controller
+        // Add a bogus workflow to controller
         wrench::Workflow workflow;
-        this->simulation_controller->addWorkflow(&workflow);
+        this->controller->addWorkflow(&workflow);
 
         // Start the simulation.
         simulation.launch();
 
     } catch (std::exception &e) {
-
+        // Set error flag and error message
         this->simulation_launch_error = true;
         this->simulation_launch_error_message = std::string(e.what());
         return;

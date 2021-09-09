@@ -11,7 +11,7 @@
 class SimulationThreadState {
 
 public:
-    std::shared_ptr<wrench::SimulationController> simulation_controller;
+    std::shared_ptr<wrench::SimulationController> controller;
     wrench::Simulation simulation;
 
     ~SimulationThreadState() = default;
