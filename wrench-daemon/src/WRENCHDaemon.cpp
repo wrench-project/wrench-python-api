@@ -90,7 +90,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
     while (isPortTaken(simulation_port_number = PORT_MIN + rand() % (PORT_MAX - PORT_MIN)));
 
     // Create a shared memory segment, to which an error message will be written by
-    // the child process (the simuation daemon) in case it fails on startup
+    // the child process (the simulation daemon) in case it fails on startup
     // in case of a simulation creation failure
     auto shm_segment_id = shmget(IPC_PRIVATE, 2048, IPC_CREAT | SHM_R | SHM_W);
     if (shm_segment_id == -1) {

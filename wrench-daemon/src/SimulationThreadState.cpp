@@ -24,12 +24,14 @@ void SimulationThreadState::createAndLaunchSimulation(
         const std::string& controller_host,
         int sleep_us) {
 
+    // Set the error flag to "no error"
     this->simulation_launch_error = false;
 
     try {
 
+        // Set up "fictitious" command-line arguments
         int argc = (full_log ? 2 : 1);
-        char **argv = (char **) calloc(argc, sizeof(char *));
+        char **argv = (char **) calloc((size_t)argc, sizeof(char *));
         argv[0] = strdup("wrench-daemon-simulation");
         if (argc > 1) {
             argv[1] = strdup("--wrench-full-log");
@@ -57,13 +59,14 @@ void SimulationThreadState::createAndLaunchSimulation(
 
         // Check that the controller host exists
         if (not wrench::Simulation::doesHostExist(controller_host)) {
-            throw std::runtime_error("The platform does not contain a controller host with name " + controller_host);
+            throw std::runtime_error("The platform does not contain a (controller) host with name " + controller_host);
         }
 
+        // Create a controller and add it to the simulation
         this->controller = simulation.add(
                 new wrench::SimulationController(controller_host, sleep_us));
 
-        // Add a bogus workflow to controller
+        // Add an empty workflow to controller
         wrench::Workflow workflow;
         this->controller->addWorkflow(&workflow);
 
