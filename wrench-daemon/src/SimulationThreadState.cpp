@@ -29,7 +29,7 @@ void SimulationThreadState::createAndLaunchSimulation(
 
     try {
 
-        // Set up "fictitious" command-line arguments
+        // Set up command-line arguments
         int argc = (full_log ? 2 : 1);
         char **argv = (char **) calloc((size_t)argc, sizeof(char *));
         argv[0] = strdup("wrench-daemon-simulation");
@@ -66,7 +66,7 @@ void SimulationThreadState::createAndLaunchSimulation(
         this->controller = simulation.add(
                 new wrench::SimulationController(controller_host, sleep_us));
 
-        // Add an empty workflow to controller
+        // Add an empty workflow to the controller
         wrench::Workflow workflow;
         this->controller->addWorkflow(&workflow);
 

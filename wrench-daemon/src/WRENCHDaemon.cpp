@@ -48,7 +48,7 @@ WRENCHDaemon::WRENCHDaemon(bool simulation_logging,
  */
 bool WRENCHDaemon::isPortTaken(int port) {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
-    struct sockaddr_in address;
+    struct sockaddr_in address{};
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons( port );
@@ -164,7 +164,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
             // Very ugly sleep, but we have to check if the grand child has exited prematurely
             // (which means it's an error), or whether it is happily running.
             usleep(200000);
-            // Check the status of the grand-child, but non-blockingly, so that
+            // Check the status of the grand-child, but non-blocking-ly, so that
             // if it is indeed happily running we dont get stuck here!
             int stat_loc = 0;
             if (waitpid(grand_child_pid, &stat_loc, WNOHANG) == -1) {
@@ -220,7 +220,6 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
 void WRENCHDaemon::error_handling(const Request& req, Response& res) {
     std::cerr << "[" << res.status << "]: " << req.path << " " << req.body << "\n";
 }
-
 
 /**
  * @brief The WRENCH daemon's "main" method

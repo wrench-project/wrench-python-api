@@ -11,7 +11,6 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE debug)
 
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CmakeModules/")
 
 # Add needed packages
@@ -45,7 +44,6 @@ add_executable (wrench-daemon
         include/KeyValueStore.h
         )
 
-
 # Add pthreads
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -70,5 +68,3 @@ else()
             ${Boost_LIBRARIES}
             )
 endif()
-
-

@@ -36,7 +36,7 @@ private:
     SimulationThreadState *simulation_thread_state;
     std::thread& simulation_thread;
 
-    void displayRequest(const Request &req);
+    void displayRequest(const Request &req) const;
     void terminateSimulation(const Request& req, Response& res);
     void alive(const Request& req, Response& res);
     void getTime(const Request& req, Response& res);

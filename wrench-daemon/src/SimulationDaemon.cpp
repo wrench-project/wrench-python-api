@@ -68,7 +68,7 @@ SimulationDaemon::SimulationDaemon(
  * @brief Helper method for logging
  * @param req HTTP request
  */
-void SimulationDaemon::displayRequest(const Request &req) {
+void SimulationDaemon::displayRequest(const Request &req) const {
     unsigned long max_line_length = 120;
     if (daemon_logging) {
         std::cerr << req.path << " " << req.body.substr(0, max_line_length)

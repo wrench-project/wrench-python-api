@@ -58,7 +58,6 @@ namespace wrench {
         std::shared_ptr<JobManager> job_manager;
         std::shared_ptr<DataMovementManager> data_movement_manager;
 
-
         bool keep_going = true;
         double time_horizon_to_reach = 0;
         int sleep_us;
