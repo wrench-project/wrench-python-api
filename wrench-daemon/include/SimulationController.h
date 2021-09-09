@@ -30,7 +30,7 @@ namespace wrench {
 
         std::vector<std::string> getAllHostnames();
 
-        std::string addNewService(json service_spec);
+        std::string addService(json service_spec);
 
         std::string createStandardJob(json task_spec);
         void submitStandardJob(json submission_spec);

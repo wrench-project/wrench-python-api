@@ -76,42 +76,5 @@ void SimulationThreadState::createAndLaunchSimulation(
         this->simulation_launch_error_message = std::string(e.what());
         return;
     }
-
 }
 
-void SimulationThreadState::advanceSimulationTime(double seconds) const {
-    this->simulation_controller->advanceSimulationTime(seconds);
-}
-
-void SimulationThreadState::getSimulationEvents(std::vector<json> &events) const {
-    this->simulation_controller->getSimulationEvents(events);
-}
-
-json SimulationThreadState::waitForNextSimulationEvent() const {
-    return this->simulation_controller->waitForNextSimulationEvent();
-}
-
-std::string SimulationThreadState::addService(json service_spec) const {
-    return this->simulation_controller->addNewService(std::move(service_spec));
-}
-
-std::vector<std::string> SimulationThreadState::getAllHostnames() const {
-    return this->simulation_controller->getAllHostnames();
-}
-
-void SimulationThreadState::stopSimulation() const {
-    this->simulation_controller->stopSimulation();
-}
-
-
-double SimulationThreadState::getSimulationTime() const {
-    return this->simulation_controller->getSimulationTime();
-}
-
-std::string SimulationThreadState::createStandardJob(json task_spec) const {
-    return this->simulation_controller->createStandardJob(std::move(task_spec));
-}
-
-void SimulationThreadState::submitStandardJob(json submission_spec) const {
-    this->simulation_controller->submitStandardJob(std::move(submission_spec));
-}

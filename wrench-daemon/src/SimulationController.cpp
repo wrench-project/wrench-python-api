@@ -201,7 +201,7 @@ namespace wrench {
      * @param service_spec: a json object
      * @return the created service's name
      */
-    std::string SimulationController::addNewService(json service_spec) {
+    std::string SimulationController::addService(json service_spec) {
         std::string service_type = service_spec["service_type"];
 
         if (service_type == "compute_baremetal") {

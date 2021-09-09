@@ -105,7 +105,7 @@ void SimulationDaemon::getTime(const Request &req, Response &res) {
     this->displayRequest(req);
 
     // Retrieve simulated time from simulation thread
-    auto time = simulation_thread_state->getSimulationTime();
+    auto time = simulation_thread_state->simulation_controller->getSimulationTime();
 
     // Create json answer
     json answer;
@@ -119,7 +119,7 @@ void SimulationDaemon::getAllHostnames(const Request &req, Response &res) {
     SimulationDaemon::displayRequest(req);
 
     // Retrieve all hostnames from simulation thread
-    std::vector<std::string> hostnames = simulation_thread_state->getAllHostnames();
+    std::vector<std::string> hostnames = simulation_thread_state->simulation_controller->getAllHostnames();
 
     // Create json answer
     json answer;
@@ -133,7 +133,7 @@ void SimulationDaemon::terminateSimulation(const Request &req, Response &res) {
     displayRequest(req);
 
     // Stop the simulation thread and wait for it to have stopped
-    simulation_thread_state->stopSimulation();
+    simulation_thread_state->simulation_controller->stopSimulation();
     simulation_thread.join();
 
     // Create an json answer
@@ -156,7 +156,7 @@ void SimulationDaemon::addTime(const Request &req, Response &res) {
     auto time_to_sleep = json::parse(req.body)["increment"].get<double>();
 
     // Tell the simulation thread to advance simulation time
-    simulation_thread_state->advanceSimulationTime(time_to_sleep);
+    simulation_thread_state->simulation_controller->advanceSimulationTime(time_to_sleep);
 
     json answer;
     answer["success"] = true;
@@ -168,7 +168,7 @@ void SimulationDaemon::getSimulationEvents(const Request &req, Response &res) {
 
     // Get events from the simulation thread
     std::vector<json> events;
-    simulation_thread_state->getSimulationEvents(events);
+    simulation_thread_state->simulation_controller->getSimulationEvents(events);
 
     // Create json answer
     json answer;
@@ -182,7 +182,7 @@ void SimulationDaemon::waitForNextSimulationEvent(const Request &req, Response &
     this->displayRequest(req);
 
     // Ask the simulation thread to wait until the next simulation event
-    auto event = simulation_thread_state->waitForNextSimulationEvent();
+    auto event = simulation_thread_state->simulation_controller->waitForNextSimulationEvent();
 
     // Create json answer
     json answer;
@@ -201,7 +201,7 @@ void SimulationDaemon::addService(const Request &req, Response &res) {
     // ask the simulation thread to add the service, and construct the json answer
     json answer;
     try {
-        std::string service_name = simulation_thread_state->addService(req_body);
+        std::string service_name = simulation_thread_state->simulation_controller->addService(req_body);
         answer["success"] = true;
         answer["compute_service_name"] = service_name;
     } catch (std::exception &e) {
@@ -221,7 +221,7 @@ void SimulationDaemon::submitStandardJob(const Request &req, Response &res) {
     // Ask the simulation thread to submit the job, and construct json answer
     json answer;
     try {
-        simulation_thread_state->submitStandardJob(req_body);
+        simulation_thread_state->simulation_controller->submitStandardJob(req_body);
         answer["success"] = true;
     } catch (std::exception &e) {
         answer["success"] = false;
@@ -240,7 +240,7 @@ void SimulationDaemon::createStandardJob(const Request &req, Response &res) {
     // Ask simulation thread to create standard job and construct json answer
     json answer;
     try {
-        std::string jobID = simulation_thread_state->createStandardJob(req_body);
+        std::string jobID = simulation_thread_state->simulation_controller->createStandardJob(req_body);
         answer["success"] = true;
         answer["job_id"] = jobID;
     } catch (std::exception &e) {
