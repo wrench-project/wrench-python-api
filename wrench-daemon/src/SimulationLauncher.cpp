@@ -1,5 +1,5 @@
 #include "httplib.h"
-#include "SimulationThreadState.h"
+#include "SimulationLauncher.h"
 #include "SimulationController.h"
 
 #include <string>
@@ -18,16 +18,19 @@
  * @param controller_host: hostname of the host that will run the controller
  * @param sleep_us: number of microseconds to sleep at each iteration of the main loop
  */
-void SimulationThreadState::createAndLaunchSimulation(
+void SimulationLauncher::createAndLaunchSimulation(
         bool full_log,
         const std::string& platform_xml,
         const std::string& controller_host,
         int sleep_us) {
 
     // Set the error flag to "no error"
-    this->simulation_launch_error = false;
+    this->launch_error = false;
+
 
     try {
+        // WRENCH simulation object
+        wrench::Simulation simulation;
 
         // Set up command-line arguments
         int argc = (full_log ? 2 : 1);
@@ -75,8 +78,8 @@ void SimulationThreadState::createAndLaunchSimulation(
 
     } catch (std::exception &e) {
         // Set error flag and error message
-        this->simulation_launch_error = true;
-        this->simulation_launch_error_message = std::string(e.what());
+        this->launch_error = true;
+        this->launch_error_message = std::string(e.what());
         return;
     }
 }

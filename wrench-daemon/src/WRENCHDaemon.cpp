@@ -1,4 +1,4 @@
-#include "SimulationThreadState.h"
+#include "SimulationLauncher.h"
 
 #include <cstdio>
 #include <string>
@@ -123,12 +123,12 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
 
         if (!grand_child_pid) {
 
-            // Create the simulation state
-            auto simulation_thread_state = new SimulationThreadState();
+            // Create the simulation launcher
+            auto simulation_launcher = new SimulationLauncher();
 
-            // Start the simulation in a separate thread
-            auto simulation_thread = std::thread(&SimulationThreadState::createAndLaunchSimulation,
-                                            simulation_thread_state,
+            // Launch the simulation in a separate thread
+            auto simulation_thread = std::thread(&SimulationLauncher::createAndLaunchSimulation,
+                                            simulation_launcher,
                                             simulation_logging, body["platform_xml"], body["controller_hostname"], sleep_us);
 
             // Wait a little bit and check whether the simulation was launched successfully
@@ -138,11 +138,11 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
 
             // If there was a simulation launch error, then put the error message in the
             // shared memory segment before exiting
-            if (simulation_thread_state->simulation_launch_error) {
+            if (simulation_launcher->launchError()) {
                 simulation_thread.join(); // THIS IS NECESSARY, otherwise the exit silently segfaults!
                 // Put the error message in shared memory
                 char *shm_segment = (char *)shmat(shm_segment_id, nullptr, 0);
-                const char *to_copy = simulation_thread_state->simulation_launch_error_message.c_str();
+                const char *to_copy = strdup(simulation_launcher->launchErrorMessage().c_str());
                 strcpy(shm_segment, to_copy);
                 if (shmdt(shm_segment) == -1) {
                     perror("shmdt()");
@@ -156,7 +156,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
             // HTTP server for this new simulation
             auto simulation_daemon = new SimulationDaemon(
                     daemon_logging, simulation_port_number,
-                    simulation_thread_state, simulation_thread);
+                    simulation_launcher->getController(), simulation_thread);
             simulation_daemon->run(); // never returns
             exit(0);
 

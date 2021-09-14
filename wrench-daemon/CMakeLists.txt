@@ -35,8 +35,8 @@ add_executable (wrench-daemon
         include/WRENCHDaemon.h
         src/SimulationDaemon.cpp
         include/SimulationDaemon.h
-        src/SimulationThreadState.cpp
-        include/SimulationThreadState.h
+        src/SimulationLauncher.cpp
+        include/SimulationLauncher.h
         include/httplib.h
         include/SimulationController.h
         src/SimulationController.cpp
