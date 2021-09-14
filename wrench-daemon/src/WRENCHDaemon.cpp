@@ -52,7 +52,7 @@ bool WRENCHDaemon::isPortTaken(int port) {
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons( port );
-    int ret_value = ::bind(sock, (struct sockaddr *)&address, sizeof(address));
+    auto ret_value = ::bind(sock, (struct sockaddr *)&address, sizeof(address));
 
     if (ret_value == 0) {
         close(sock);

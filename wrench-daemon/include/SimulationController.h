@@ -60,7 +60,7 @@ namespace wrench {
 
         bool keep_going = true;
         double time_horizon_to_reach = 0;
-        int sleep_us;
+        unsigned int sleep_us;
 
         int main() override;
         std::string addNewBareMetalComputeService(json service_spec);
