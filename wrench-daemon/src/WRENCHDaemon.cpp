@@ -105,10 +105,17 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         exit(1);
     }
 
-    if (!child_pid) {
+    if (!child_pid) { // The child process
 
         // Stop the server that was listening on the main WRENCH daemon port
         server.stop();
+
+        // Create a pipe for communication with my child (aka the grand-child)
+        int fd[2];
+        if (pipe(fd) == -1) {
+            perror("pipe()");
+            exit(1);
+        }
 
         // The child process creates a grand child, that will be adopted by
         // pid 1 (the well-known "if I create a child that creates a grand-child
@@ -121,45 +128,38 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
             exit(1);
         }
 
-        if (!grand_child_pid) {
+        if (!grand_child_pid) { // the grand-child
+
+            // close read end of the pipe
+            close(fd[0]);
 
             // Create the simulation launcher
             auto simulation_launcher = new SimulationLauncher();
 
+            // mutex/condvar for synchronization with the simulation thread I am about to create
             std::mutex guard;
             std::condition_variable signal;
 
             // Launch the simulation in a separate thread
             auto simulation_thread = std::thread([simulation_launcher, this, body, &guard, &signal] () {
                 // Create simulation
-                std::cerr << "CREATING THE SIMULATION\n";
                 simulation_launcher->createSimulation(this->simulation_logging, body["platform_xml"], body["controller_hostname"], this->sleep_us);
-                // Signal the parent thread that simulation creation has been done (if may have failed)
-                std::cerr << "THREAD SIGNALING THE OK\n";
-
+                // Signal the parent thread that simulation creation has been done, successfully or not
                 {
                     std::unique_lock<std::mutex> lock(guard);
                     signal.notify_one();
                 }
-                // If no failure, then proceed
+                // If no failure, then proceed with the launch!
                 if (not simulation_launcher->launchError()) {
-                    std::cerr << "LAUNCHING!\n";
                     simulation_launcher->launchSimulation();
                 }
             });
 
-            std::cerr << "WAITING FOR THE OK\n";
-            // WAITING FOR THE "OK"
+            // Waiting for the simulation thread to have created the simulation, successfully or not
             {
                 std::unique_lock<std::mutex> lock(guard);
                 signal.wait(lock);
             }
-            std::cerr << "GOT SIGNALED!\n";
-
-            // Wait a little bit and check whether the simulation was launched successfully
-            // This is pretty ugly, but will do for now. It's a bit hard to do it in a different
-            // wait, especially because the call to launch() could fail (or perhaps not?) in createAndLaunchSimulation()
-//            usleep(100000);
 
             // If there was a simulation launch error, then put the error message in the
             // shared memory segment before exiting
@@ -170,36 +170,54 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
                 const char *to_copy = strdup(simulation_launcher->launchErrorMessage().c_str());
                 strcpy(shm_segment, to_copy);
                 if (shmdt(shm_segment) == -1) {
-                    perror("shmdt()");
-                    exit(1);
+                    perror("shmdt()"); // just as a weird warning
                 }
-                // Terminate with a non-zero error code
+                // Write to the parent
+                bool success = false;
+                if (write(fd[1], &success, sizeof(bool)) == -1) {
+                    perror("write()");
+                }
+                // Close the write-end of the pipe
+                close(fd[1]);
+                // Terminate with a non-zero error code, just for kicks (nbody's calling waitpid)
                 exit(1);
             }
 
-            // Create the simulation daemon and call its run() method, which will launch the
-            // HTTP server for this new simulation
+            // Write to the pipe that everything's ok and close it
+            bool success = true;
+            if (write(fd[1], &success, sizeof(bool)) == -1) {
+                perror("write()");
+                exit(1);
+            }
+            // Close the write-end of the pipe
+            close(fd[1]);
+
+            // Create a simulation daemon
             auto simulation_daemon = new SimulationDaemon(
                     daemon_logging, simulation_port_number,
                     simulation_launcher->getController(), simulation_thread);
+
+            // Start the HTTP server for this particular simulation
             simulation_daemon->run(); // never returns
-            exit(0);
+            exit(0); // is never executed
 
         } else {
-            // Very ugly sleep, but we have to check if the grand child has exited prematurely
-            // (which means it's an error), or whether it is happily running.
-            usleep(200000);
-            // Check the status of the grand-child, but non-blocking-ly, so that
-            // if it is indeed happily running we dont get stuck here!
-            int stat_loc = 0;
-            if (waitpid(grand_child_pid, &stat_loc, WNOHANG) == -1) {
-                perror("waitpid()");
-                exit(1);
+
+            // close write end of the pipe
+            close(fd[1]);
+
+            // Wait to hear from the pipe
+            bool success;
+            auto bytes_read = read(fd[0], &success, sizeof(bool));
+            if (bytes_read == -1) { // child failure
+                success = false;
             }
-            // propagate grand-child's exit code (whether 0 or non-zero) up to the parent
-            exit(WEXITSTATUS(stat_loc));
+
+            // If success exit(0) otherwise exit(1)
+            exit(not success);
         }
     }
+
 
     // Wait for the child to finish and get its exit code
     int stat_loc;

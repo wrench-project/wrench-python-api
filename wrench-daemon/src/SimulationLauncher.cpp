@@ -66,8 +66,7 @@ void SimulationLauncher::createSimulation(
                 new wrench::SimulationController(controller_host, sleep_us));
 
         // Add an empty workflow to the controller
-        wrench::Workflow workflow;
-        this->controller->addWorkflow(&workflow);
+        this->controller->addWorkflow(new wrench::Workflow());
 
     } catch (std::exception &e) {
         // Set error flag and error message
