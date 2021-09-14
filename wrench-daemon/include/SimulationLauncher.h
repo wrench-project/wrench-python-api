@@ -14,16 +14,18 @@ public:
 
     ~SimulationLauncher() = default;
 
-    void createAndLaunchSimulation(bool full_log,
+    void createSimulation(bool full_log,
                                    const std::string& platform_xml,
                                    const std::string& controller_host,
                                    int sleep_us);
+    void launchSimulation();
 
     bool launchError() const { return this->launch_error; }
     std::string launchErrorMessage() const { return this->launch_error_message; }
     std::shared_ptr<wrench::SimulationController> getController() const { return this->controller; }
 
 private:
+    wrench::Simulation simulation;
     std::shared_ptr<wrench::SimulationController> controller;
     bool launch_error = false;
     std::string launch_error_message;

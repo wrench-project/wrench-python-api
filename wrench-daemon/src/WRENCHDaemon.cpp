@@ -31,13 +31,13 @@ using json = nlohmann::json;
  *        thread should sleep at each iteration
  */
 WRENCHDaemon::WRENCHDaemon(bool simulation_logging,
-             bool daemon_logging,
-             int port_number,
-             int sleep_us) :
-             simulation_logging(simulation_logging),
-             daemon_logging(daemon_logging),
-             port_number(port_number),
-             sleep_us(sleep_us) {
+                           bool daemon_logging,
+                           int port_number,
+                           int sleep_us) :
+        simulation_logging(simulation_logging),
+        daemon_logging(daemon_logging),
+        port_number(port_number),
+        sleep_us(sleep_us) {
 }
 
 
@@ -126,15 +126,40 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
             // Create the simulation launcher
             auto simulation_launcher = new SimulationLauncher();
 
+            std::mutex guard;
+            std::condition_variable signal;
+
             // Launch the simulation in a separate thread
-            auto simulation_thread = std::thread(&SimulationLauncher::createAndLaunchSimulation,
-                                            simulation_launcher,
-                                            simulation_logging, body["platform_xml"], body["controller_hostname"], sleep_us);
+            auto simulation_thread = std::thread([simulation_launcher, this, body, &guard, &signal] () {
+                // Create simulation
+                std::cerr << "CREATING THE SIMULATION\n";
+                simulation_launcher->createSimulation(this->simulation_logging, body["platform_xml"], body["controller_hostname"], this->sleep_us);
+                // Signal the parent thread that simulation creation has been done (if may have failed)
+                std::cerr << "THREAD SIGNALING THE OK\n";
+
+                {
+                    std::unique_lock<std::mutex> lock(guard);
+                    signal.notify_one();
+                }
+                // If no failure, then proceed
+                if (not simulation_launcher->launchError()) {
+                    std::cerr << "LAUNCHING!\n";
+                    simulation_launcher->launchSimulation();
+                }
+            });
+
+            std::cerr << "WAITING FOR THE OK\n";
+            // WAITING FOR THE "OK"
+            {
+                std::unique_lock<std::mutex> lock(guard);
+                signal.wait(lock);
+            }
+            std::cerr << "GOT SIGNALED!\n";
 
             // Wait a little bit and check whether the simulation was launched successfully
             // This is pretty ugly, but will do for now. It's a bit hard to do it in a different
             // wait, especially because the call to launch() could fail (or perhaps not?) in createAndLaunchSimulation()
-            usleep(100000);
+//            usleep(100000);
 
             // If there was a simulation launch error, then put the error message in the
             // shared memory segment before exiting

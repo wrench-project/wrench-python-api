@@ -9,7 +9,7 @@
 #include <wrench.h>
 
 /**
- * @brief Method to create and launch the simulation, which is called in a thread inside a child process.
+ * @brief Method to create the simulation, which is called in a thread inside a child process.
  *        To be able to notify the parent process of the nature of an error, if any, this method
  *        simple sets an error message variable and returns
  *
@@ -18,7 +18,7 @@
  * @param controller_host: hostname of the host that will run the controller
  * @param sleep_us: number of microseconds to sleep at each iteration of the main loop
  */
-void SimulationLauncher::createAndLaunchSimulation(
+void SimulationLauncher::createSimulation(
         bool full_log,
         const std::string& platform_xml,
         const std::string& controller_host,
@@ -27,11 +27,7 @@ void SimulationLauncher::createAndLaunchSimulation(
     // Set the error flag to "no error"
     this->launch_error = false;
 
-
     try {
-        // WRENCH simulation object
-        wrench::Simulation simulation;
-
         // Set up command-line arguments
         int argc = (full_log ? 2 : 1);
         char **argv = (char **) calloc((size_t)argc, sizeof(char *));
@@ -73,9 +69,6 @@ void SimulationLauncher::createAndLaunchSimulation(
         wrench::Workflow workflow;
         this->controller->addWorkflow(&workflow);
 
-        // Start the simulation.
-        simulation.launch();
-
     } catch (std::exception &e) {
         // Set error flag and error message
         this->launch_error = true;
@@ -83,4 +76,13 @@ void SimulationLauncher::createAndLaunchSimulation(
         return;
     }
 }
+
+/**
+ * @brief Method to launch the simulation
+ */
+void SimulationLauncher::launchSimulation() {
+    this->simulation.launch();
+}
+
+
 
