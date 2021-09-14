@@ -140,7 +140,9 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
             std::mutex guard;
             std::condition_variable signal;
 
-            // Launch the simulation in a separate thread
+            // Create AND launch the simulation in a separate thread (it is tempting to
+            // do the creation here and the launch in a thread, but it seems that SimGrid
+            // does not like that - likely due to the maestro business)
             auto simulation_thread = std::thread([simulation_launcher, this, body, &guard, &signal] () {
                 // Create simulation
                 simulation_launcher->createSimulation(this->simulation_logging, body["platform_xml"], body["controller_hostname"], this->sleep_us);
