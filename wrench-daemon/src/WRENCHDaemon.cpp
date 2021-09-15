@@ -150,6 +150,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         if (grand_child_pid == -1) {
             char *shm_segment = (char *)shmat(shm_segment_id, nullptr, 0);
             strcpy(shm_segment, "Internal wrench-daemon error: ");
+            strcat(shm_segment, "shmat(): ");
             strcat(shm_segment, strerror(errno));
             exit(1);
         }
@@ -198,12 +199,12 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
                 const char *to_copy = strdup(simulation_launcher->launchErrorMessage().c_str());
                 strcpy(shm_segment, to_copy);
                 if (shmdt(shm_segment) == -1) {
-                    perror("shmdt()"); // just as a weird warning, since we're already in error mode anyway
+                    perror("WARNING: shmdt()"); // just a warning, since we're already in error mode anyway
                 }
                 // Write to the parent
                 bool success = false;
                 if (write(fd[1], &success, sizeof(bool)) == -1) {
-                    perror("write()"); // just as a weird warning, since we're already in error mode anyway
+                    perror("WARNING: write()"); // just a warning, since we're already in error mode anyway
                 }
                 // Close the write-end of the pipe
                 close(fd[1]);
