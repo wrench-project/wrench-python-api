@@ -274,18 +274,14 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         char *shm_segment_top = (char *)shmat(shm_segment_id, nullptr, 0);
         answer["failure_cause"] = std::string(shm_segment_top);
         if (shmdt(shm_segment_top) == -1) {
-            perror("shmdt()");
-            std::cerr << "Fatal error [ABORTING]\n";
-            exit(0); 
+            perror("WARNING: shmdt()");
         }
     }
 
     // Destroy the shared memory segment (important, since there is a limited
     // number of them we can create, and besides we should clean-up after ourselves)
     if (shmctl(shm_segment_id, IPC_RMID, nullptr) == -1) {
-        perror("shmctl()");
-        std::cerr << "Fatal error [ABORTING]\n";
-        exit(1);
+        perror("WARNING: shmctl()");
     }
 
     // Prepare the response to the client
