@@ -76,6 +76,9 @@ bool WRENCHDaemon::isPortTaken(int port) {
  */
 void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
 
+    /** This method has quite a bit of code duplication for error catching-handling,
+     ** which is not great and should be fixed at some point **/
+
     // Print some logging
     unsigned long max_line_length = 120;
     if (daemon_logging) {
@@ -103,12 +106,12 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
     // Create a shared memory segment, to which an error message will be written by
     // the child process (the simulation daemon) in case it fails on startup
     // in case of a simulation creation failure
-    auto shm_segment_id = shmget(IPC_PRIVATE, 2048, IPC_CREAT | SHM_R | SHM_W);
+    auto shm_segment_id = shmget(IPC_PRIVATE, 4096, IPC_CREAT | SHM_R | SHM_W);
     if (shm_segment_id == -1) {
         perror("shmget()");
         json answer;
         answer["success"] = false;
-        answer["failure_cause"] = std::string("Internal wrench-daemon error: " + std::string(strerror(errno)));
+        answer["failure_cause"] = std::string("Internal wrench-daemon error: shmget(): " + std::string(strerror(errno)));
         res.set_header("access-control-allow-origin", "*");
         res.set_content(answer.dump(), "application/json");
         return;
@@ -120,7 +123,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         perror("fork()");
         json answer;
         answer["success"] = false;
-        answer["failure_cause"] = std::string("Internal wrench-daemon error: " + std::string(strerror(errno)));
+        answer["failure_cause"] = std::string("Internal wrench-daemon error: fork(): " + std::string(strerror(errno)));
         res.set_header("access-control-allow-origin", "*");
         res.set_content(answer.dump(), "application/json");
         return;
@@ -135,8 +138,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         if (pipe(fd) == -1) {
             perror("pipe()");
             char *shm_segment = (char *)shmat(shm_segment_id, nullptr, 0);
-            strcpy(shm_segment, "Internal wrench-daemon error: ");
-            strcat(shm_segment, "pipe(): ");
+            strcpy(shm_segment, "Internal wrench-daemon error: pipe(): ");
             strcat(shm_segment, strerror(errno));
             exit(1);
         }
@@ -149,8 +151,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         auto grand_child_pid = fork();
         if (grand_child_pid == -1) {
             char *shm_segment = (char *)shmat(shm_segment_id, nullptr, 0);
-            strcpy(shm_segment, "Internal wrench-daemon error: ");
-            strcat(shm_segment, "shmat(): ");
+            strcpy(shm_segment, "Internal wrench-daemon error: shmat(): ");
             strcat(shm_segment, strerror(errno));
             exit(1);
         }
@@ -217,8 +218,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
             if (write(fd[1], &success, sizeof(bool)) == -1) {
                 perror("write()");
                 char *shm_segment = (char *)shmat(shm_segment_id, nullptr, 0);
-                strcpy(shm_segment, "Internal wrench-daemon error: ");
-                strcat(shm_segment, "pipe(): ");
+                strcpy(shm_segment, "Internal wrench-daemon error: write(): ");
                 strcat(shm_segment, strerror(errno));
                 exit(1);
             }
@@ -239,14 +239,14 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
             // close write end of the pipe
             close(fd[1]);
 
-            // Wait to hear from the pipe
+            // Wait to hear from the child via the pipe
             bool success;
             if (read(fd[0], &success, sizeof(bool)) == -1) {
                 // child failure
                 success = false;
             }
 
-            // If success exit(0) otherwise exit(1)
+            // If success exit(zero) otherwise exit(non-zero)
             exit(not success);
         }
     }
@@ -257,7 +257,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         perror("waitpid()");
         json answer;
         answer["success"] = false;
-        answer["failure_cause"] = std::string("Internal wrench-daemon error: " + std::string(strerror(errno)));
+        answer["failure_cause"] = std::string("Internal wrench-daemon error: waitpid(): " + std::string(strerror(errno)));
         res.set_header("access-control-allow-origin", "*");
         res.set_content(answer.dump(), "application/json");
         return;
