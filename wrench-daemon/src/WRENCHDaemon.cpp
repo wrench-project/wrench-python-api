@@ -154,7 +154,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
 
     // Create a shared memory segment, to which an error message will be written by
     // the child process (the simulation daemon) in case it fails on startup
-    // in case of a simulation creation failure
+    // due to a simulation creation failure
     auto shm_segment_id = shmget(IPC_PRIVATE, 4096, IPC_CREAT | SHM_R | SHM_W);
     if (shm_segment_id == -1) {
         perror("shmget()");
@@ -194,6 +194,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         // to reap children would get in the way of what we need to do in the code hereafter.
         auto grand_child_pid = fork();
         if (grand_child_pid == -1) {
+            perror("fork()");
             writeStringToSharedMemorySegment(shm_segment_id,
                                              "Internal wrench-daemon error: fork(): " + std::string(strerror(errno)));
             exit(1);
@@ -216,7 +217,10 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
             // does not like that - likely due to the maestro business)
             auto simulation_thread = std::thread([simulation_launcher, this, body, &guard, &signal] () {
                 // Create simulation
-                simulation_launcher->createSimulation(this->simulation_logging, body["platform_xml"], body["controller_hostname"], this->sleep_us);
+                simulation_launcher->createSimulation(this->simulation_logging,
+                                                      body["platform_xml"],
+                                                      body["controller_hostname"],
+                                                      this->sleep_us);
                 // Signal the parent thread that simulation creation has been done, successfully or not
                 {
                     std::unique_lock<std::mutex> lock(guard);
@@ -235,7 +239,8 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
             }
 
             // If there was a simulation launch error, then put the error message in the
-            // shared memory segment and exit
+            // shared memory segment, communicate the failure to the parent process
+            // via a pipe,  and exit
             if (simulation_launcher->launchError()) {
                 simulation_thread.join(); // THIS IS NECESSARY, otherwise the exit silently segfaults!
                 // Put the error message in shared memory segment
@@ -250,71 +255,75 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
                 close(fd[1]);
                 // Terminate with a non-zero error code, just for kicks (nobody's calling waitpid)
                 exit(1);
+
+            } else {
+
+                // Write to the pipe that everything's ok and close it
+                bool success = true;
+                if (write(fd[1], &success, sizeof(bool)) == -1) {
+                    perror("write()");
+                    writeStringToSharedMemorySegment(shm_segment_id, "Internal wrench-daemon error: write(): " +
+                                                                     std::string(strerror(errno)));
+                    exit(1);
+                }
+
+                // Close the write-end of the pipe
+                close(fd[1]);
+
+                // Create a simulation daemon
+                auto simulation_daemon = new SimulationDaemon(
+                        daemon_logging, simulation_port_number,
+                        simulation_launcher->getController(), simulation_thread);
+
+                // Start the HTTP server for this particular simulation
+                simulation_daemon->run(); // never returns
+                exit(0); // never executed
             }
-
-            // Write to the pipe that everything's ok and close it
-            bool success = true;
-            if (write(fd[1], &success, sizeof(bool)) == -1) {
-                perror("write()");
-                writeStringToSharedMemorySegment(shm_segment_id, "Internal wrench-daemon error: write(): " +
-                                                                 std::string(strerror(errno)));
-                exit(1);
-            }
-
-            // Close the write-end of the pipe
-            close(fd[1]);
-
-            // Create a simulation daemon
-            auto simulation_daemon = new SimulationDaemon(
-                    daemon_logging, simulation_port_number,
-                    simulation_launcher->getController(), simulation_thread);
-
-            // Start the HTTP server for this particular simulation
-            simulation_daemon->run(); // never returns
-            exit(0); // never executed
 
         } else {
 
-            // close write end of the pipe
+            // close the write-end of the pipe
             close(fd[1]);
 
             // Wait to hear from the child via the pipe
             bool success;
             if (read(fd[0], &success, sizeof(bool)) == -1) {
-                // child failure due to broken pipe
+                // If broken pipe, when we know it's a failure
                 success = false;
             }
 
             // If success exit(0) otherwise exit(1)
             exit(success ? 0 : 1);
         }
-    }
 
-    // Wait for the child to finish and get its exit code
-    int stat_loc;
-    if (waitpid(child_pid, &stat_loc, 0) == -1) {
-        perror("waitpid()");
-        setFailureAnswer(res, "Internal wrench-daemon error: waitpid(): " + std::string(strerror(errno)));
+    } else { // The parent process
+
+        // Wait for the child to finish and get its exit code
+        int stat_loc;
+        if (waitpid(child_pid, &stat_loc, 0) == -1) {
+            perror("waitpid()");
+            setFailureAnswer(res, "Internal wrench-daemon error: waitpid(): " + std::string(strerror(errno)));
+            return;
+        }
+
+        // Create json answer that will inform the client of success or failure, based on
+        // child's exit code (which was relayed to this process from the grand-child
+        if (WEXITSTATUS(stat_loc) == 0) {
+            setSuccessAnswer(res, simulation_port_number);
+        } else {
+            // Grab the error message from the shared memory segment and set up the failure answer
+            setFailureAnswer(res, readStringFromSharedMemorySegment(shm_segment_id));
+        }
+
+        // Destroy the shared memory segment (important, since there is a limited
+        // number of them we can create, and besides we should clean-up after ourselves)
+        if (shmctl(shm_segment_id, IPC_RMID, nullptr) == -1) {
+            perror("WARNING: shmctl()");
+        }
+
+        // At this point, the answer has been set
         return;
     }
-
-    // Create json answer that will inform the client of success or failure, based on
-    // child's exit code (which was relayed to this process from the grand-child
-    if (WEXITSTATUS(stat_loc) == 0) {
-        setSuccessAnswer(res, simulation_port_number);
-    } else {
-        // Grab the error message from the shared memory segment and set up the failure answer
-        setFailureAnswer(res, readStringFromSharedMemorySegment(shm_segment_id));
-    }
-
-    // Destroy the shared memory segment (important, since there is a limited
-    // number of them we can create, and besides we should clean-up after ourselves)
-    if (shmctl(shm_segment_id, IPC_RMID, nullptr) == -1) {
-        perror("WARNING: shmctl()");
-    }
-
-    // At this point, the answer has been set
-    return;
 }
 
 /**
