@@ -21,7 +21,6 @@ using json = nlohmann::json;
 #define PORT_MIN 10000
 #define PORT_MAX 20000
 
-
 /**
  * @brief Constructor
  * @param simulation_logging true if simulation logging should be printed
@@ -39,7 +38,6 @@ WRENCHDaemon::WRENCHDaemon(bool simulation_logging,
         port_number(port_number),
         sleep_us(sleep_us) {
 }
-
 
 /**
  * @brief Helper method to check whether a port is available for binding/listening
@@ -92,19 +90,39 @@ void setFailureAnswer(Response& res, const std::string& failure_cause) {
 }
 
 /**
- * @brief Help function to write a string to a shared-memory segment
+ * @brief Helper function to write a string to a shared-memory segment
  * @param shm_segment_id shared-memory segment ID
  * @param content string to write
  */
-void writeToSharedMemorySegment(int shm_segment_id, const std::string& content) {
-    char *shm_segment = (char *)shmat(shm_segment_id, nullptr, 0);
+void writeStringToSharedMemorySegment(int shm_segment_id, const std::string& content) {
+    auto shm_segment = (char *)shmat(shm_segment_id, nullptr, 0);
     if ((long)shm_segment == -1) {
         perror("WARNING: shmat(): ");
+        return;
     }
     strcpy(shm_segment, content.c_str());
     if (shmdt(shm_segment) == -1) {
         perror("WARNING: shmdt()");
+        return;
     }
+}
+
+/**
+ * @brief Helper function to read a string from a shared-memory segment
+ * @param shm_segment_id shared-memory segment ID
+ * @return string read
+ */
+std::string readStringFromSharedMemorySegment(int shm_segment_id) {
+    auto shm_segment = (char *)shmat(shm_segment_id, nullptr, 0);
+    if ((long)shm_segment == -1) {
+        perror("WARNING: shmat(): ");
+        return "n/a";
+    }
+    std::string to_return = std::string(shm_segment);
+    if (shmdt(shm_segment) == -1) {
+        perror("WARNING: shmdt()");
+    }
+    return to_return;
 }
 
 /**
@@ -144,9 +162,9 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         return;
     }
 
-    // Write a non-descript error message in the shared-memory segment in case
+    // Write a nondescript error message in the shared-memory segment in case
     // writing to the shared-memory segment later fails (which it shouldn't)
-    writeToSharedMemorySegment(shm_segment_id, "Internal wrench-daemon error: ");
+    writeStringToSharedMemorySegment(shm_segment_id, "Internal wrench-daemon error: ");
 
     // Create a child process
     auto child_pid = fork();
@@ -164,7 +182,8 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         int fd[2];
         if (pipe(fd) == -1) {
             perror("pipe()");
-            writeToSharedMemorySegment(shm_segment_id, "Internal wrench-daemon error: pipe(): " + std::string(strerror(errno)));
+            writeStringToSharedMemorySegment(shm_segment_id,
+                                             "Internal wrench-daemon error: pipe(): " + std::string(strerror(errno)));
             exit(1);
         }
 
@@ -175,7 +194,8 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         // to reap children would get in the way of what we need to do in the code hereafter.
         auto grand_child_pid = fork();
         if (grand_child_pid == -1) {
-            writeToSharedMemorySegment(shm_segment_id, "Internal wrench-daemon error: fork(): " + std::string(strerror(errno)));
+            writeStringToSharedMemorySegment(shm_segment_id,
+                                             "Internal wrench-daemon error: fork(): " + std::string(strerror(errno)));
             exit(1);
         }
 
@@ -219,7 +239,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
             if (simulation_launcher->launchError()) {
                 simulation_thread.join(); // THIS IS NECESSARY, otherwise the exit silently segfaults!
                 // Put the error message in shared memory segment
-                writeToSharedMemorySegment(shm_segment_id, simulation_launcher->launchErrorMessage());
+                writeStringToSharedMemorySegment(shm_segment_id, simulation_launcher->launchErrorMessage());
 
                 // Write success status to the parent
                 bool success = false;
@@ -236,9 +256,11 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
             bool success = true;
             if (write(fd[1], &success, sizeof(bool)) == -1) {
                 perror("write()");
-                writeToSharedMemorySegment(shm_segment_id, "Internal wrench-daemon error: write(): " + std::string(strerror(errno)));
+                writeStringToSharedMemorySegment(shm_segment_id, "Internal wrench-daemon error: write(): " +
+                                                                 std::string(strerror(errno)));
                 exit(1);
             }
+
             // Close the write-end of the pipe
             close(fd[1]);
 
@@ -259,12 +281,12 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
             // Wait to hear from the child via the pipe
             bool success;
             if (read(fd[0], &success, sizeof(bool)) == -1) {
-                // child failure
+                // child failure due to broken pipe
                 success = false;
             }
 
-            // If success exit(zero) otherwise exit(non-zero)
-            exit(not success);
+            // If success exit(0) otherwise exit(1)
+            exit(success ? 0 : 1);
         }
     }
 
@@ -281,12 +303,8 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
     if (WEXITSTATUS(stat_loc) == 0) {
         setSuccessAnswer(res, simulation_port_number);
     } else {
-        // Grab the error message from the shared memory segment
-        char *shm_segment = (char *)shmat(shm_segment_id, nullptr, 0);
-        setFailureAnswer(res, std::string(shm_segment));
-        if (shmdt(shm_segment) == -1) {
-            perror("WARNING: shmdt()");
-        }
+        // Grab the error message from the shared memory segment and set up the failure answer
+        setFailureAnswer(res, readStringFromSharedMemorySegment(shm_segment_id));
     }
 
     // Destroy the shared memory segment (important, since there is a limited
