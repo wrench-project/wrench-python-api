@@ -70,14 +70,38 @@ bool WRENCHDaemon::isPortTaken(int port) {
  ***********************/
 
 /**
+ * @brief Helper method to set up a "success" HTTP answer
+ * @param res the response object to update
+ * @param port_number the port_number on which simulation client will need to connect
+ */
+void setSuccessAnswer(Response& res, int port_number) {
+    json answer;
+    answer["success"] = true;
+    answer["port_number"] = port_number;
+    res.set_header("access-control-allow-origin", "*");
+    res.set_content(answer.dump(), "application/json");
+}
+
+/**
+ * @brief Helper method to set up a "failure" HTTP answer
+ * @param res res the response object to update
+ * @param failure_cause a human-readable error message
+ */
+void setFailureAnswer(Response& res, std::string failure_cause) {
+    json answer;
+    answer["success"] = false;
+    answer["failure_cause"] = failure_cause;
+    res.set_header("access-control-allow-origin", "*");
+    res.set_content(answer.dump(), "application/json");
+}
+
+
+/**
  * @brief Method to handle /api/startSimulation path
  * @param req HTTP request
  * @param res answer
  */
 void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
-
-    /** This method has quite a bit of code duplication for error catching-handling,
-     ** which is not great and should be fixed at some point **/
 
     // Print some logging
     unsigned long max_line_length = 120;
@@ -91,11 +115,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
     try {
         body = json::parse(req.body);
     } catch (std::exception &e) {
-        json answer;
-        answer["success"] = false;
-        answer["failure_cause"] = std::string("Internal error: malformed json in request");
-        res.set_header("access-control-allow-origin", "*");
-        res.set_content(answer.dump(), "application/json");
+        setFailureAnswer(res,"Internal error: malformed json in request");
         return;
     }
 
@@ -109,11 +129,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
     auto shm_segment_id = shmget(IPC_PRIVATE, 4096, IPC_CREAT | SHM_R | SHM_W);
     if (shm_segment_id == -1) {
         perror("shmget()");
-        json answer;
-        answer["success"] = false;
-        answer["failure_cause"] = std::string("Internal wrench-daemon error: shmget(): " + std::string(strerror(errno)));
-        res.set_header("access-control-allow-origin", "*");
-        res.set_content(answer.dump(), "application/json");
+        setFailureAnswer(res, "Internal wrench-daemon error: shmget(): " + std::string(strerror(errno)));
         return;
     }
 
@@ -121,11 +137,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
     auto child_pid = fork();
     if (child_pid == -1) {
         perror("fork()");
-        json answer;
-        answer["success"] = false;
-        answer["failure_cause"] = std::string("Internal wrench-daemon error: fork(): " + std::string(strerror(errno)));
-        res.set_header("access-control-allow-origin", "*");
-        res.set_content(answer.dump(), "application/json");
+        setFailureAnswer(res, "Internal wrench-daemon error: fork(): " + std::string(strerror(errno)));
         return;
     }
 
@@ -255,25 +267,18 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
     int stat_loc;
     if (waitpid(child_pid, &stat_loc, 0) == -1) {
         perror("waitpid()");
-        json answer;
-        answer["success"] = false;
-        answer["failure_cause"] = std::string("Internal wrench-daemon error: waitpid(): " + std::string(strerror(errno)));
-        res.set_header("access-control-allow-origin", "*");
-        res.set_content(answer.dump(), "application/json");
+        setFailureAnswer(res, "Internal wrench-daemon error: waitpid(): " + std::string(strerror(errno)));
         return;
     }
 
     // Create json answer that will inform the client of success or failure, based on
     // child's exit code (which was relayed to this process from the grand-child
-    json answer;
     if (WEXITSTATUS(stat_loc) == 0) {
-        answer["success"] = true;
-        answer["port_number"] = simulation_port_number;
+        setSuccessAnswer(res, simulation_port_number);
     } else {
-        answer["success"] = false;
         // Grab the error message from the shared memory segment
         char *shm_segment_top = (char *)shmat(shm_segment_id, nullptr, 0);
-        answer["failure_cause"] = std::string(shm_segment_top);
+        setFailureAnswer(res, std::string(shm_segment_top));
         if (shmdt(shm_segment_top) == -1) {
             perror("WARNING: shmdt()");
         }
@@ -285,9 +290,8 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         perror("WARNING: shmctl()");
     }
 
-    // Prepare the response to the client
-    res.set_header("access-control-allow-origin", "*");
-    res.set_content(answer.dump(), "application/json");
+    // At this point, the answer has been set
+    return;
 }
 
 /**
