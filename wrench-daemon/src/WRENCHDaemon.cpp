@@ -65,12 +65,8 @@ bool WRENCHDaemon::isPortTaken(int port) {
     }
 }
 
-/***********************
- ** ALL PATH HANDLERS **
- ***********************/
-
 /**
- * @brief Helper method to set up a "success" HTTP answer
+ * @brief Helper function to set up a "success" HTTP answer
  * @param res the response object to update
  * @param port_number the port_number on which simulation client will need to connect
  */
@@ -83,11 +79,11 @@ void setSuccessAnswer(Response& res, int port_number) {
 }
 
 /**
- * @brief Helper method to set up a "failure" HTTP answer
+ * @brief Helper function to set up a "failure" HTTP answer
  * @param res res the response object to update
  * @param failure_cause a human-readable error message
  */
-void setFailureAnswer(Response& res, std::string failure_cause) {
+void setFailureAnswer(Response& res, const std::string& failure_cause) {
     json answer;
     answer["success"] = false;
     answer["failure_cause"] = failure_cause;
@@ -95,6 +91,21 @@ void setFailureAnswer(Response& res, std::string failure_cause) {
     res.set_content(answer.dump(), "application/json");
 }
 
+/**
+ * @brief Help function to write a string to a shared-memory segment
+ * @param shm_segment_id shared-memory segment ID
+ * @param content string to write
+ */
+void writeToSharedMemorySegment(int shm_segment_id, const std::string& content) {
+    char *shm_segment = (char *)shmat(shm_segment_id, nullptr, 0);
+    if ((long)shm_segment == -1) {
+        perror("WARNING: shmat(): ");
+    }
+    strcpy(shm_segment, content.c_str());
+    if (shmdt(shm_segment) == -1) {
+        perror("WARNING: shmdt()");
+    }
+}
 
 /**
  * @brief Method to handle /api/startSimulation path
@@ -133,6 +144,10 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         return;
     }
 
+    // Write a non-descript error message in the shared-memory segment in case
+    // writing to the shared-memory segment later fails (which it shouldn't)
+    writeToSharedMemorySegment(shm_segment_id, "Internal wrench-daemon error: ");
+
     // Create a child process
     auto child_pid = fork();
     if (child_pid == -1) {
@@ -149,9 +164,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         int fd[2];
         if (pipe(fd) == -1) {
             perror("pipe()");
-            char *shm_segment = (char *)shmat(shm_segment_id, nullptr, 0);
-            strcpy(shm_segment, "Internal wrench-daemon error: pipe(): ");
-            strcat(shm_segment, strerror(errno));
+            writeToSharedMemorySegment(shm_segment_id, "Internal wrench-daemon error: pipe(): " + std::string(strerror(errno)));
             exit(1);
         }
 
@@ -162,9 +175,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         // to reap children would get in the way of what we need to do in the code hereafter.
         auto grand_child_pid = fork();
         if (grand_child_pid == -1) {
-            char *shm_segment = (char *)shmat(shm_segment_id, nullptr, 0);
-            strcpy(shm_segment, "Internal wrench-daemon error: shmat(): ");
-            strcat(shm_segment, strerror(errno));
+            writeToSharedMemorySegment(shm_segment_id, "Internal wrench-daemon error: fork(): " + std::string(strerror(errno)));
             exit(1);
         }
 
@@ -204,17 +215,13 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
             }
 
             // If there was a simulation launch error, then put the error message in the
-            // shared memory segment before exiting
+            // shared memory segment and exit
             if (simulation_launcher->launchError()) {
                 simulation_thread.join(); // THIS IS NECESSARY, otherwise the exit silently segfaults!
-                // Put the error message in shared memory
-                char *shm_segment = (char *)shmat(shm_segment_id, nullptr, 0);
-                const char *to_copy = strdup(simulation_launcher->launchErrorMessage().c_str());
-                strcpy(shm_segment, to_copy);
-                if (shmdt(shm_segment) == -1) {
-                    perror("WARNING: shmdt()"); // just a warning, since we're already in error mode anyway
-                }
-                // Write to the parent
+                // Put the error message in shared memory segment
+                writeToSharedMemorySegment(shm_segment_id, simulation_launcher->launchErrorMessage());
+
+                // Write success status to the parent
                 bool success = false;
                 if (write(fd[1], &success, sizeof(bool)) == -1) {
                     perror("WARNING: write()"); // just a warning, since we're already in error mode anyway
@@ -229,9 +236,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
             bool success = true;
             if (write(fd[1], &success, sizeof(bool)) == -1) {
                 perror("write()");
-                char *shm_segment = (char *)shmat(shm_segment_id, nullptr, 0);
-                strcpy(shm_segment, "Internal wrench-daemon error: write(): ");
-                strcat(shm_segment, strerror(errno));
+                writeToSharedMemorySegment(shm_segment_id, "Internal wrench-daemon error: write(): " + std::string(strerror(errno)));
                 exit(1);
             }
             // Close the write-end of the pipe
@@ -244,7 +249,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
 
             // Start the HTTP server for this particular simulation
             simulation_daemon->run(); // never returns
-            exit(0); // is never executed
+            exit(0); // never executed
 
         } else {
 
@@ -277,9 +282,9 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         setSuccessAnswer(res, simulation_port_number);
     } else {
         // Grab the error message from the shared memory segment
-        char *shm_segment_top = (char *)shmat(shm_segment_id, nullptr, 0);
-        setFailureAnswer(res, std::string(shm_segment_top));
-        if (shmdt(shm_segment_top) == -1) {
+        char *shm_segment = (char *)shmat(shm_segment_id, nullptr, 0);
+        setFailureAnswer(res, std::string(shm_segment));
+        if (shmdt(shm_segment) == -1) {
             perror("WARNING: shmdt()");
         }
     }
