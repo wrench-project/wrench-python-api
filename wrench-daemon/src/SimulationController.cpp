@@ -81,20 +81,16 @@ namespace wrench {
             if (time_to_sleep > 0.0) {
                 WRENCH_INFO("Sleeping %.2lf seconds", time_to_sleep);
                 S4U_Simulation::sleep(time_to_sleep);
-                WRENCH_INFO("DONE SLEEPING");
                 while (auto event = this->waitForNextEvent(10*JOB_MANAGER_COMMUNICATION_TIMEOUT_VALUE)) {
                     // Add job onto the event queue
-                    WRENCH_INFO("STUFF");
                     event_queue.push(std::make_pair(Simulation::getCurrentSimulatedDate(), event));
                 }
-                WRENCH_INFO("HERE");
             }
 
             // Sleep since no matter what we're in locked step with client time and don't want
             // to burn CPU cycles like crazy. Could probably sleep 1s...
             usleep(sleep_us);
         }
-        WRENCH_INFO("DONE!");
         return 0;
     }
 

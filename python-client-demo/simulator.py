@@ -25,64 +25,43 @@ if __name__ == "__main__":
         simulation.sleep(10)
         print("Time now is " + str(simulation.get_simulated_time()))
 
-        print("Sleeping for 10 seconds...")
-        simulation.sleep(10)
+        print("Creating a standard job with a single 100.0 flop task")
+        job = simulation.create_standard_job("some_task", 100.0, 1, 1)
+        
+        print("Created standard job has name " + job.get_name())
+       
+        print("Submitting the standard job to the compute service...")
+        cs.submit_standard_job(job)
+        print("Job submitted!")
+
+        print("Sleeping for 1000 seconds...")
+        simulation.sleep(1000)
+        
         print("Time now is " + str(simulation.get_simulated_time()))
-
-        print("Sleeping for 10 seconds...")
-        simulation.sleep(10)
-        print("Time now is " + str(simulation.get_simulated_time()))
-
-        print("Sleeping for 10 seconds...")
-        simulation.sleep(10)
-        print("Time now is " + str(simulation.get_simulated_time()))
-
-        print("Sleeping for 10 seconds...")
-        simulation.sleep(10)
-
-        print("Time now is " + str(simulation.get_simulated_time()))
-
-        print("Sleeping for 10 seconds...")
-        simulation.sleep(10)
-
-        print("Time now is " + str(simulation.get_simulated_time()))
-
-        # print("Creating a standard job with a single 100.0 flop task")
-        # job = simulation.create_standard_job("some_task", 100.0, 1, 1)
-        #
-        # print("Created standard job has name " + job.get_name())
-        #
-        # print("Submitting the standard job to the compute service...")
-        # cs.submit_standard_job(job)
-        # print("Job submitted!")
-
-        # print("Sleeping for 1000 seconds...")
-        # simulation.sleep(1000)
-        #
-        # print("Time now is " + str(simulation.get_simulated_time()))
-        #
-        # print("Getting simulation events that have occurred while I slept...")
-        # events = simulation.get_simulation_events()
-        # for event in events:
-        #     print("  - Event: " + str(event))
-        #
-        # import os
-        # import sys
-        # os.system("sleep " + sys.argv[1])
-        #
-        # print("Creating another standard job...")
-        # other_job = simulation.create_standard_job("some_other_task", 100.0, 1, 1)
-        # print("Created standard job has name " + other_job.get_name())
-        #
-        # print("Submitting the standard job to the compute service...")
-        # cs.submit_standard_job(other_job)
-        # print("Job submitted!")
-        #
-        # print("Synchronously waiting for the next simulation event...")
-        # event = simulation.wait_for_next_event()
-        # print("  - Event: " + str(event))
-        #
-        # print("Time is " + str(simulation.get_simulated_time()))
+        
+        print("Getting simulation events that have occurred while I slept...")
+        events = simulation.get_simulation_events()
+        for event in events:
+            print("  - Event: " + str(event))
+        
+        import os
+        import sys
+        print("Sleeping " + sys.argv[1] + " seconds in real time")
+        os.system("sleep " + sys.argv[1])
+        
+        print("Creating another standard job...")
+        other_job = simulation.create_standard_job("some_other_task", 100.0, 1, 1)
+        print("Created standard job has name " + other_job.get_name())
+        
+        print("Submitting the standard job to the compute service...")
+        cs.submit_standard_job(other_job)
+        print("Job submitted!")
+        
+        print("Synchronously waiting for the next simulation event...")
+        event = simulation.wait_for_next_event()
+        print("  - Event: " + str(event))
+        
+        print("Time is " + str(simulation.get_simulated_time()))
 
         print("Terminating simulation daemon")
         simulation.terminate()

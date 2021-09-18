@@ -45,11 +45,12 @@ class WRENCHSimulation:
 
     def __del__(self):
         """
-        Destructor
+        Destructor, which is necessary to avoid leaving dangling wrench-daemon processes running!
 
         :return:
         """
-        if hasattr(self, "terminated") and not self.terminated:
+
+        if (not hasattr(self, "terminated")) or (not self.terminated):
             self.terminate()
 
     def terminate(self):
