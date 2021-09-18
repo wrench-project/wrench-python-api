@@ -20,6 +20,7 @@ void SimulationDaemon::run() {
     server.Get("/api/alive", [this](const Request &req, Response &res) { alive(req, res); });
     server.Get("/api/getTime", [this](const Request &req, Response &res) { getTime(req, res); });
     server.Get("/api/getAllHostnames", [this](const Request &req, Response &res) { getAllHostnames(req, res); });
+    server.Post("/api/standardJobGetNumTasks", [this](const Request &req, Response &res) { standardJobGetNumTasks(req, res); });
     server.Get("/api/getSimulationEvents",
                [this](const Request &req, Response &res) { getSimulationEvents(req, res); });
     server.Get("/api/waitForNextSimulationEvent",
@@ -102,7 +103,7 @@ void SimulationDaemon::alive(const Request &req, Response &res) {
  ***********************/
 
 void SimulationDaemon::getTime(const Request &req, Response &res) {
-    this->displayRequest(req);
+    SimulationDaemon::displayRequest(req);
 
     // Retrieve simulated time from simulation thread
     auto time = simulation_controller->getSimulationTime();
@@ -125,6 +126,27 @@ void SimulationDaemon::getAllHostnames(const Request &req, Response &res) {
     json answer;
     answer["success"] = true;
     answer["hostnames"] = hostnames;
+
+    setJSONResponse(res, answer);
+}
+
+void SimulationDaemon::standardJobGetNumTasks(const Request &req, Response &res) {
+    SimulationDaemon::displayRequest(req);
+
+    std::cerr << req.body << "\n";
+    std::string job_name = json::parse(req.body)["job_name"];
+
+    json answer;
+    // Retrieve number of tasks from simulation thread
+    try {
+        int num_tasks = simulation_controller->getStandardJobNumTasks(job_name);
+        // Create json answer
+        answer["success"] = true;
+        answer["num_tasks"] = num_tasks;
+    } catch (std::runtime_error &e) {
+        answer["success"] = false;
+        answer["failure_cause"] = std::string(e.what());
+    }
 
     setJSONResponse(res, answer);
 }

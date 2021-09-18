@@ -47,8 +47,10 @@ private:
     void addService(const Request& req, Response& res);
     void submitStandardJob(const Request& req, Response& res);
     void createStandardJob(const Request& req, Response& res);
+    void standardJobGetNumTasks(const Request &req, Response &res);
 
-};
+
+    };
 
 
 #endif // SIMULATION_DAEMON_H

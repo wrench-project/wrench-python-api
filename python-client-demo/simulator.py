@@ -43,24 +43,26 @@ if __name__ == "__main__":
         events = simulation.get_simulation_events()
         for event in events:
             print("  - Event: " + str(event))
-        
+
         import os
         import sys
         print("Sleeping " + sys.argv[1] + " seconds in real time")
         os.system("sleep " + sys.argv[1])
-        
+
         print("Creating another standard job...")
         other_job = simulation.create_standard_job("some_other_task", 100.0, 1, 1)
         print("Created standard job has name " + other_job.get_name())
-        
+
         print("Submitting the standard job to the compute service...")
         cs.submit_standard_job(other_job)
         print("Job submitted!")
-        
+
         print("Synchronously waiting for the next simulation event...")
         event = simulation.wait_for_next_event()
         print("  - Event: " + str(event))
-        
+
+        print("That Job's number of tasks is " + str(event["job"].get_num_tasks()))
+
         print("Time is " + str(simulation.get_simulated_time()))
 
         print("Terminating simulation daemon")

@@ -43,6 +43,10 @@ class WRENCHSimulation:
         self.daemon_port = response["port_number"]
         self.daemon_url = "http://" + daemon_host + ":" + str(self.daemon_port) + "/api"
 
+        # Simulation Item Dictionaries
+        self.jobs = {}
+        self.compute_services = {}
+
     def __del__(self):
         """
         Destructor, which is necessary to avoid leaving dangling wrench-daemon processes running!
@@ -50,8 +54,12 @@ class WRENCHSimulation:
         :return:
         """
 
-        if (not hasattr(self, "terminated")) or (not self.terminated):
-            self.terminate()
+        try:
+            if (not hasattr(self, "terminated")) or (not self.terminated):
+                self.terminate()
+        except Exception:
+            # Ignore exceptions in here, since we're done anyway
+            pass
 
     def terminate(self):
         """
@@ -74,7 +82,7 @@ class WRENCHSimulation:
         """
         r = requests.get(self.daemon_url + "/waitForNextSimulationEvent")
         response = r.json()
-        return response["event"]
+        return self.__json_event_to_dict(response["event"])
 
     def submit_standard_job(self, job_name, cs_name):
         """
@@ -100,6 +108,7 @@ class WRENCHSimulation:
         """
         r = requests.get(self.daemon_url + "/getSimulationEvents")
         response = r.json()["events"]
+        response = [self.__json_event_to_dict(e) for e in response]
         return response
 
     def create_standard_job(self, task_name, task_flops, min_num_cores, max_num_cores):
@@ -118,7 +127,21 @@ class WRENCHSimulation:
 
         response = r.json()
         if response["success"]:
-            return StandardJob(self, response["job_id"])
+            self.jobs[response["job_id"]] = StandardJob(self, response["job_id"])
+            return self.jobs[response["job_id"]]
+        else:
+            raise WRENCHException(response["failure_cause"])
+
+    def standard_job_get_num_tasks(self, job_name):
+        """
+        Return the number of tasks in a standard job
+        """
+        data = {"job_name": job_name}
+        r = requests.post(self.daemon_url + "/standardJobGetNumTasks", data=json.dumps(data))
+
+        response = r.json()
+        if response["success"]:
+            return response["num_tasks"]
         else:
             raise WRENCHException(response["failure_cause"])
 
@@ -153,7 +176,9 @@ class WRENCHSimulation:
         response = r.json()
 
         if response["success"]:
-            return ComputeService(self, response["compute_service_name"])
+            compute_service_name = response["compute_service_name"]
+            self.compute_services[compute_service_name] = ComputeService(self, compute_service_name)
+            return self.compute_services[compute_service_name]
         else:
             raise WRENCHException(response["failure_cause"])
 
@@ -165,3 +190,21 @@ class WRENCHSimulation:
         r = requests.get(self.daemon_url + "/getAllHostnames")
         response = r.json()
         return response["hostnames"]
+
+    #
+    # Private methods
+    ###############################
+
+    def __json_event_to_dict(self, json_event):
+        event_dict = {}
+        if json_event["event_type"] == "job_completion":
+            event_dict["event_type"] = json_event["event_type"]
+            event_dict["compute_service"] = self.compute_services[json_event["compute_service_name"]]
+            event_dict["submit_date"] = json_event["submit_date"]
+            event_dict["end_date"] = json_event["end_date"]
+            event_dict["event_date"] = json_event["event_date"]
+            event_dict["job"] = self.jobs[json_event["job_name"]]
+        else:
+            raise WRENCHException("Unknown event type " + json_event["event_type"])
+
+        return event_dict

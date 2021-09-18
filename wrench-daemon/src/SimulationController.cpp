@@ -167,10 +167,6 @@ namespace wrench {
         std::shared_ptr<wrench::StandardJob> job;
         json event_desc = eventToJSON(event.first, event.second);
 
-        // Remove the job from the event registry (this may not be a good idea, will see what semantics
-        // we want the client API to show)
-        this->job_registry.remove(event_desc["job_name"]);
-
         return event_desc;
     }
 
@@ -220,6 +216,17 @@ namespace wrench {
         return Simulation::getHostnameList();
     }
 
+    /**
+     * @brief Retrieve job num tasks
+     * @return a number of tasks
+     */
+    unsigned long SimulationController::getStandardJobNumTasks(const std::string &job_name) {
+        std::shared_ptr<StandardJob> job;
+        if (not job_registry.lookup(job_name, job)) {
+            throw std::runtime_error("Unknown job '" + job_name + "'");
+        }
+        return job->getNumTasks();
+    }
 
     /**
     * @brief Create new BareMetalComputeService instance in response to a request

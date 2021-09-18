@@ -34,8 +34,10 @@ namespace wrench {
 
         std::string createStandardJob(json task_spec);
         void submitStandardJob(json submission_spec);
+        unsigned long getStandardJobNumTasks(const std::string &job_name);
 
-        double getSimulationTime();
+
+            double getSimulationTime();
         void advanceSimulationTime(double seconds);
 
         void getSimulationEvents(std::vector<json> &events);
