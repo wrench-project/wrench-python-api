@@ -202,7 +202,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
 
         if (!grand_child_pid) { // the grand-child
 
-            // close read end of the pipe
+            // close read-end of the pipe
             close(fd[0]);
 
             // Create the simulation launcher
@@ -307,7 +307,7 @@ void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
         }
 
         // Create json answer that will inform the client of success or failure, based on
-        // child's exit code (which was relayed to this process from the grand-child
+        // child's exit code (which was relayed to this process from the grand-child)
         if (WEXITSTATUS(stat_loc) == 0) {
             setSuccessAnswer(res, simulation_port_number);
         } else {

@@ -1,6 +1,9 @@
 import requests
 import json
+
+from pywrench.compute_service import ComputeService
 from pywrench.exception import WRENCHException
+from pywrench.standard_job import StandardJob
 
 
 class WRENCHSimulation:
@@ -114,7 +117,7 @@ class WRENCHSimulation:
 
         response = r.json()
         if response["success"]:
-            return response["job_id"]
+            return StandardJob(self, response["job_id"])
         else:
             raise WRENCHException(response["failure_cause"])
 
@@ -149,7 +152,7 @@ class WRENCHSimulation:
         response = r.json()
 
         if response["success"]:
-            return response["compute_service_name"]
+            return ComputeService(self, response["compute_service_name"])
         else:
             raise WRENCHException(response["failure_cause"])
 
