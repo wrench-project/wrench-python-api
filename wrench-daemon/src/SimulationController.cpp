@@ -29,16 +29,16 @@ namespace wrench {
                     "SimulationController"
             ), sleep_us(sleep_us) {
 
-        /* initialize the request handler map */
-        this->request_handlers["getTime"] = [this](json data) { return this->getSimulationTime(std::move(data));};
-        this->request_handlers["getAllHostnames"] = [this](json data) { return this->getAllHostnames(std::move(data));};
-        this->request_handlers["addService"] = [this](json data) { return this->addService(std::move(data));};
-        this->request_handlers["advanceTime"] = [this](json data) { return this->advanceTime(std::move(data));};
-        this->request_handlers["createStandardJob"] = [this](json data) { return this->createStandardJob(std::move(data));};
-        this->request_handlers["submitStandardJob"] = [this](json data) { return this->submitStandardJob(std::move(data));};
-        this->request_handlers["getSimulationEvents"] = [this](json data) { return this->getSimulationEvents(std::move(data));};
-        this->request_handlers["waitForNextSimulationEvent"] = [this](json data) { return this->waitForNextSimulationEvent(std::move(data));};
-        this->request_handlers["standardJobGetNumTasks"] = [this](json data) { return this->getStandardJobNumTasks(std::move(data));};
+//        /* initialize the request handler map */
+//        this->request_handlers["getTime"] = [this](json data) { return this->getSimulationTime(std::move(data));};
+//        this->request_handlers["getAllHostnames"] = [this](json data) { return this->getAllHostnames(std::move(data));};
+//        this->request_handlers["addService"] = [this](json data) { return this->addService(std::move(data));};
+//        this->request_handlers["advanceTime"] = [this](json data) { return this->advanceTime(std::move(data));};
+//        this->request_handlers["createStandardJob"] = [this](json data) { return this->createStandardJob(std::move(data));};
+//        this->request_handlers["submitStandardJob"] = [this](json data) { return this->submitStandardJob(std::move(data));};
+//        this->request_handlers["getSimulationEvents"] = [this](json data) { return this->getSimulationEvents(std::move(data));};
+//        this->request_handlers["waitForNextSimulationEvent"] = [this](json data) { return this->waitForNextSimulationEvent(std::move(data));};
+//        this->request_handlers["standardJobGetNumTasks"] = [this](json data) { return this->getStandardJobNumTasks(std::move(data));};
     }
 
     /**
@@ -314,22 +314,6 @@ namespace wrench {
         this->submissions_to_do.push(std::make_pair(job, cs));
         return {};
     }
-
-
-    /**
-     * @brief "Generic" method to process a request on behalf of the simulation daemon
-     * @param request_path the request's path
-     * @param data the request's data
-     * @return the answer to the request
-     */
-    json SimulationController::processRequest(const std::string& request_path, json data) {
-        std::string api_function = request_path.substr(std::string("/api/").length());
-        if (request_handlers.find(api_function) == request_handlers.end()) {
-            throw std::runtime_error("Unknown API function " + api_function);
-        }
-        return request_handlers[api_function](std::move(data));
-    }
-
 
 }
 

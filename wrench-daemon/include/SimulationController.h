@@ -26,10 +26,8 @@ namespace wrench {
 
     public:
         explicit SimulationController(const std::string &hostname, int sleep_us);
-        json processRequest(const std::string& request_path, json data);
         void stopSimulation();
 
-    private:
         json getSimulationTime(json data);
         json getAllHostnames(json data);
         json advanceTime(json data);
@@ -40,7 +38,7 @@ namespace wrench {
         json getStandardJobNumTasks(json data);
         json waitForNextSimulationEvent(json data);
 
-        std::map<std::string, std::function<json(json)>> request_handlers;
+    private:
 
         // Thread-safe key value stores
         KeyValueStore<std::shared_ptr<wrench::StandardJob>> job_registry;

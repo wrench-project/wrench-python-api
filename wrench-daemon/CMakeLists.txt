@@ -42,7 +42,8 @@ add_executable (wrench-daemon
         src/SimulationController.cpp
         include/BlockingQueue.h
         include/KeyValueStore.h
-        )
+        include/REST_API.h
+        include/REST_API.h)
 
 # Add pthreads
 set(THREADS_PREFER_PTHREAD_FLAG ON)

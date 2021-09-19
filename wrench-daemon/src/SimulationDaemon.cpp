@@ -8,6 +8,7 @@
 
 #include "SimulationController.h"
 #include "SimulationDaemon.h"
+#include "REST_API.h"
 
 using json = nlohmann::json;
 
@@ -17,30 +18,16 @@ using json = nlohmann::json;
 void SimulationDaemon::run() {
 
     // Set up GET request handler for the (likely useless) "alive" path
-    server.Get("/api/alive", [this](const Request &req, Response &res) { alive(req, res); });
+    this->server.Get("/api/alive", [this](const Request &req, Response &res) { alive(req, res); });
 
     // Set up POST request handler for terminating simulation
-    server.Post("/api/terminateSimulation",
+    this->server.Post("/api/terminateSimulation",
                 [this](const Request &req, Response &res) { terminateSimulation(req, res); });
 
     // Set up ALL POST request handlers for API calls
-
-    std::vector<std::string> api_paths = {
-            "getTime",
-            "getAllHostnames",
-            "addService",
-            "advanceTime",
-            "createStandardJob",
-            "submitStandardJob",
-            "getSimulationEvents",
-            "waitForNextSimulationEvent",
-            "standardJobGetNumTasks"
-    };
-
-    for (auto const &path : api_paths) {
-        server.Post(("/api/" + path).c_str(),
-                    [this](const Request &req, Response &res) { handleAPIRequest(req, res); });
-    }
+    REST_API rest_api(this->server,
+                      [this](const Request &req) { this->displayRequest(req); },
+                      this->simulation_controller);
 
     if (daemon_logging) {
         std::cerr << " PID " << getpid() << " listening on port " << simulation_port_number << "\n";
@@ -85,16 +72,6 @@ void SimulationDaemon::displayRequest(const Request &req) const {
     }
 }
 
-/**
- * @brief Helper method to reduce code duplication
- * @param res HTTP request
- * @param answer reply
- */
-void setJSONResponse(Response &res, json &answer) {
-    res.set_header("access-control-allow-origin", "*");
-    res.set_content(answer.dump(), "application/json");
-}
-
 void SimulationDaemon::alive(const Request &req, Response &res) {
     SimulationDaemon::displayRequest(req);
 
@@ -103,7 +80,8 @@ void SimulationDaemon::alive(const Request &req, Response &res) {
     answer["wrench_api_request_success"] = true;
     answer["alive"] = true;
 
-    setJSONResponse(res, answer);
+    res.set_header("access-control-allow-origin", "*");
+    res.set_content(answer.dump(), "application/json");
 }
 
 /***********************
@@ -121,26 +99,12 @@ void SimulationDaemon::terminateSimulation(const Request &req, Response &res) {
     json answer;
     answer["wrench_api_request_success"] = true;
 
-    setJSONResponse(res, answer);
+    res.set_header("access-control-allow-origin", "*");
+    res.set_content(answer.dump(), "application/json");
 
     server.stop();
     if (daemon_logging) {
         std::cerr << " PID " << getpid() << " terminated.\n";
     }
     exit(1);
-}
-
-
-void SimulationDaemon::handleAPIRequest(const Request &req, Response &res) {
-    this->displayRequest(req);
-
-    json answer;
-    try {
-        answer = simulation_controller->processRequest(req.path, json::parse(req.body));
-        answer["wrench_api_request_success"] = true;
-    } catch (std::exception &e) {
-        answer["wrench_api_request_success"] = false;
-        answer["failure_cause"] = e.what();
-    }
-    setJSONResponse(res, answer);
 }

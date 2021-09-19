@@ -39,7 +39,6 @@ private:
     void displayRequest(const Request &req) const;
     void terminateSimulation(const Request& req, Response& res);
     void alive(const Request& req, Response& res);
-    void handleAPIRequest(const Request& req, Response& res);
 
     };
 
