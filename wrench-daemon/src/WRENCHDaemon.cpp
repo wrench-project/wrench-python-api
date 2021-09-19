@@ -70,7 +70,7 @@ bool WRENCHDaemon::isPortTaken(int port) {
  */
 void setSuccessAnswer(Response& res, int port_number) {
     json answer;
-    answer["success"] = true;
+    answer["wrench_api_request_success"] = true;
     answer["port_number"] = port_number;
     res.set_header("access-control-allow-origin", "*");
     res.set_content(answer.dump(), "application/json");
@@ -83,7 +83,7 @@ void setSuccessAnswer(Response& res, int port_number) {
  */
 void setFailureAnswer(Response& res, const std::string& failure_cause) {
     json answer;
-    answer["success"] = false;
+    answer["wrench_api_request_success"] = false;
     answer["failure_cause"] = failure_cause;
     res.set_header("access-control-allow-origin", "*");
     res.set_content(answer.dump(), "application/json");

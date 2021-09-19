@@ -2,6 +2,7 @@
 
 #include <random>
 #include <iostream>
+#include <utility>
 #include <unistd.h>
 
 // The timeout use when the SimulationController receives a message
@@ -27,6 +28,18 @@ namespace wrench {
                     hostname,
                     "SimulationController"
             ), sleep_us(sleep_us) {
+
+        /* initialize the request handler map */
+        this->requestProcessingMethods["getTime"] = [this](json data) { return this->getSimulationTime(std::move(data));};
+        this->requestProcessingMethods["getAllHostnames"] = [this](json data) { return this->getAllHostnames(std::move(data));};
+        this->requestProcessingMethods["addService"] = [this](json data) { return this->addService(std::move(data));};
+        this->requestProcessingMethods["advanceTime"] = [this](json data) { return this->advanceTime(std::move(data));};
+        this->requestProcessingMethods["createStandardJob"] = [this](json data) { return this->createStandardJob(std::move(data));};
+        this->requestProcessingMethods["submitStandardJob"] = [this](json data) { return this->submitStandardJob(std::move(data));};
+        this->requestProcessingMethods["getSimulationEvents"] = [this](json data) { return this->getSimulationEvents(std::move(data));};
+        this->requestProcessingMethods["waitForNextSimulationEvent"] = [this](json data) { return this->waitForNextSimulationEvent(std::move(data));};
+        this->requestProcessingMethods["standardJobGetNumTasks"] = [this](json data) { return this->getStandardJobNumTasks(std::move(data));};
+
     }
 
     /**
@@ -105,20 +118,24 @@ namespace wrench {
      * @brief Advance the simulation time (a.k.a. sleep)
      * @param seconds number of seconds
      */
-    void SimulationController::advanceSimulationTime(double seconds) {
+    json SimulationController::advanceTime(json data) {
         // Simply set the time_horizon_to_reach variable so that
         // the Controller will catch up to that time
-        this->time_horizon_to_reach = Simulation::getCurrentSimulatedDate() + seconds;
+        double increment_in_seconds = data["increment"];
+        this->time_horizon_to_reach = Simulation::getCurrentSimulatedDate() + increment_in_seconds;
+        return {};
     }
 
     /**
      * @brief Retrieve the simulation time
      * @return date in seconds
      */
-    double SimulationController::getSimulationTime() {
+    json SimulationController::getSimulationTime(json data) {
         // This is not called by the simulation thread, but getting the
         // simulation time is fine as it doesn't change the state of the simulation
-        return Simulation::getCurrentSimulatedDate();
+        json answer;
+        answer["time"] = Simulation::getCurrentSimulatedDate();
+        return answer;
     }
 
 
@@ -155,7 +172,7 @@ namespace wrench {
      * @brief Wait for the next event
      * @return the event
      */
-    json SimulationController::waitForNextSimulationEvent() {
+    json SimulationController::waitForNextSimulationEvent(json data) {
 
         // Set the time horizon to -1, to signify the "wait for next event" to the controller
         time_horizon_to_reach = -1.0;
@@ -174,21 +191,24 @@ namespace wrench {
     /**
      * @brief Retrieve the set of events that have occurred since last time we checked
      *
-     * @param events A vector of events in which to put events
+     * @param data the json data
+     * @return the json output
      */
-    void SimulationController::getSimulationEvents(std::vector<json> &events) {
+    json SimulationController::getSimulationEvents(json data) {
 
         // Deal with all events
         std::pair<double, std::shared_ptr<wrench::WorkflowExecutionEvent>> event;
 
+        std::vector<json> json_events;
+
         while (this->event_queue.tryPop(event)) {
-            std::shared_ptr<wrench::StandardJob> job;
             json event_desc = eventToJSON(event.first, event.second);
-            events.push_back(event_desc);
-            // Remove the job from the event registry (this may not be a good idea, will see what semantics
-            // we want the client API to show)
-            this->job_registry.remove(event_desc["job_name"]);
+            json_events.push_back(event_desc);
         }
+
+        json answer;
+        answer["events"] = json_events;
+        return answer;
     }
 
 
@@ -197,7 +217,7 @@ namespace wrench {
      * @param service_spec: a json object
      * @return the created service's name
      */
-    std::string SimulationController::addService(json service_spec) {
+    json SimulationController::addService(json service_spec) {
         std::string service_type = service_spec["service_type"];
 
         if (service_type == "compute_baremetal") {
@@ -212,28 +232,34 @@ namespace wrench {
      * @brief Retrieve all hostnames
      * @return a vector of hostnames
      */
-    std::vector<std::string> SimulationController::getAllHostnames() {
-        return Simulation::getHostnameList();
+    json SimulationController::getAllHostnames(json data) {
+        std::vector<std::string> hostname_list = Simulation::getHostnameList();
+        json answer = {};
+        answer["hostnames"] = hostname_list;
+        return answer;
     }
 
     /**
      * @brief Retrieve job num tasks
      * @return a number of tasks
      */
-    unsigned long SimulationController::getStandardJobNumTasks(const std::string &job_name) {
+    json SimulationController::getStandardJobNumTasks(json data) {
         std::shared_ptr<StandardJob> job;
+        std::string job_name = data["job_name"];
         if (not job_registry.lookup(job_name, job)) {
             throw std::runtime_error("Unknown job '" + job_name + "'");
         }
-        return job->getNumTasks();
+        json answer;
+        answer["num_tasks"] = job->getNumTasks();
+        return answer;
     }
 
     /**
     * @brief Create new BareMetalComputeService instance in response to a request
     * @param service_spec: a json object
-    * @return the created service's name
+    * @return the json response
     */
-    std::string SimulationController::addNewBareMetalComputeService(json service_spec) {
+    json SimulationController::addNewBareMetalComputeService(json service_spec) {
         std::string head_host = service_spec["head_host"];
 
         // Create the new service
@@ -243,16 +269,17 @@ namespace wrench {
         // SimGrid simulation methods, e.g., to start a service)
         this->compute_services_to_start.push(new_service);
 
-        // Return the service's name
-        return new_service->getName();
+        // Return the expected answer
+        json answer;
+        answer["service_name"] = new_service->getName();
+        return answer;
     }
-
 
     /**
      * @brief Create a new job
      * @return a job name
      */
-    std::string SimulationController::createStandardJob(json task_spec) {
+    json SimulationController::createStandardJob(json task_spec) {
         auto task = this->getWorkflow()->addTask(task_spec["task_name"],
                                                  task_spec["task_flops"],
                                                  task_spec["min_num_cores"],
@@ -260,18 +287,20 @@ namespace wrench {
                                                  0.0);
         auto job = this->job_manager->createStandardJob(task, {});
         this->job_registry.insert(job->getName(), job);
-        return job->getName();
+        json answer;
+        answer["job_name"] = job->getName();
+        return answer;
     }
 
     /**
      * @brief Submit a standard job
      *
-     * @param submission_spec Job submission specification
+     * @param data Job submission specification
      */
-    void SimulationController::submitStandardJob(json submission_spec) {
+    json SimulationController::submitStandardJob(json data) {
 
-        std::string job_name = submission_spec["job_name"];
-        std::string cs_name = submission_spec["compute_service_name"];
+        std::string job_name = data["job_name"];
+        std::string cs_name = data["compute_service_name"];
 
         std::shared_ptr<StandardJob> job;
         if (not this->job_registry.lookup(job_name, job)) {
@@ -284,7 +313,24 @@ namespace wrench {
         }
 
         this->submissions_to_do.push(std::make_pair(job, cs));
+        return {};
     }
+
+
+    /**
+     * @brief "Generic" method to process a request on behalf of the simulation daemon
+     * @param request_path the request's path
+     * @param data the request's data
+     * @return the answer to the request
+     */
+    json SimulationController::processRequest(const std::string& request_path, json data) {
+        std::string api_function = request_path.substr(std::string("/api/").length());
+        if (requestProcessingMethods.find(api_function) == requestProcessingMethods.end()) {
+            throw std::runtime_error("Unknown API function " + api_function);
+        }
+        return requestProcessingMethods[api_function](std::move(data));
+    }
+
 
 }
 

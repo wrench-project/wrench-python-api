@@ -25,27 +25,22 @@ namespace wrench {
     class SimulationController : public WMS {
 
     public:
-
         explicit SimulationController(const std::string &hostname, int sleep_us);
-
-        std::vector<std::string> getAllHostnames();
-
-        std::string addService(json service_spec);
-
-        std::string createStandardJob(json task_spec);
-        void submitStandardJob(json submission_spec);
-        unsigned long getStandardJobNumTasks(const std::string &job_name);
-
-
-            double getSimulationTime();
-        void advanceSimulationTime(double seconds);
-
-        void getSimulationEvents(std::vector<json> &events);
-        json waitForNextSimulationEvent();
-
+        json processRequest(const std::string& request_path, json data);
         void stopSimulation();
 
     private:
+        json getSimulationTime(json data);
+        json getAllHostnames(json data);
+        json advanceTime(json data);
+        json addService(json service_spec);
+        json createStandardJob(json task_spec);
+        json getSimulationEvents(json);
+        json submitStandardJob(json data);
+        json getStandardJobNumTasks(json data);
+        json waitForNextSimulationEvent(json data);
+
+        std::map<std::string, std::function<json(json)>> requestProcessingMethods;
 
         // Thread-safe key value stores
         KeyValueStore<std::shared_ptr<wrench::StandardJob>> job_registry;
@@ -65,7 +60,7 @@ namespace wrench {
         unsigned int sleep_us;
 
         int main() override;
-        std::string addNewBareMetalComputeService(json service_spec);
+        json addNewBareMetalComputeService(json service_spec);
         static json eventToJSON(double date, const std::shared_ptr<wrench::WorkflowExecutionEvent>& event);
 
     };

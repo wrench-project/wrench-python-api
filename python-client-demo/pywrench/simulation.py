@@ -32,12 +32,12 @@ class WRENCHSimulation:
 
         spec = {"platform_xml": xml, "controller_hostname": controller_hostname}
         try:
-            r = requests.post(self.daemon_url + "/startSimulation", data=json.dumps(spec))
+            r = requests.post(self.daemon_url + "/startSimulation", json=spec)
         except Exception:
             raise WRENCHException("Cannot connect to WRENCH daemon. Perhaps it needs to be started?")
 
         response = r.json()
-        if not response["success"]:
+        if not response["wrench_api_request_success"]:
             self.terminated = True
             raise WRENCHException(response["failure_cause"])
         self.daemon_port = response["port_number"]
@@ -68,7 +68,7 @@ class WRENCHSimulation:
         :return:
         """
         try:
-            requests.post(self.daemon_url + "/terminateSimulation")
+            requests.post(self.daemon_url + "/terminateSimulation", json={})
         except requests.exceptions.ConnectionError:
             pass  # The server process was killed by me!
         self.terminated = True
@@ -80,9 +80,10 @@ class WRENCHSimulation:
 
         :return: A JSON object
         """
-        r = requests.get(self.daemon_url + "/waitForNextSimulationEvent")
+        r = requests.post(self.daemon_url + "/waitForNextSimulationEvent", json={})
+        print(r.text)
         response = r.json()
-        return self.__json_event_to_dict(response["event"])
+        return self.__json_event_to_dict(response)
 
     def submit_standard_job(self, job_name, cs_name):
         """
@@ -92,10 +93,10 @@ class WRENCHSimulation:
         :param cs_name: the name of the compute service
         :return:
         """
-        submission_spec = {"job_name": job_name, "compute_service_name": cs_name}
-        r = requests.post(self.daemon_url + "/submitStandardJob", data=json.dumps(submission_spec))
+        data = {"job_name": job_name, "compute_service_name": cs_name}
+        r = requests.post(self.daemon_url + "/submitStandardJob", json=data)
         response = r.json()
-        if response["success"]:
+        if response["wrench_api_request_success"]:
             return
         else:
             raise WRENCHException(response["failure_cause"])
@@ -106,7 +107,9 @@ class WRENCHSimulation:
 
         :return: A JSON object
         """
-        r = requests.get(self.daemon_url + "/getSimulationEvents")
+        r = requests.post(self.daemon_url + "/getSimulationEvents", json={})
+        print(r.text)
+        print(r.json())
         response = r.json()["events"]
         response = [self.__json_event_to_dict(e) for e in response]
         return response
@@ -121,14 +124,14 @@ class WRENCHSimulation:
         :param max_num_cores: task's maximum number of cores
         :return:
         """
-        task_spec = {"task_name": task_name, "task_flops": task_flops, "min_num_cores": min_num_cores,
+        data = {"task_name": task_name, "task_flops": task_flops, "min_num_cores": min_num_cores,
                      "max_num_cores": max_num_cores}
-        r = requests.post(self.daemon_url + "/createStandardJob", data=json.dumps(task_spec))
+        r = requests.post(self.daemon_url + "/createStandardJob", json=data)
 
         response = r.json()
-        if response["success"]:
-            self.jobs[response["job_id"]] = StandardJob(self, response["job_id"])
-            return self.jobs[response["job_id"]]
+        if response["wrench_api_request_success"]:
+            self.jobs[response["job_name"]] = StandardJob(self, response["job_name"])
+            return self.jobs[response["job_name"]]
         else:
             raise WRENCHException(response["failure_cause"])
 
@@ -137,10 +140,10 @@ class WRENCHSimulation:
         Return the number of tasks in a standard job
         """
         data = {"job_name": job_name}
-        r = requests.post(self.daemon_url + "/standardJobGetNumTasks", data=json.dumps(data))
+        r = requests.post(self.daemon_url + "/standardJobGetNumTasks", json=data)
 
         response = r.json()
-        if response["success"]:
+        if response["wrench_api_request_success"]:
             return response["num_tasks"]
         else:
             raise WRENCHException(response["failure_cause"])
@@ -151,8 +154,8 @@ class WRENCHSimulation:
         :param seconds: number of seconds
         :return:
         """
-        time_spec = {"increment": seconds}
-        requests.post(self.daemon_url + "/addTime", data=json.dumps(time_spec))
+        data = {"increment": seconds}
+        requests.post(self.daemon_url + "/advanceTime", json=data)
         return
 
     def get_simulated_time(self):
@@ -160,7 +163,7 @@ class WRENCHSimulation:
         Get the current simulation date
         :return: the simulation date
         """
-        r = requests.get(self.daemon_url + "/getTime")
+        r = requests.post(self.daemon_url + "/getTime", json={})
         response = r.json()
         return response["time"]
 
@@ -171,12 +174,12 @@ class WRENCHSimulation:
         :param hostname: name of the (simulated) host on which the compute service should run
         :return: the service name
         """
-        service_spec = {"service_type": "compute_baremetal", "head_host": hostname}
-        r = requests.post(self.daemon_url + "/addService", data=json.dumps(service_spec))
+        data = {"service_type": "compute_baremetal", "head_host": hostname}
+        r = requests.post(self.daemon_url + "/addService", json=data)
         response = r.json()
 
-        if response["success"]:
-            compute_service_name = response["compute_service_name"]
+        if response["wrench_api_request_success"]:
+            compute_service_name = response["service_name"]
             self.compute_services[compute_service_name] = ComputeService(self, compute_service_name)
             return self.compute_services[compute_service_name]
         else:
@@ -187,7 +190,7 @@ class WRENCHSimulation:
         Get the list of hostnames in the simulated platform
         :return: list of hostnames
         """
-        r = requests.get(self.daemon_url + "/getAllHostnames")
+        r = requests.post(self.daemon_url + "/getAllHostnames", json={})
         response = r.json()
         return response["hostnames"]
 

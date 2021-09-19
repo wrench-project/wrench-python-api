@@ -39,16 +39,7 @@ private:
     void displayRequest(const Request &req) const;
     void terminateSimulation(const Request& req, Response& res);
     void alive(const Request& req, Response& res);
-    void getTime(const Request& req, Response& res);
-    void getAllHostnames(const Request& req, Response& res);
-    void addTime(const Request& req, Response& res);
-    void getSimulationEvents(const Request& req, Response& res);
-    void waitForNextSimulationEvent(const Request &req, Response & res);
-    void addService(const Request& req, Response& res);
-    void submitStandardJob(const Request& req, Response& res);
-    void createStandardJob(const Request& req, Response& res);
-    void standardJobGetNumTasks(const Request &req, Response &res);
-
+    void handleAPIRequest(const Request& req, Response& res);
 
     };
 

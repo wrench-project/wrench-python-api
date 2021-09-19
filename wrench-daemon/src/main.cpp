@@ -31,9 +31,9 @@ int main(int argc, char **argv) {
     po::options_description desc("Allowed options");
     desc.add_options()
             ("help", "Show this help message")
-            ("enable-simulation-logging", po::bool_switch()->default_value(false),
+            ("simulation-logging", po::bool_switch()->default_value(false),
              "Show full simulation log during execution")
-            ("enable-daemon-logging", po::bool_switch()->default_value(false),
+            ("daemon-logging", po::bool_switch()->default_value(false),
              "Show full daemon log during execution")
             ("port", po::value<int>()->default_value(8101)->notifier(
                     in(1024, 49151, "port")),
@@ -60,8 +60,8 @@ int main(int argc, char **argv) {
     }
 
     // Create and run the WRENCH daemon
-    WRENCHDaemon daemon(vm["enable-simulation-logging"].as<bool>(),
-                        vm["enable-daemon-logging"].as<bool>(),
+    WRENCHDaemon daemon(vm["simulation-logging"].as<bool>(),
+                        vm["daemon-logging"].as<bool>(),
                         vm["port"].as<int>(),
                         vm["sleep-us"].as<int>());
 
