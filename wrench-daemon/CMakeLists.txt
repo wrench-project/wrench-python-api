@@ -13,6 +13,15 @@ set(CMAKE_BUILD_TYPE debug)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CmakeModules/")
 
+add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/REST_API.h
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_REST_API.py ${CMAKE_CURRENT_SOURCE_DIR}/include/REST_API.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/REST_API.h
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/REST_API.h.in
+        COMMENT "Generating REST API code"
+        VERBATIM
+)
+
 # Add needed packages
 find_package(SimGrid REQUIRED)
 find_package(Boost COMPONENTS program_options REQUIRED)
@@ -30,6 +39,7 @@ include_directories(src/ include/ ${Boost_INCLUDE_DIR} ${SimGrid_INCLUDE_DIR}/in
 
 # Add source to this project's executable.
 add_executable (wrench-daemon
+        include/httplib.h
         src/main.cpp
         src/WRENCHDaemon.cpp
         include/WRENCHDaemon.h
@@ -37,13 +47,12 @@ add_executable (wrench-daemon
         include/SimulationDaemon.h
         src/SimulationLauncher.cpp
         include/SimulationLauncher.h
-        include/httplib.h
         include/SimulationController.h
         src/SimulationController.cpp
         include/BlockingQueue.h
         include/KeyValueStore.h
         include/REST_API.h
-        include/REST_API.h)
+       )
 
 # Add pthreads
 set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -69,3 +78,4 @@ else()
             ${Boost_LIBRARIES}
             )
 endif()
+
