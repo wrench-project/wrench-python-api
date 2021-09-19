@@ -40,7 +40,7 @@ namespace wrench {
         json getStandardJobNumTasks(json data);
         json waitForNextSimulationEvent(json data);
 
-        std::map<std::string, std::function<json(json)>> requestProcessingMethods;
+        std::map<std::string, std::function<json(json)>> request_handlers;
 
         // Thread-safe key value stores
         KeyValueStore<std::shared_ptr<wrench::StandardJob>> job_registry;
