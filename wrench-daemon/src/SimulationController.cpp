@@ -39,7 +39,6 @@ namespace wrench {
         this->request_handlers["getSimulationEvents"] = [this](json data) { return this->getSimulationEvents(std::move(data));};
         this->request_handlers["waitForNextSimulationEvent"] = [this](json data) { return this->waitForNextSimulationEvent(std::move(data));};
         this->request_handlers["standardJobGetNumTasks"] = [this](json data) { return this->getStandardJobNumTasks(std::move(data));};
-
     }
 
     /**
