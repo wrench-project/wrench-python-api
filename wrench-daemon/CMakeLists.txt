@@ -20,7 +20,7 @@ add_custom_command(
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/REST_API.h.in
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/SimulationController.cpp
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/SimulationDaemon.cpp
-        COMMENT "Generating REST API code"
+        COMMENT "Generating REST API code and documentation"
         VERBATIM
 )
 
