@@ -120,39 +120,30 @@ def construct_json_specs(src_path):
 
 if __name__ == "__main__":
 
-    if len(sys.argv) <= 3:
-        sys.stderr.write("Usage: " + sys.argv[0] + " <.h.in path> <.h path> <src path> [<doc file path>]\n")
+    if len(sys.argv) < 3:
+        sys.stderr.write("Usage: " + sys.argv[0] + " <include path> <src path> [<doc file path>]\n")
         sys.exit(0)
 
-    # Grab all the JSON from the SimulationController.cpp comments
-    json_specs = construct_json_specs(sys.argv[3])
+    # Grab all the JSON from the .cpp comments
+    json_specs = construct_json_specs(sys.argv[2])
 
     generated_code = ""
     for spec in json_specs:
         if "controller_method" in spec:
             generated_code += """\trequest_handlers[\"""" + spec["REST_func"] + """\"] = [sc](json data) { return sc->""" + spec["controller_method"] + """(std::move(data)); };\n"""
 
-    # Read source code file
-    try:
-        source_code = open(sys.argv[1]).read()
-    except IOError:
-        sys.stderr.write("Can't read file " + sys.argv[1])
-        sys.exit(1)
-
-    # Insert generated code into source code
-    source_code = source_code.replace("REQUEST_HANDLER_SETUP", generated_code)
-
     # Write generated source code file
     try:
-        open(sys.argv[2], "w").write(source_code)
+        filename = sys.argv[1] + "/REST_API_generated_code.h"
+        open(filename, "w").write(generated_code)
     except IOError:
-        sys.stderr.write("Can't write file " + sys.argv[2])
+        sys.stderr.write("Can't write file " + filename)
         sys.exit(1)
 
     # Write doc file if needed
-    if len(sys.argv) == 5:
+    if len(sys.argv) == 4:
         try:
-            open(sys.argv[4], "w").write(generate_documentation(json_specs))
+            open(sys.argv[3], "w").write(generate_documentation(json_specs))
         except IOError:
             sys.stderr.write("Can't write file " + sys.argv[3])
             sys.exit(1)

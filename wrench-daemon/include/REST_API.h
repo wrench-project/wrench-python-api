@@ -12,17 +12,7 @@ public:
              display_request_function(std::move(display_request_function)) {
 
         // Set up all request handlers (automatically generated code!)
-	request_handlers["advanceTime"] = [sc](json data) { return sc->advanceTime(std::move(data)); };
-	request_handlers["getTime"] = [sc](json data) { return sc->getSimulationTime(std::move(data)); };
-	request_handlers["waitForNextSimulationEvent"] = [sc](json data) { return sc->waitForNextSimulationEvent(std::move(data)); };
-	request_handlers["getSimulationEvents"] = [sc](json data) { return sc->getSimulationEvents(std::move(data)); };
-	request_handlers["getAllHostnames"] = [sc](json data) { return sc->getAllHostnames(std::move(data)); };
-	request_handlers["standardJobGetTasks"] = [sc](json data) { return sc->getStandardJobTasks(std::move(data)); };
-	request_handlers["addBareMetalComputeService"] = [sc](json data) { return sc->addBareMetalComputeService(std::move(data)); };
-	request_handlers["createStandardJob"] = [sc](json data) { return sc->createStandardJob(std::move(data)); };
-	request_handlers["submitStandardJob"] = [sc](json data) { return sc->submitStandardJob(std::move(data)); };
-	request_handlers["createTask"] = [sc](json data) { return sc->createTask(std::move(data)); };
-
+#include "./REST_API_generated_code.h"
 
         // Set up all post request handlers
         for (auto const &spec : request_handlers) {
