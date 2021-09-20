@@ -4,6 +4,7 @@ import json
 from pywrench.compute_service import ComputeService
 from pywrench.exception import WRENCHException
 from pywrench.standard_job import StandardJob
+from pywrench.task import Task
 
 
 class WRENCHSimulation:
@@ -44,6 +45,7 @@ class WRENCHSimulation:
         self.daemon_url = "http://" + daemon_host + ":" + str(self.daemon_port) + "/api"
 
         # Simulation Item Dictionaries
+        self.tasks = {}
         self.jobs = {}
         self.compute_services = {}
 
@@ -114,18 +116,15 @@ class WRENCHSimulation:
         response = [self.__json_event_to_dict(e) for e in response]
         return response
 
-    def create_standard_job(self, task_name, task_flops, min_num_cores, max_num_cores):
+    def create_standard_job(self, tasks):
         """
         Create a one-task standard job
 
-        :param task_name: name of the task to create
-        :param task_flops: task's flops
-        :param min_num_cores: task's minimum number of cores
-        :param max_num_cores: task's maximum number of cores
-        :return:
+        :param tasks: list of tasks
+        :return: a job object
         """
-        data = {"task_name": task_name, "task_flops": task_flops, "min_num_cores": min_num_cores,
-                     "max_num_cores": max_num_cores}
+        task_names = [t.name for t in tasks]
+        data = {"tasks": task_names}
         r = requests.post(self.daemon_url + "/createStandardJob", json=data)
 
         response = r.json()
@@ -135,18 +134,40 @@ class WRENCHSimulation:
         else:
             raise WRENCHException(response["failure_cause"])
 
-    def standard_job_get_num_tasks(self, job_name):
+    def create_task(self, name, flops, min_num_cores, max_num_cores, memory):
         """
-        Return the number of tasks in a standard job
+        Create a one-task standard job
+
+        :param name: task name
+        :param flops: number of flops
+        :param min_num_cores: minimum number of cores
+        :param max_num_cores: maximum number of cores
+        :param memory: memory requirement in bytes
+        :return: a task object
+        """
+        data = {"name": name, "flops": flops, "min_num_cores": min_num_cores, "max_num_cores": max_num_cores, "memory": memory}
+        r = requests.post(self.daemon_url + "/createTask", json=data)
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            self.tasks[name] = Task(self, name)
+            return self.tasks[name]
+        else:
+            raise WRENCHException(response["failure_cause"])
+
+    def standard_job_get_tasks(self, job_name):
+        """
+        Get the number of tasks in a standard job
+        :param job_name: the job's name
+
+        :return: a list of task objects
         """
         data = {"job_name": job_name}
-        r = requests.post(self.daemon_url + "/standardJobGetNumTasks", json=data)
+        r = requests.post(self.daemon_url + "/standardJobGetTasks", json=data)
 
-        print(r.text)
         response = r.json()
-        print(response)
         if response["wrench_api_request_success"]:
-            return response["num_tasks"]
+            return [self.tasks[x] for x in response["tasks"]]
         else:
             raise WRENCHException(response["failure_cause"])
 
@@ -154,6 +175,7 @@ class WRENCHSimulation:
         """
         Sleep (in simulation) for a number of seconds
         :param seconds: number of seconds
+
         :return:
         """
         data = {"increment": seconds}
@@ -176,8 +198,8 @@ class WRENCHSimulation:
         :param hostname: name of the (simulated) host on which the compute service should run
         :return: the service name
         """
-        data = {"service_type": "compute_baremetal", "head_host": hostname}
-        r = requests.post(self.daemon_url + "/addService", json=data)
+        data = {"head_host": hostname}
+        r = requests.post(self.daemon_url + "/addBareMetalComputeService", json=data)
         response = r.json()
 
         if response["wrench_api_request_success"]:

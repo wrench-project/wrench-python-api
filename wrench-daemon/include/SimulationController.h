@@ -31,12 +31,13 @@ namespace wrench {
         json getSimulationTime(json data);
         json getAllHostnames(json data);
         json advanceTime(json data);
-        json addService(json service_spec);
-        json createStandardJob(json task_spec);
+        json createStandardJob(json data);
         json getSimulationEvents(json);
         json submitStandardJob(json data);
-        json getStandardJobNumTasks(json data);
+        json getStandardJobTasks(json data);
         json waitForNextSimulationEvent(json data);
+        json addBareMetalComputeService(json data);
+        json createTask(json data);
 
     private:
 
@@ -58,7 +59,6 @@ namespace wrench {
         unsigned int sleep_us;
 
         int main() override;
-        json addNewBareMetalComputeService(json service_spec);
         static json eventToJSON(double date, const std::shared_ptr<wrench::WorkflowExecutionEvent>& event);
 
     };

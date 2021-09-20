@@ -8,8 +8,8 @@ class StandardJob(SimulationItem):
     """
     WRENCH Standard Job class
     """
-    def get_num_tasks(self):
-        return self.simulation.standard_job_get_num_tasks(self.name)
+    def get_tasks(self):
+        return self.simulation.standard_job_get_tasks(self.name)
 
 
 

@@ -16,11 +16,12 @@ public:
 	request_handlers["getTime"] = [sc](json data) { return sc->getSimulationTime(std::move(data)); };
 	request_handlers["waitForNextSimulationEvent"] = [sc](json data) { return sc->waitForNextSimulationEvent(std::move(data)); };
 	request_handlers["getSimulationEvents"] = [sc](json data) { return sc->getSimulationEvents(std::move(data)); };
-	request_handlers["addService"] = [sc](json data) { return sc->addService(std::move(data)); };
 	request_handlers["getAllHostnames"] = [sc](json data) { return sc->getAllHostnames(std::move(data)); };
-	request_handlers["standardJobGetNumTasks"] = [sc](json data) { return sc->getStandardJobNumTasks(std::move(data)); };
+	request_handlers["standardJobGetTasks"] = [sc](json data) { return sc->getStandardJobTasks(std::move(data)); };
+	request_handlers["addBareMetalComputeService"] = [sc](json data) { return sc->addBareMetalComputeService(std::move(data)); };
 	request_handlers["createStandardJob"] = [sc](json data) { return sc->createStandardJob(std::move(data)); };
 	request_handlers["submitStandardJob"] = [sc](json data) { return sc->submitStandardJob(std::move(data)); };
+	request_handlers["createTask"] = [sc](json data) { return sc->createTask(std::move(data)); };
 
 
         // Set up all post request handlers

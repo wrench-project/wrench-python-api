@@ -105,7 +105,7 @@ namespace wrench {
 
     /**
      * @brief REST API Handler
-     * @param JSON input
+     * @param data JSON input
      * @return JSON output
      * BEGIN_REST_API_DOCUMENTATION
      * {
@@ -132,7 +132,7 @@ namespace wrench {
 
     /**
      * @brief REST API Handler
-     * @param JSON input
+     * @param data JSON input
      * @return JSON output
      * BEGIN_REST_API_DOCUMENTATION
      * {
@@ -190,7 +190,7 @@ namespace wrench {
 
     /**
      * @brief REST API Handler
-     * @param JSON input
+     * @param data JSON input
      * @return JSON output
      * BEGIN_REST_API_DOCUMENTATION
      * {
@@ -229,7 +229,7 @@ namespace wrench {
 
     /**
      * @brief REST API Handler
-     * @param JSON input
+     * @param data JSON input
      * @return JSON output
      * BEGIN_REST_API_DOCUMENTATION
      * {
@@ -266,38 +266,7 @@ namespace wrench {
 
     /**
      * @brief REST API Handler
-     * @param JSON input
-     * @return JSON output
-     * BEGIN_REST_API_DOCUMENTATION
-     * {
-     *   "REST_func": "addService",
-     *   "documentation":
-     *     {
-     *       "purpose": "Create a new service in the simulation and start it",
-     *       "json_input": {
-     *         "service_type": ["string", "The service type, one of: compute_baremetal"]
-     *       },
-     *       "json_output": {
-     *         "service_name": ["string", "The name of the new service"]
-     *       }
-     *     }
-     * }
-     * END_REST_API_DOCUMENTATION
-     */
-    json SimulationController::addService(json service_spec) {
-        std::string service_type = service_spec["service_type"];
-
-        if (service_type == "compute_baremetal") {
-            return this->addNewBareMetalComputeService(service_spec);
-        } else {
-            throw std::runtime_error("Unknown service type '" + service_type + "' - cannot create it");
-        }
-    }
-
-
-    /**
-     * @brief REST API Handler
-     * @param JSON input
+     * @param data JSON input
      * @return JSON output
      * BEGIN_REST_API_DOCUMENTATION
      * {
@@ -323,42 +292,61 @@ namespace wrench {
 
     /**
      * @brief REST API Handler
-     * @param JSON input
+     * @param data JSON input
      * @return JSON output
      * BEGIN_REST_API_DOCUMENTATION
      * {
-     *   "REST_func": "standardJobGetNumTasks",
+     *   "REST_func": "standardJobGetTasks",
      *   "documentation":
      *     {
-     *       "purpose": "Retrieve the number of tasks in a standard job",
+     *       "purpose": "Retrieve the tasks in a standard job",
      *       "json_input": {
      *         "job_name": ["string", "The job's name"]
      *       },
      *       "json_output": {
-     *         "num_tasks": ["int", "A number of tasks"]
+     *         "tasks": ["list<string>", "A list of task names"]
      *       }
      *     }
      * }
      * END_REST_API_DOCUMENTATION
      */
-    json SimulationController::getStandardJobNumTasks(json data) {
+    json SimulationController::getStandardJobTasks(json data) {
         std::shared_ptr<StandardJob> job;
         std::string job_name = data["job_name"];
         if (not job_registry.lookup(job_name, job)) {
             throw std::runtime_error("Unknown job '" + job_name + "'");
         }
         json answer;
-        answer["num_tasks"] = job->getNumTasks();
+        std::vector<std::string> task_names;
+        for (const auto &t : job->getTasks()) {
+            task_names.push_back(t->getID());
+        }
+        answer["tasks"] = task_names;
         return answer;
     }
 
     /**
-    * @brief Create new BareMetalComputeService instance in response to a request
-    * @param service_spec: a json object
-    * @return the json response
-    */
-    json SimulationController::addNewBareMetalComputeService(json service_spec) {
-        std::string head_host = service_spec["head_host"];
+     * @brief REST API Handler
+     * @param data JSON input
+     * @return JSON output
+     * BEGIN_REST_API_DOCUMENTATION
+     * {
+     *   "REST_func": "addBareMetalComputeService",
+     *   "documentation":
+     *     {
+     *       "purpose": "Create and start a bare-metal compute service",
+     *       "json_input": {
+     *         "head_host": ["string", "The service's head host"]
+     *       },
+     *       "json_output": {
+     *         "service_name": ["string", "The new service's name"]
+     *       }
+     *     }
+     * }
+     * END_REST_API_DOCUMENTATION
+     */
+    json SimulationController::addBareMetalComputeService(json data) {
+        std::string head_host = data["head_host"];
 
         // Create the new service
         auto new_service = new BareMetalComputeService(head_host, {head_host}, "", {}, {});
@@ -375,7 +363,7 @@ namespace wrench {
 
     /**
      * @brief REST API Handler
-     * @param JSON input
+     * @param data JSON input
      * @return JSON output
      * BEGIN_REST_API_DOCUMENTATION
      * {
@@ -384,10 +372,7 @@ namespace wrench {
      *     {
      *       "purpose": "Create a new standard job",
      *       "json_input": {
-     *         "task_name": ["string", "The job's only task's name"],
-     *         "task_flops": ["double", "The job's only task's flops"],
-     *         "min_num_cores": ["double", "The job's only task's minimum number of cores"],
-     *         "max_num_cores": ["double", "The job's only task's maximum number of cores"]
+     *         "tasks": ["list<string>", "List of task names"]
      *       },
      *       "json_output": {
      *         "job_name": ["string", "The new job's name"]
@@ -396,13 +381,15 @@ namespace wrench {
      * }
      * END_REST_API_DOCUMENTATION
      */
-    json SimulationController::createStandardJob(json task_spec) {
-        auto task = this->getWorkflow()->addTask(task_spec["task_name"],
-                                                 task_spec["task_flops"],
-                                                 task_spec["min_num_cores"],
-                                                 task_spec["max_num_cores"],
-                                                 0.0);
-        auto job = this->job_manager->createStandardJob(task, {});
+    json SimulationController::createStandardJob(json data) {
+
+        std::vector<WorkflowTask *> tasks;
+
+        for (auto const &name : data["tasks"]) {
+            tasks.push_back(this->getWorkflow()->getTaskByID(name));
+        }
+
+        auto job = this->job_manager->createStandardJob(tasks, {});
         this->job_registry.insert(job->getName(), job);
         json answer;
         answer["job_name"] = job->getName();
@@ -411,7 +398,7 @@ namespace wrench {
 
     /**
      * @brief REST API Handler
-     * @param JSON input
+     * @param data JSON input
      * @return JSON output
      * BEGIN_REST_API_DOCUMENTATION
      * {
@@ -446,6 +433,39 @@ namespace wrench {
 
         this->submissions_to_do.push(std::make_pair(job, cs));
         return {};
+    }
+
+    /**
+     * @brief REST API Handler
+     * @param data JSON input
+     * @return JSON output
+     * BEGIN_REST_API_DOCUMENTATION
+     * {
+     *   "REST_func": "createTask",
+     *   "documentation":
+     *     {
+     *       "purpose": "Create a new task",
+     *       "json_input": {
+     *         "name": ["string", "The task's name"],
+     *         "flops": ["double", "The task's flops"],
+     *         "min_num_cores": ["double", "The task's minimum number of cores"],
+     *         "max_num_cores": ["double", "The task's maximum number of cores"],
+     *         "memory": ["double", "The task's memory requirement"]
+     *       },
+     *       "json_output": {
+     *       }
+     *     }
+     * }
+     * END_REST_API_DOCUMENTATION
+     */
+    json SimulationController::createTask(json data) {
+
+        this->getWorkflow()->addTask(data["name"],
+                                     data["flops"],
+                                     data["min_num_cores"],
+                                     data["max_num_cores"],
+                                     data["memory"]);
+        return json({});
     }
 
 }

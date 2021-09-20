@@ -126,9 +126,26 @@ std::string readStringFromSharedMemorySegment(int shm_segment_id) {
 }
 
 /**
- * @brief Method to handle /api/startSimulation path
+ * @brief REST API Handler
  * @param req HTTP request
- * @param res answer
+ * @param res HTTP response
+ *
+ * BEGIN_REST_API_DOCUMENTATION
+ * {
+ *   "REST_func": "startSimulation",
+ *   "documentation":
+ *     {
+ *       "purpose": "Start a new simulation",
+ *       "json_input": {
+ *         "platform_xml": ["string", "XML description of the simulated platform (using the SimGrid DTD)"],
+ *         "controller_hostname": ["string", "Name of the host in the simulated platform that runs the simulation controller"]
+ *       },
+ *       "json_output": {
+ *         "port_number": ["int", "port number to which all subsequent HTTP Post requests should be sent"]
+ *       }
+ *     }
+ * }
+ * END_REST_API_DOCUMENTATION
  */
 void WRENCHDaemon::startSimulation(const Request& req, Response& res) {
 

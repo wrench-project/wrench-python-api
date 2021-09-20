@@ -26,8 +26,10 @@ if __name__ == "__main__":
         simulation.sleep(10)
         print("Time now is " + str(simulation.get_simulated_time()))
 
+        print("Creating a task")
+        task1 = simulation.create_task("task1", 100.0, 1, 1, 0)
         print("Creating a standard job with a single 100.0 flop task")
-        job = simulation.create_standard_job("some_task", 100.0, 1, 1)
+        job = simulation.create_standard_job([task1])
 
         print("Created standard job has name " + job.get_name())
 
@@ -50,8 +52,11 @@ if __name__ == "__main__":
         print("Sleeping " + sys.argv[1] + " seconds in real time")
         os.system("sleep " + sys.argv[1])
 
-        print("Creating another standard job...")
-        other_job = simulation.create_standard_job("some_other_task", 100.0, 1, 1)
+        print("Creating another task")
+        task2 = simulation.create_task("task2", 100.0, 1, 1, 0)
+
+        print("Creating another job...")
+        other_job = simulation.create_standard_job([task2])
         print("Created standard job has name " + other_job.get_name())
 
         print("Submitting the standard job to the compute service...")
@@ -62,7 +67,10 @@ if __name__ == "__main__":
         event = simulation.wait_for_next_event()
         print("  - Event: " + str(event))
 
-        print("That Job's number of tasks is " + str(event["job"].get_num_tasks()))
+        print("That Job's tasks are:")
+        tasks = event["job"].get_tasks()
+        for t in tasks:
+            print("  - " + t.get_name())
 
         print("Time is " + str(simulation.get_simulated_time()))
 

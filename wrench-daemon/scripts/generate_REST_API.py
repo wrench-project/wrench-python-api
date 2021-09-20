@@ -54,27 +54,39 @@ def generate_documentation(json_specs):
     return documentation
 
 
-def grab_json_comments(cpp_source_lines):
+def grab_json_comments(cpp_source_file):
+
+    try:
+        cpp_source_lines = open(cpp_source_file).readlines()
+    except IOError:
+        raise Exception("Can't read file " + cpp_source_file)
+
     all_specs = []
     phase = 0 # 0: haven't found BEGIN yet; 1: haven't found END yet; 2: haven't found Method yet
     spec_string = ""
+    line_number = 0
     for line in cpp_source_lines:
+        line_number += 1
         if line.find("BEGIN_REST_API_DOCUMENTATION") != -1:
             phase = 1
+            begin_line_number = line_number
         elif line.find("END_REST_API_DOCUMENTATION") != -1:
             phase = 2
+            end_line_number = line_number
         elif phase == 1:
             line = re.sub(".*\*", "", line.strip())
-            line = re.sub("\t+", " ", line)
-            line = re.sub(" +", " ", line)
             spec_string += line
         elif phase == 2:
             if line.find("::") != -1:
-                json_spec = json.loads(spec_string)
+                full_method_name = re.sub(".* ([a-zA-Z0-9]+)::([a-zA-Z0-9]+)\(.*", "\\1::\\2", line.strip())
+                method_name = re.sub(".*::", "", full_method_name)
+                try:
+                    json_spec = json.loads(spec_string)
+                except:
+                    raise Exception("Syntax error in JSON documentation of method " + full_method_name +
+                                    "() (lines " + str(begin_line_number) + "-" + str(end_line_number) + ")")
 
                 if line.find("SimulationController::") != -1:
-                    method_name = re.sub(".*SimulationController::", "", line.strip())
-                    method_name = re.sub("\(.*", "", method_name)
                     json_spec["controller_method"] = method_name
 
                 json_spec["wrench_api_request_success"] = ["bool", "True is success, false if failure"]
@@ -82,6 +94,11 @@ def grab_json_comments(cpp_source_lines):
                 all_specs.append(json_spec)
                 spec_string = ""
                 phase = 0
+
+    if phase == 1:
+        raise Exception(cpp_source_file + ": BEGIN_REST_API_DOCUMENTATION at line " + str(begin_line_number) + " has no matching END_REST_API_DOCUMENTATION")
+    elif phase == 2:
+        raise Exception(cpp_source_file + ": END_REST_API_DOCUMENTATION at line " + str(end_line_number) + " is not followed by a method definition")
 
     return all_specs
 
@@ -91,12 +108,12 @@ def construct_json_specs(src_path):
     import glob
     cpp_source_files = glob.glob(src_path+"/*.cpp", recursive=True)
     for cpp_source_file in cpp_source_files:
+
         try:
-            cpp_source_lines = open(cpp_source_file).readlines()
-        except IOError:
-            sys.stderr.write("Can't read file " + cpp_source_file)
+            specs += grab_json_comments(cpp_source_file)
+        except Exception as e:
+            sys.stderr.write("Error while processing file " + cpp_source_file + ": " + str(e) + "\n")
             sys.exit(1)
-        specs += grab_json_comments(cpp_source_lines)
 
     return specs
 
