@@ -56,8 +56,8 @@ def generate_documentation(json_specs):
 
 def grab_json_comments(cpp_source_lines):
     all_specs = []
-    phase = 0 # 0: haven't found BEGIN; 1: haven't found END; 2: haven't found Method
-    spec = ""
+    phase = 0 # 0: haven't found BEGIN yet; 1: haven't found END yet; 2: haven't found Method yet
+    spec_string = ""
     for line in cpp_source_lines:
         if line.find("BEGIN_REST_API_DOCUMENTATION") != -1:
             phase = 1
@@ -67,10 +67,10 @@ def grab_json_comments(cpp_source_lines):
             line = re.sub(".*\*", "", line.strip())
             line = re.sub("\t+", " ", line)
             line = re.sub(" +", " ", line)
-            spec += line
+            spec_string += line
         elif phase == 2:
             if line.find("::") != -1:
-                json_spec = json.loads(spec)
+                json_spec = json.loads(spec_string)
 
                 if line.find("SimulationController::") != -1:
                     method_name = re.sub(".*SimulationController::", "", line.strip())
@@ -80,7 +80,7 @@ def grab_json_comments(cpp_source_lines):
                 json_spec["wrench_api_request_success"] = ["bool", "True is success, false if failure"]
                 json_spec["failure_cause"] = ["string", "Human-readable failure cause message (if failure)"]
                 all_specs.append(json_spec)
-                spec = ""
+                spec_string = ""
                 phase = 0
 
     return all_specs
@@ -96,8 +96,8 @@ def construct_json_specs(src_path):
         except IOError:
             sys.stderr.write("Can't read file " + cpp_source_file)
             sys.exit(1)
-        for spec in grab_json_comments(cpp_source_lines):
-            specs.append(spec)
+        specs += grab_json_comments(cpp_source_lines)
+
     return specs
 
 
@@ -115,17 +115,17 @@ if __name__ == "__main__":
         if "controller_method" in spec:
             generated_code += """\trequest_handlers[\"""" + spec["REST_func"] + """\"] = [sc](json data) { return sc->""" + spec["controller_method"] + """(std::move(data)); };\n"""
 
-    # Read source code
+    # Read source code file
     try:
         source_code = open(sys.argv[1]).read()
     except IOError:
         sys.stderr.write("Can't read file " + sys.argv[1])
         sys.exit(1)
 
-    # replace
+    # Insert generated code into source code
     source_code = source_code.replace("REQUEST_HANDLER_SETUP", generated_code)
 
-    # Write generated source code
+    # Write generated source code file
     try:
         open(sys.argv[2], "w").write(source_code)
     except IOError:
