@@ -16,8 +16,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CmakeModules/")
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/REST_API.h
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_REST_API.py ${CMAKE_CURRENT_SOURCE_DIR}/include/REST_API.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/REST_API.h
+        COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_REST_API.py ${CMAKE_CURRENT_SOURCE_DIR}/include/REST_API.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/REST_API.h ${CMAKE_CURRENT_SOURCE_DIR}/src
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/REST_API.h.in
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/SimulationController.cpp
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/SimulationDaemon.cpp
         COMMENT "Generating REST API code"
         VERBATIM
 )

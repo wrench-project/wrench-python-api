@@ -82,7 +82,7 @@ class WRENCHSimulation:
         """
         r = requests.post(self.daemon_url + "/waitForNextSimulationEvent", json={})
         print(r.text)
-        response = r.json()
+        response = r.json()["event"]
         return self.__json_event_to_dict(response)
 
     def submit_standard_job(self, job_name, cs_name):
@@ -142,7 +142,9 @@ class WRENCHSimulation:
         data = {"job_name": job_name}
         r = requests.post(self.daemon_url + "/standardJobGetNumTasks", json=data)
 
+        print(r.text)
         response = r.json()
+        print(response)
         if response["wrench_api_request_success"]:
             return response["num_tasks"]
         else:

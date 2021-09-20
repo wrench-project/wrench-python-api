@@ -88,6 +88,25 @@ void SimulationDaemon::alive(const Request &req, Response &res) {
  ** ALL PATH HANDLERS **
  ***********************/
 
+/**
+ * @brief REST API Handler
+ * @param req HTTP request
+ * @param res HTTP response
+ *
+ * BEGIN_REST_API_DOCUMENTATION
+ * {
+ *   "REST_func": "terminateSimulation",
+ *   "documentation":
+ *     {
+ *       "purpose": "Terminate the simulation",
+ *       "json_input": {
+ *       },
+ *       "json_output": {
+ *       }
+ *     }
+ * }
+ * END_REST_API_DOCUMENTATION
+ */
 void SimulationDaemon::terminateSimulation(const Request &req, Response &res) {
     displayRequest(req);
 

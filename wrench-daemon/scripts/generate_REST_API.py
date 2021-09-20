@@ -1,125 +1,14 @@
 #!/usr/bin/env python3
 import sys
-
-REST_API_SPECIFICATION = [
-    {"func": "getTime",
-     "controller_method": "getSimulationTime",
-     "documentation":
-         {"purpose": "Retrieve the current simulated time",
-          "json_input": {
-          },
-          "json_output": {
-              "time": ["double", "simulation time in seconds (if success)"],
-          }
-          }
-     },
-    {"func": "getAllHostnames",
-     "controller_method": "getAllHostnames",
-     "documentation":
-         {"purpose": "Retrieve the names of all hosts in the simulated platform",
-          "json_input": {
-          },
-          "json_output": {
-              "hostnames": ["list<string>", "list of hostnames"],
-          }
-          }
-     },
-    {"func": "addService",
-     "controller_method": "addService",
-     "documentation": {
-         "purpose": "Add a new service to the simulation and start it",
-         "json_input": {
-            "service_type": ["string", "one of: compute_baremetal"],
-             "head_host": ["string", "name of the host on which the service will run"]
-         },
-         "json_output": {
-            "service_name": ["string", "name of the service"]
-         }
-     }
-     },
-    {"func": "advanceTime",
-     "controller_method": "advanceTime",
-     "documentation": {
-         "purpose": "Advance the simulated time",
-         "json_input": {
-             "increment": ["double", "time increment in seconds"]
-         },
-         "json_output": {
-
-         }
-     }
-     },
-    {"func": "createStandardJob",
-     "controller_method": "createStandardJob",
-     "documentation": {
-         "purpose": "Create a standard job",
-         "json_input": {
-             "task_name": ["string", "Name of the one task to create for this job"],
-             "task_flops": ["double", "Task's flops"],
-             "min_num_cores": ["double", "Minimum number of cores"],
-             "max_num_cores": ["double", "Maximum number of cores"],
-         },
-         "json_output": {
-             "job_name": ["string", "name of the job"]
-         }
-     }
-     },
-    {"func": "submitStandardJob",
-     "controller_method": "submitStandardJob",
-     "documentation": {
-         "purpose": "Submit a standard job to a compute service",
-         "json_input": {
-             "job_name": ["string", "Name of the job to submit"],
-             "compute_service_name": ["string", "Name of the compute service"],
-         },
-         "json_output": {
-         }
-     }
-     },
-    {"func": "getSimulationEvents",
-     "controller_method": "getSimulationEvents",
-     "documentation": {
-         "purpose": "Retrieve simulation events that occurred since last time I checked. Each event is a JSON object "
-                    "with a \"event_type\" name, whose value defines the rest of the object.",
-         "json_input": {
-         },
-         "json_output": {
-             "events": ["list<json object>", "List of events"],
-         }
-     }
-     },
-    {"func": "waitForNextSimulationEvent",
-     "controller_method": "waitForNextSimulationEvent",
-     "documentation": {
-         "purpose": "Wait for and retrieve the next simulation event",
-         "json_input": {
-         },
-         "json_output": {
-             "event_type": ["string", "Event type (which determines the rest of the keys/values)"],
-         }
-     }
-     },
-    {"func": "standardJobGetNumTasks",
-     "controller_method": "getStandardJobNumTasks",
-     "documentation": {
-         "purpose": "Retrieve the number of tasks in a job",
-         "json_input": {
-             "job_name": ["string", "Name of the job"]
-         },
-         "json_output": {
-             "num_tasks": ["int", "Number of tasks in the job"],
-         }
-     }
-     },
-
-]
+import re
+import json
 
 
 def generate_documentation_item(spec):
     documentation_string = "<hr>"
     documentation = spec["documentation"]
 
-    documentation_string += "<h2>/api/" + spec["func"] + "</h2>\n\n"
+    documentation_string += "<h2>/api/" + spec["REST_func"] + "</h2>\n\n"
 
     try:
         documentation_string += "<b>Purpose</b>: " + documentation["purpose"] + "<br><br>\n\n"
@@ -153,11 +42,11 @@ def generate_documentation_item(spec):
     return documentation_string
 
 
-def generate_documentation():
+def generate_documentation(json_specs):
 
     documentation = ""
 
-    for spec in REST_API_SPECIFICATION:
+    for spec in json_specs:
         documentation += generate_documentation_item(spec)
 
     documentation += "<hr>\n"
@@ -165,16 +54,66 @@ def generate_documentation():
     return documentation
 
 
+def grab_json_comments(cpp_source_lines):
+    all_specs = []
+    phase = 0 # 0: haven't found BEGIN; 1: haven't found END; 2: haven't found Method
+    spec = ""
+    for line in cpp_source_lines:
+        if line.find("BEGIN_REST_API_DOCUMENTATION") != -1:
+            phase = 1
+        elif line.find("END_REST_API_DOCUMENTATION") != -1:
+            phase = 2
+        elif phase == 1:
+            line = re.sub(".*\*", "", line.strip())
+            line = re.sub("\t+", " ", line)
+            line = re.sub(" +", " ", line)
+            spec += line
+        elif phase == 2:
+            if line.find("::") != -1:
+                json_spec = json.loads(spec)
+
+                if line.find("SimulationController::") != -1:
+                    method_name = re.sub(".*SimulationController::", "", line.strip())
+                    method_name = re.sub("\(.*", "", method_name)
+                    json_spec["controller_method"] = method_name
+
+                json_spec["wrench_api_request_success"] = ["bool", "True is success, false if failure"]
+                json_spec["failure_cause"] = ["string", "Human-readable failure cause message (if failure)"]
+                all_specs.append(json_spec)
+                spec = ""
+                phase = 0
+
+    return all_specs
+
+
+def construct_json_specs(src_path):
+    specs = []
+    import glob
+    cpp_source_files = glob.glob(src_path+"/*.cpp", recursive=True)
+    for cpp_source_file in cpp_source_files:
+        try:
+            cpp_source_lines = open(cpp_source_file).readlines()
+        except IOError:
+            sys.stderr.write("Can't read file " + cpp_source_file)
+            sys.exit(1)
+        for spec in grab_json_comments(cpp_source_lines):
+            specs.append(spec)
+    return specs
+
+
 if __name__ == "__main__":
 
     if len(sys.argv) <= 3:
-        sys.stderr.write("Usage: " + sys.argv[0] + " <.h.in path> <.h path> [<doc file path>]\n")
+        sys.stderr.write("Usage: " + sys.argv[0] + " <.h.in path> <.h path> <src path> [<doc file path>]\n")
         sys.exit(0)
 
+    # Grab all the JSON from the SimulationController.cpp comments
+    json_specs = construct_json_specs(sys.argv[3])
+
     generated_code = ""
-    for spec in REST_API_SPECIFICATION:
-        generated_code += """\trequest_handlers[\"""" + spec["func"] + """\"] = [sc](json data) { return sc->""" + \
-                          spec["controller_method"] + """(std::move(data)); };\n"""
+    for spec in json_specs:
+        if "controller_method" in spec:
+            generated_code += """\trequest_handlers[\"""" + spec["REST_func"] + """\"] = [sc](json data) { return sc->""" + spec["controller_method"] + """(std::move(data)); };\n"""
 
     # Read source code
     try:
@@ -194,9 +133,9 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Write doc file if needed
-    if len(sys.argv) == 4:
+    if len(sys.argv) == 5:
         try:
-            open(sys.argv[3], "w").write(generate_documentation())
+            open(sys.argv[4], "w").write(generate_documentation(json_specs))
         except IOError:
             sys.stderr.write("Can't write file " + sys.argv[3])
             sys.exit(1)

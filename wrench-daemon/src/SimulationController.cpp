@@ -104,8 +104,23 @@ namespace wrench {
     }
 
     /**
-     * @brief Advance the simulation time (a.k.a. sleep)
-     * @param seconds number of seconds
+     * @brief REST API Handler
+     * @param JSON input
+     * @return JSON output
+     * BEGIN_REST_API_DOCUMENTATION
+     * {
+     *   "REST_func": "advanceTime",
+     *   "documentation":
+     *     {
+     *       "purpose": "Advances current simulated time by some number of seconds",
+     *       "json_input": {
+     *         "increment": ["double", "increment in seconds"]
+     *       },
+     *       "json_output": {
+     *       }
+     *     }
+     * }
+     * END_REST_API_DOCUMENTATION
      */
     json SimulationController::advanceTime(json data) {
         // Simply set the time_horizon_to_reach variable so that
@@ -116,12 +131,28 @@ namespace wrench {
     }
 
     /**
-     * @brief Retrieve the simulation time
-     * @return date in seconds
+     * @brief REST API Handler
+     * @param JSON input
+     * @return JSON output
+     * BEGIN_REST_API_DOCUMENTATION
+     * {
+     *   "REST_func": "getTime",
+     *   "documentation":
+     *     {
+     *       "purpose": "Retrieve the current simulated time",
+     *       "json_input": {
+     *       },
+     *       "json_output": {
+     *         "time": ["double", "simulation time in seconds"]
+     *       }
+     *     }
+     * }
+     * END_REST_API_DOCUMENTATION
      */
     json SimulationController::getSimulationTime(json data) {
         // This is not called by the simulation thread, but getting the
         // simulation time is fine as it doesn't change the state of the simulation
+
         json answer;
         answer["time"] = Simulation::getCurrentSimulatedDate();
         return answer;
@@ -158,8 +189,23 @@ namespace wrench {
     }
 
     /**
-     * @brief Wait for the next event
-     * @return the event
+     * @brief REST API Handler
+     * @param JSON input
+     * @return JSON output
+     * BEGIN_REST_API_DOCUMENTATION
+     * {
+     *   "REST_func": "waitForNextSimulationEvent",
+     *   "documentation":
+     *     {
+     *       "purpose": "Retrieve the next simulation event",
+     *       "json_input": {
+     *       },
+     *       "json_output": {
+     *         "event": ["json", "JSON event description"]
+     *       }
+     *     }
+     * }
+     * END_REST_API_DOCUMENTATION
      */
     json SimulationController::waitForNextSimulationEvent(json data) {
 
@@ -173,15 +219,32 @@ namespace wrench {
         std::shared_ptr<wrench::StandardJob> job;
         json event_desc = eventToJSON(event.first, event.second);
 
-        return event_desc;
+        // Construct the json answer
+        json answer;
+        answer["event"] = event_desc;
+
+        return answer;
     }
 
 
     /**
-     * @brief Retrieve the set of events that have occurred since last time we checked
-     *
-     * @param data the json data
-     * @return the json output
+     * @brief REST API Handler
+     * @param JSON input
+     * @return JSON output
+     * BEGIN_REST_API_DOCUMENTATION
+     * {
+     *   "REST_func": "getSimulationEvents",
+     *   "documentation":
+     *     {
+     *       "purpose": "Retrieve all simulation events since last time we checked",
+     *       "json_input": {
+     *       },
+     *       "json_output": {
+     *         "events": ["list<json>", "List of JSON event descriptions"]
+     *       }
+     *     }
+     * }
+     * END_REST_API_DOCUMENTATION
      */
     json SimulationController::getSimulationEvents(json data) {
 
@@ -202,9 +265,24 @@ namespace wrench {
 
 
     /**
-     * @brief Create and start new service instance in response to a request
-     * @param service_spec: a json object
-     * @return the created service's name
+     * @brief REST API Handler
+     * @param JSON input
+     * @return JSON output
+     * BEGIN_REST_API_DOCUMENTATION
+     * {
+     *   "REST_func": "addService",
+     *   "documentation":
+     *     {
+     *       "purpose": "Create a new service in the simulation and start it",
+     *       "json_input": {
+     *         "service_type": ["string", "The service type, one of: compute_baremetal"]
+     *       },
+     *       "json_output": {
+     *         "service_name": ["string", "The name of the new service"]
+     *       }
+     *     }
+     * }
+     * END_REST_API_DOCUMENTATION
      */
     json SimulationController::addService(json service_spec) {
         std::string service_type = service_spec["service_type"];
@@ -218,8 +296,23 @@ namespace wrench {
 
 
     /**
-     * @brief Retrieve all hostnames
-     * @return a vector of hostnames
+     * @brief REST API Handler
+     * @param JSON input
+     * @return JSON output
+     * BEGIN_REST_API_DOCUMENTATION
+     * {
+     *   "REST_func": "getAllHostnames",
+     *   "documentation":
+     *     {
+     *       "purpose": "Retrieve the names of all hosts in the simulated platform",
+     *       "json_input": {
+     *       },
+     *       "json_output": {
+     *         "hostnames": ["list<string>", "List of host names"]
+     *       }
+     *     }
+     * }
+     * END_REST_API_DOCUMENTATION
      */
     json SimulationController::getAllHostnames(json data) {
         std::vector<std::string> hostname_list = Simulation::getHostnameList();
@@ -229,8 +322,24 @@ namespace wrench {
     }
 
     /**
-     * @brief Retrieve job num tasks
-     * @return a number of tasks
+     * @brief REST API Handler
+     * @param JSON input
+     * @return JSON output
+     * BEGIN_REST_API_DOCUMENTATION
+     * {
+     *   "REST_func": "standardJobGetNumTasks",
+     *   "documentation":
+     *     {
+     *       "purpose": "Retrieve the number of tasks in a standard job",
+     *       "json_input": {
+     *         "job_name": ["string", "The job's name"]
+     *       },
+     *       "json_output": {
+     *         "num_tasks": ["int", "A number of tasks"]
+     *       }
+     *     }
+     * }
+     * END_REST_API_DOCUMENTATION
      */
     json SimulationController::getStandardJobNumTasks(json data) {
         std::shared_ptr<StandardJob> job;
@@ -265,8 +374,27 @@ namespace wrench {
     }
 
     /**
-     * @brief Create a new job
-     * @return a job name
+     * @brief REST API Handler
+     * @param JSON input
+     * @return JSON output
+     * BEGIN_REST_API_DOCUMENTATION
+     * {
+     *   "REST_func": "createStandardJob",
+     *   "documentation":
+     *     {
+     *       "purpose": "Create a new standard job",
+     *       "json_input": {
+     *         "task_name": ["string", "The job's only task's name"],
+     *         "task_flops": ["double", "The job's only task's flops"],
+     *         "min_num_cores": ["double", "The job's only task's minimum number of cores"],
+     *         "max_num_cores": ["double", "The job's only task's maximum number of cores"]
+     *       },
+     *       "json_output": {
+     *         "job_name": ["string", "The new job's name"]
+     *       }
+     *     }
+     * }
+     * END_REST_API_DOCUMENTATION
      */
     json SimulationController::createStandardJob(json task_spec) {
         auto task = this->getWorkflow()->addTask(task_spec["task_name"],
@@ -282,9 +410,24 @@ namespace wrench {
     }
 
     /**
-     * @brief Submit a standard job
-     *
-     * @param data Job submission specification
+     * @brief REST API Handler
+     * @param JSON input
+     * @return JSON output
+     * BEGIN_REST_API_DOCUMENTATION
+     * {
+     *   "REST_func": "submitStandardJob",
+     *   "documentation":
+     *     {
+     *       "purpose": "Submit a standard job for execution to a compute service",
+     *       "json_input": {
+     *         "job_name": ["string", "The job's name"],
+     *         "compute_service_name": ["string", "The compute service's name"]
+     *       },
+     *       "json_output": {
+     *       }
+     *     }
+     * }
+     * END_REST_API_DOCUMENTATION
      */
     json SimulationController::submitStandardJob(json data) {
 
