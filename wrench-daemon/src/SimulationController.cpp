@@ -37,6 +37,7 @@ namespace wrench {
      * @return exit code
      */
     int SimulationController::main() {
+
         // Initial setup
         wrench::TerminalOutput::setThisProcessLoggingColor(TerminalOutput::COLOR_RED);
         WRENCH_INFO("Starting");

@@ -1,5 +1,6 @@
 import requests
 import json
+import atexit
 
 from pywrench.compute_service import ComputeService
 from pywrench.exception import WRENCHException
@@ -44,24 +45,14 @@ class WRENCHSimulation:
         self.daemon_port = response["port_number"]
         self.daemon_url = "http://" + daemon_host + ":" + str(self.daemon_port) + "/api"
 
+        # Setup atexit handler
+        atexit.register(self.terminate)
+        self.terminated = False
+
         # Simulation Item Dictionaries
         self.tasks = {}
         self.jobs = {}
         self.compute_services = {}
-
-    def __del__(self):
-        """
-        Destructor, which is necessary to avoid leaving dangling wrench-daemon processes running!
-
-        :return:
-        """
-
-        try:
-            if (not hasattr(self, "terminated")) or (not self.terminated):
-                self.terminate()
-        except Exception:
-            # Ignore exceptions in here, since we're done anyway
-            pass
 
     def terminate(self):
         """
@@ -69,10 +60,11 @@ class WRENCHSimulation:
 
         :return:
         """
-        try:
-            requests.post(self.daemon_url + "/terminateSimulation", json={})
-        except requests.exceptions.ConnectionError:
-            pass  # The server process was killed by me!
+        if not self.terminated:
+            try:
+                requests.post(self.daemon_url + "/terminateSimulation", json={})
+            except requests.exceptions.ConnectionError:
+                pass  # The server process was just killed by me!
         self.terminated = True
         return
 
