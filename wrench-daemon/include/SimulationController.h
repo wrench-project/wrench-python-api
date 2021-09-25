@@ -35,6 +35,12 @@ namespace wrench {
         json getSimulationEvents(json);
         json submitStandardJob(json data);
         json getStandardJobTasks(json data);
+
+        json getTaskFlops(json data);
+        json getTaskMinNumCores(json data);
+        json getTaskMaxNumCores(json data);
+        json getTaskMemory(json data);
+
         json waitForNextSimulationEvent(json data);
         json addBareMetalComputeService(json data);
         json createTask(json data);

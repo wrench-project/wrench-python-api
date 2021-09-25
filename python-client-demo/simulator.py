@@ -28,6 +28,11 @@ if __name__ == "__main__":
 
         print("Creating a task")
         task1 = simulation.create_task("task1", 100.0, 1, 1, 0)
+        print("Just created a task with flops=" + str(task1.get_flops()) +
+              ", min_num_cores=" + str(task1.get_min_num_cores()) +
+              ", max_num_cores=" + str(task1.get_max_num_cores()) +
+              ", memory=" + str(task1.get_memory()))
+
         print("Creating a standard job with a single 100.0 flop task")
         job = simulation.create_standard_job([task1])
 
@@ -54,6 +59,7 @@ if __name__ == "__main__":
 
         print("Creating another task")
         task2 = simulation.create_task("task2", 100.0, 1, 1, 0)
+
 
         print("Creating another job...")
         other_job = simulation.create_standard_job([task2])

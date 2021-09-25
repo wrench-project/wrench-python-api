@@ -147,6 +147,71 @@ class WRENCHSimulation:
         else:
             raise WRENCHException(response["failure_cause"])
 
+    def task_get_flops(self, task_name):
+        """
+        Get the number of tasks in a standard job
+        :param task_name: the task's name
+
+        :return: a number of flops
+        """
+        data = {"name": task_name}
+        r = requests.post(self.daemon_url + "/taskGetFlops", json=data)
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["flops"]
+        else:
+            raise WRENCHException(response["failure_cause"])
+
+    def task_get_min_num_cores(self, task_name):
+        """
+        Get the number of tasks in a standard job
+        :param task_name: the task's name
+
+        :return: a number of cores
+        """
+        data = {"name": task_name}
+        r = requests.post(self.daemon_url + "/taskGetMinNumCores", json=data)
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["min_num_cores"]
+        else:
+            raise WRENCHException(response["failure_cause"])
+
+    def task_get_max_num_cores(self, task_name):
+        """
+        Get the number of tasks in a standard job
+        :param task_name: the task's name
+
+        :return: a number of cores
+        """
+        data = {"name": task_name}
+        r = requests.post(self.daemon_url + "/taskGetMaxNumCores", json=data)
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["max_num_cores"]
+        else:
+            raise WRENCHException(response["failure_cause"])
+
+    def task_get_memory(self, task_name):
+        """
+        Get the number of tasks in a standard job
+        :param task_name: the task's name
+
+        :return: a memory footprint in bytes
+        """
+        data = {"name": task_name}
+        r = requests.post(self.daemon_url + "/taskGetMemory", json=data)
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["memory"]
+        else:
+            raise WRENCHException(response["failure_cause"])
+
+
     def standard_job_get_tasks(self, job_name):
         """
         Get the number of tasks in a standard job

@@ -469,5 +469,109 @@ namespace wrench {
         return json({});
     }
 
+    /**
+     * @brief REST API Handler
+     * @param data JSON input
+     * @return JSON output
+     * BEGIN_REST_API_DOCUMENTATION
+     * {
+     *   "REST_func": "taskGetFlops",
+     *   "documentation":
+     *     {
+     *       "purpose": "Get a task's flops",
+     *       "json_input": {
+     *         "name": ["string", "The task's name"]
+     *       },
+     *       "json_output": {
+     *         "flops": ["double", "The task's flops"]
+     *       }
+     *     }
+     * }
+     * END_REST_API_DOCUMENTATION
+     */
+    json SimulationController::getTaskFlops(json data) {
+        json answer;
+        answer["flops"] = this->getWorkflow()->getTaskByID(data["name"])->getFlops();
+        return answer;
+    }
+
+    /**
+     * @brief REST API Handler
+     * @param data JSON input
+     * @return JSON output
+     * BEGIN_REST_API_DOCUMENTATION
+     * {
+     *   "REST_func": "taskGetMinNumCores",
+     *   "documentation":
+     *     {
+     *       "purpose": "Get a task's minimum number of cores",
+     *       "json_input": {
+     *         "name": ["string", "The task's name"]
+     *       },
+     *       "json_output": {
+     *         "min_num_cores": ["double", "The task's minimum number of cores"]
+     *       }
+     *     }
+     * }
+     * END_REST_API_DOCUMENTATION
+     */
+    json SimulationController::getTaskMinNumCores(json data) {
+        json answer;
+        answer["min_num_cores"] = this->getWorkflow()->getTaskByID(data["name"])->getMinNumCores();
+        return answer;
+    }
+
+    /**
+     * @brief REST API Handler
+     * @param data JSON input
+     * @return JSON output
+     * BEGIN_REST_API_DOCUMENTATION
+     * {
+     *   "REST_func": "taskGetMaxNumCores",
+     *   "documentation":
+     *     {
+     *       "purpose": "Get a task's maximum number of cores",
+     *       "json_input": {
+     *         "name": ["string", "The task's name"]
+     *       },
+     *       "json_output": {
+     *         "max_num_cores": ["double", "The task's maximum number of cores"]
+     *       }
+     *     }
+     * }
+     * END_REST_API_DOCUMENTATION
+     */
+    json SimulationController::getTaskMaxNumCores(json data) {
+        json answer;
+        answer["max_num_cores"] = this->getWorkflow()->getTaskByID(data["name"])->getMaxNumCores();
+        return answer;
+    }
+
+    /**
+     * @brief REST API Handler
+     * @param data JSON input
+     * @return JSON output
+     * BEGIN_REST_API_DOCUMENTATION
+     * {
+     *   "REST_func": "taskGetMemory",
+     *   "documentation":
+     *     {
+     *       "purpose": "Get a task's memory requirement",
+     *       "json_input": {
+     *         "name": ["string", "The task's name"]
+     *       },
+     *       "json_output": {
+     *         "memory": ["double", "The task's memory requirement in bytes"]
+     *       }
+     *     }
+     * }
+     * END_REST_API_DOCUMENTATION
+     */
+    json SimulationController::getTaskMemory(json data) {
+        json answer;
+        answer["memory"] = this->getWorkflow()->getTaskByID(data["name"])->getMemoryRequirement();
+        return answer;
+    }
+
 }
 

@@ -210,4 +210,84 @@
 <tr><td style="padding:5px">  "failure_cause"</td><td style="padding:5px"> string</td><td style="padding:5px">human-readable error message (if failure) </td></tr>
 
 
+</table><br><hr><h2>/api/taskGetFlops</h2>
+
+<b>Purpose</b>: Get a task's flops<br><br>
+
+<b>JSON input:</b> <br>
+<table border=1>
+
+<tr><th>name/key</th><th>type</th><th>meaning</th></tr>
+<tr><td style="padding:5px">  "name"</td><td style="padding:5px"> string</td><td style="padding:5px">The task's name </td></tr>
+
+
+</table><br><b>JSON output:</b> <br>
+<table border=1>
+
+<tr><th>name/key</th><th>type</th><th>meaning</th></tr>
+<tr><td style="padding:5px">  "flops"</td><td style="padding:5px"> double</td><td style="padding:5px">The task's flops </td></tr>
+<tr><td style="padding:5px">  "wrench_api_request_success"</td><td style="padding:5px"> bool</td><td style="padding:5px">true if success, false if failure </td></tr>
+<tr><td style="padding:5px">  "failure_cause"</td><td style="padding:5px"> string</td><td style="padding:5px">human-readable error message (if failure) </td></tr>
+
+
+</table><br><hr><h2>/api/taskGetMinNumCores</h2>
+
+<b>Purpose</b>: Get a task's minimum number of cores<br><br>
+
+<b>JSON input:</b> <br>
+<table border=1>
+
+<tr><th>name/key</th><th>type</th><th>meaning</th></tr>
+<tr><td style="padding:5px">  "name"</td><td style="padding:5px"> string</td><td style="padding:5px">The task's name </td></tr>
+
+
+</table><br><b>JSON output:</b> <br>
+<table border=1>
+
+<tr><th>name/key</th><th>type</th><th>meaning</th></tr>
+<tr><td style="padding:5px">  "min_num_cores"</td><td style="padding:5px"> double</td><td style="padding:5px">The task's minimum number of cores </td></tr>
+<tr><td style="padding:5px">  "wrench_api_request_success"</td><td style="padding:5px"> bool</td><td style="padding:5px">true if success, false if failure </td></tr>
+<tr><td style="padding:5px">  "failure_cause"</td><td style="padding:5px"> string</td><td style="padding:5px">human-readable error message (if failure) </td></tr>
+
+
+</table><br><hr><h2>/api/taskGetMaxNumCores</h2>
+
+<b>Purpose</b>: Get a task's maximum number of cores<br><br>
+
+<b>JSON input:</b> <br>
+<table border=1>
+
+<tr><th>name/key</th><th>type</th><th>meaning</th></tr>
+<tr><td style="padding:5px">  "name"</td><td style="padding:5px"> string</td><td style="padding:5px">The task's name </td></tr>
+
+
+</table><br><b>JSON output:</b> <br>
+<table border=1>
+
+<tr><th>name/key</th><th>type</th><th>meaning</th></tr>
+<tr><td style="padding:5px">  "max_num_cores"</td><td style="padding:5px"> double</td><td style="padding:5px">The task's maximum number of cores </td></tr>
+<tr><td style="padding:5px">  "wrench_api_request_success"</td><td style="padding:5px"> bool</td><td style="padding:5px">true if success, false if failure </td></tr>
+<tr><td style="padding:5px">  "failure_cause"</td><td style="padding:5px"> string</td><td style="padding:5px">human-readable error message (if failure) </td></tr>
+
+
+</table><br><hr><h2>/api/taskGetMemory</h2>
+
+<b>Purpose</b>: Get a task's memory requirement<br><br>
+
+<b>JSON input:</b> <br>
+<table border=1>
+
+<tr><th>name/key</th><th>type</th><th>meaning</th></tr>
+<tr><td style="padding:5px">  "name"</td><td style="padding:5px"> string</td><td style="padding:5px">The task's name </td></tr>
+
+
+</table><br><b>JSON output:</b> <br>
+<table border=1>
+
+<tr><th>name/key</th><th>type</th><th>meaning</th></tr>
+<tr><td style="padding:5px">  "memory"</td><td style="padding:5px"> double</td><td style="padding:5px">The task's memory requirement in bytes </td></tr>
+<tr><td style="padding:5px">  "wrench_api_request_success"</td><td style="padding:5px"> bool</td><td style="padding:5px">true if success, false if failure </td></tr>
+<tr><td style="padding:5px">  "failure_cause"</td><td style="padding:5px"> string</td><td style="padding:5px">human-readable error message (if failure) </td></tr>
+
+
 </table><br><hr>
