@@ -1,4 +1,5 @@
 [![Build][build-badge]][build-link]
+[![License: LGPL v3][license-badge]](LICENSE)
 
 <a href="https://wrench-project.org" target="_blank"><img src="https://wrench-project.org/images/logo-horizontal.png" width="350" alt="WRENCH Project" /></a>
 <br/>_Cyberinfrastructure Simulation Workbench_
@@ -25,3 +26,4 @@ The objective of this repo is to implement a tiny "hello world" proof-of-concept
 
 [build-badge]:         https://github.com/wrench-project/wrench-api/workflows/Build/badge.svg
 [build-link]:          https://github.com/wrench-project/wrench-api/actions
+[license-badge]:       https://img.shields.io/badge/License-LGPL%20v3-blue.svg
