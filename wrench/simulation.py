@@ -1,27 +1,34 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2021 The WRENCH Team.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
 import requests
-import json
 import atexit
 
-from pywrench.compute_service import ComputeService
-from pywrench.exception import WRENCHException
-from pywrench.standard_job import StandardJob
-from pywrench.task import Task
+from .compute_service import ComputeService
+from .exception import WRENCHException
+from .standard_job import StandardJob
+from .task import Task
 
 
 class WRENCHSimulation:
     """
     WRENCH client class
+
+    :param platform_file_path: path to the XML platform file
+    :param controller_hostname: name of the simulated host on which the controller will run
+    :param daemon_host: name of the host on which the WRENCH daemon is running
+    :param daemon_port: port number on which the WRENCH daemon is listening
     """
 
-    def __init__(self, platform_file_path, controller_hostname, daemon_host, daemon_port):
-        """
-        Constructor
-
-        :param platform_file_path: path to the XML platform file
-        :param controller_hostname: name of the simulated host on which the controller will run
-        :param daemon_host: name of the host on which the WRENCH daemon is running
-        :param daemon_port: port number on which the WRENCH daemon is listening
-        """
+    def __init__(self, platform_file_path, controller_hostname: str, daemon_host: str, daemon_port: int) -> None:
+        """ Constructor """
         self.daemon_url = "http://" + daemon_host + ":" + str(daemon_port) + "/api"
 
         # Read the platform XML
@@ -126,7 +133,7 @@ class WRENCHSimulation:
         else:
             raise WRENCHException(response["failure_cause"])
 
-    def create_task(self, name, flops, min_num_cores, max_num_cores, memory):
+    def create_task(self, name, flops, min_num_cores, max_num_cores, memory) -> Task:
         """
         Create a one-task standard job
 
@@ -135,9 +142,11 @@ class WRENCHSimulation:
         :param min_num_cores: minimum number of cores
         :param max_num_cores: maximum number of cores
         :param memory: memory requirement in bytes
+
         :return: a task object
         """
-        data = {"name": name, "flops": flops, "min_num_cores": min_num_cores, "max_num_cores": max_num_cores, "memory": memory}
+        data = {"name": name, "flops": flops, "min_num_cores": min_num_cores, "max_num_cores": max_num_cores,
+                "memory": memory}
         r = requests.post(self.daemon_url + "/createTask", json=data)
 
         response = r.json()
@@ -211,7 +220,6 @@ class WRENCHSimulation:
         else:
             raise WRENCHException(response["failure_cause"])
 
-
     def standard_job_get_tasks(self, job_name):
         """
         Get the number of tasks in a standard job
@@ -275,7 +283,7 @@ class WRENCHSimulation:
         response = r.json()
         return response["hostnames"]
 
-    #
+    ###############################
     # Private methods
     ###############################
 

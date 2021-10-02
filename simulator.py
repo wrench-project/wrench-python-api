@@ -1,7 +1,7 @@
 #!/usr/bin/env python3  
-from pywrench import pywrench
-from pywrench.exception import WRENCHException
 import sys
+
+from wrench import start_simulation, WRENCHException
 
 if __name__ == "__main__":
 
@@ -10,7 +10,7 @@ if __name__ == "__main__":
         exit(1)
 
     try:
-        simulation = pywrench.start_simulation("three_host_platform.xml", "ControllerHost")
+        simulation = start_simulation("three_host_platform.xml", "ControllerHost")
 
         print("New simulation, time is " + str(simulation.get_simulated_time()))
 
@@ -54,12 +54,12 @@ if __name__ == "__main__":
 
         import os
         import sys
+
         print("Sleeping " + sys.argv[1] + " seconds in real time")
         os.system("sleep " + sys.argv[1])
 
         print("Creating another task")
         task2 = simulation.create_task("task2", 100.0, 1, 1, 0)
-
 
         print("Creating another job...")
         other_job = simulation.create_standard_job([task2])
@@ -86,4 +86,3 @@ if __name__ == "__main__":
     except WRENCHException as e:
         print("Error: " + str(e))
         exit(1)
-
