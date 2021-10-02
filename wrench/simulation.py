@@ -8,8 +8,11 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-import requests
 import atexit
+import requests
+import pathlib
+
+from typing import Dict
 
 from .compute_service import ComputeService
 from .exception import WRENCHException
@@ -22,26 +25,32 @@ class WRENCHSimulation:
     WRENCH client class
 
     :param platform_file_path: path to the XML platform file
+    :type platform_file_path: pathlib.Path
     :param controller_hostname: name of the simulated host on which the controller will run
+    :type controller_hostname: str
     :param daemon_host: name of the host on which the WRENCH daemon is running
+    :type daemon_host: str
     :param daemon_port: port number on which the WRENCH daemon is listening
+    :type daemon_port: int
     """
 
-    def __init__(self, platform_file_path, controller_hostname: str, daemon_host: str, daemon_port: int) -> None:
+    def __init__(self, platform_file_path: pathlib.Path,
+                 controller_hostname: str,
+                 daemon_host: str,
+                 daemon_port: int) -> None:
         """ Constructor """
-        self.daemon_url = "http://" + daemon_host + ":" + str(daemon_port) + "/api"
+        self.daemon_url = f"http://{daemon_host}:{daemon_port}/api"
 
         # Read the platform XML
         try:
-            platform_file = open(platform_file_path, "r")
-            xml = platform_file.read()
-            platform_file.close()
+            with open(platform_file_path, "r") as platform_file:
+                xml = platform_file.read()
         except Exception as e:
-            raise WRENCHException("Cannot read platform file '" + platform_file_path + "' (" + str(e) + ")")
+            raise WRENCHException(f"Cannot read platform file '{platform_file_path.absolute().name}' ({str(e)})")
 
         spec = {"platform_xml": xml, "controller_hostname": controller_hostname}
         try:
-            r = requests.post(self.daemon_url + "/startSimulation", json=spec)
+            r = requests.post(f"{self.daemon_url}/startSimulation", json=spec)
         except Exception:
             raise WRENCHException("Cannot connect to WRENCH daemon. Perhaps it needs to be started?")
 
@@ -50,7 +59,7 @@ class WRENCHSimulation:
             self.terminated = True
             raise WRENCHException(response["failure_cause"])
         self.daemon_port = response["port_number"]
-        self.daemon_url = "http://" + daemon_host + ":" + str(self.daemon_port) + "/api"
+        self.daemon_url = f"http://{daemon_host}:{self.daemon_port}/api"
 
         # Setup atexit handler
         atexit.register(self.terminate)
@@ -64,42 +73,39 @@ class WRENCHSimulation:
     def terminate(self):
         """
         Terminate the simulation
-
-        :return:
         """
         if not self.terminated:
             try:
-                requests.post(self.daemon_url + "/terminateSimulation", json={})
+                requests.post(f"{self.daemon_url}/terminateSimulation", json={})
             except requests.exceptions.ConnectionError:
                 pass  # The server process was just killed by me!
         self.terminated = True
-        return
 
-    def wait_for_next_event(self):
+    def wait_for_next_event(self) -> Dict[str, str]:
         """
         Wait for the next simulation event to occur
 
         :return: A JSON object
+        :rtype: Dict[str, str]
         """
-        r = requests.post(self.daemon_url + "/waitForNextSimulationEvent", json={})
+        r = requests.post(f"{self.daemon_url}/waitForNextSimulationEvent", json={})
         print(r.text)
         response = r.json()["event"]
         return self.__json_event_to_dict(response)
 
-    def submit_standard_job(self, job_name, cs_name):
+    def submit_standard_job(self, job_name: str, cs_name: str):
         """
         Submit a standard job to a compute service
 
         :param job_name: the name of the job
+        :type job_name: str
         :param cs_name: the name of the compute service
-        :return:
+        :type cs_name: str
         """
         data = {"job_name": job_name, "compute_service_name": cs_name}
-        r = requests.post(self.daemon_url + "/submitStandardJob", json=data)
+        r = requests.post(f"{self.daemon_url}/submitStandardJob", json=data)
         response = r.json()
-        if response["wrench_api_request_success"]:
-            return
-        else:
+        if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
 
     def get_simulation_events(self):
@@ -287,7 +293,7 @@ class WRENCHSimulation:
     # Private methods
     ###############################
 
-    def __json_event_to_dict(self, json_event):
+    def __json_event_to_dict(self, json_event) -> Dict[str, str]:
         event_dict = {}
         if json_event["event_type"] == "job_completion":
             event_dict["event_type"] = json_event["event_type"]
