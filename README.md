@@ -1,3 +1,8 @@
+[![Build][build-badge]][build-link]
+
+<a href="https://wrench-project.org" target="_blank"><img src="https://wrench-project.org/images/logo-horizontal.png" width="350" alt="WRENCH Project" /></a>
+<br/>_Cyberinfrastructure Simulation Workbench_
+
 # Objective
 
 The objective of this repo is to implement a tiny "hello world" proof-of-concept of the envisioned system architecture for the WRENCH (re-?)implementation as part of the NSF-funded CSSI grant. The key ideas are:
@@ -18,4 +23,5 @@ The objective of this repo is to implement a tiny "hello world" proof-of-concept
   - Run the Python simulator: `./python-client-demo/simulator.py` 
 
 
-
+[build-badge]:         https://github.com/wrench-project/wrench-api/workflows/Build/badge.svg
+[build-link]:          https://github.com/wrench-project/wrench-api/actions
