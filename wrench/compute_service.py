@@ -8,15 +8,31 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-import json
-
 from .simulation_item import SimulationItem
+from .standard_job import StandardJob
 
 
 class ComputeService(SimulationItem):
     """
     WRENCH Compute Service class
+
+    :param simulation: simulation object
+    :type simulation: WRENCHSimulation
+    :param name: Task name
+    :type name: str
     """
 
-    def submit_standard_job(self, standard_job):
+    def __init__(self, simulation, name: str) -> None:
+        """
+        Constructor
+        """
+        super().__init__(simulation, name)
+
+    def submit_standard_job(self, standard_job: StandardJob) -> None:
+        """
+        Submit a standard job to a compute service
+
+        :param standard_job: the standard job
+        :type standard_job: StandardJob
+        """
         return self.simulation.submit_standard_job(standard_job.get_name(), self.name)

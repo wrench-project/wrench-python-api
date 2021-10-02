@@ -13,5 +13,8 @@ from .version import __version__
 __author__ = 'WRENCH Team - https://wrench-project.org'
 __credits__ = 'University of Hawaii at Manoa, Oak Ridge National Laboratory'
 
-from .api import start_simulation
+from .compute_service import ComputeService
 from .exception import WRENCHException
+from .simulation import WRENCHSimulation, start_simulation
+from .standard_job import StandardJob
+from .task import Task

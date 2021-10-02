@@ -12,7 +12,7 @@ import atexit
 import requests
 import pathlib
 
-from typing import Dict
+from typing import Dict, List, Optional
 
 from .compute_service import ComputeService
 from .exception import WRENCHException
@@ -91,9 +91,9 @@ class WRENCHSimulation:
         r = requests.post(f"{self.daemon_url}/waitForNextSimulationEvent", json={})
         print(r.text)
         response = r.json()["event"]
-        return self.__json_event_to_dict(response)
+        return self._json_event_to_dict(response)
 
-    def submit_standard_job(self, job_name: str, cs_name: str):
+    def submit_standard_job(self, job_name: str, cs_name: str) -> None:
         """
         Submit a standard job to a compute service
 
@@ -108,184 +108,210 @@ class WRENCHSimulation:
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
 
-    def get_simulation_events(self):
+    def get_simulation_events(self) -> List[Dict[str, str]]:
         """
         Get all simulation events since last time we checked
 
-        :return: A JSON object
+        :return: A list of events
+        :rtype: List[Dict[str, str]]
         """
-        r = requests.post(self.daemon_url + "/getSimulationEvents", json={})
+        r = requests.post(f"{self.daemon_url}/getSimulationEvents", json={})
         print(r.text)
         print(r.json())
         response = r.json()["events"]
-        response = [self.__json_event_to_dict(e) for e in response]
+        response = [self._json_event_to_dict(e) for e in response]
         return response
 
-    def create_standard_job(self, tasks):
+    def create_standard_job(self, tasks: List[Task]) -> StandardJob:
         """
         Create a one-task standard job
 
         :param tasks: list of tasks
-        :return: a job object
+        :type tasks: List[Task]
+
+        :return: A StandardJob object
+        :rtype: StandardJob
         """
         task_names = [t.name for t in tasks]
         data = {"tasks": task_names}
-        r = requests.post(self.daemon_url + "/createStandardJob", json=data)
+        r = requests.post(f"{self.daemon_url}/createStandardJob", json=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
             self.jobs[response["job_name"]] = StandardJob(self, response["job_name"])
             return self.jobs[response["job_name"]]
-        else:
-            raise WRENCHException(response["failure_cause"])
+        raise WRENCHException(response["failure_cause"])
 
-    def create_task(self, name, flops, min_num_cores, max_num_cores, memory) -> Task:
+    def create_task(self, name: str, flops: float, min_num_cores: int, max_num_cores: int, memory: int) -> Task:
         """
         Create a one-task standard job
 
         :param name: task name
+        :type name: str
         :param flops: number of flops
+        :type flops: float
         :param min_num_cores: minimum number of cores
+        :type min_num_cores: int
         :param max_num_cores: maximum number of cores
+        :type max_num_cores: int
         :param memory: memory requirement in bytes
+        :type memory: int
 
-        :return: a task object
+        :return: A task object
+        :rtype: Task
         """
-        data = {"name": name, "flops": flops, "min_num_cores": min_num_cores, "max_num_cores": max_num_cores,
+        data = {"name": name,
+                "flops": flops,
+                "min_num_cores": min_num_cores,
+                "max_num_cores": max_num_cores,
                 "memory": memory}
-        r = requests.post(self.daemon_url + "/createTask", json=data)
+        r = requests.post(f"{self.daemon_url}/createTask", json=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
             self.tasks[name] = Task(self, name)
             return self.tasks[name]
-        else:
-            raise WRENCHException(response["failure_cause"])
+        raise WRENCHException(response["failure_cause"])
 
-    def task_get_flops(self, task_name):
+    def task_get_flops(self, task_name: str) -> float:
         """
-        Get the number of tasks in a standard job
+        Get the number of flops in a task
+
         :param task_name: the task's name
+        :type task_name: str
 
         :return: a number of flops
+        :rtype: float
         """
         data = {"name": task_name}
-        r = requests.post(self.daemon_url + "/taskGetFlops", json=data)
+        r = requests.post(f"{self.daemon_url}/taskGetFlops", json=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
             return response["flops"]
-        else:
-            raise WRENCHException(response["failure_cause"])
+        raise WRENCHException(response["failure_cause"])
 
-    def task_get_min_num_cores(self, task_name):
+    def task_get_min_num_cores(self, task_name: str) -> int:
         """
-        Get the number of tasks in a standard job
+        Get the task's minimum number of required cores
+
         :param task_name: the task's name
+        :type task_name: str
 
         :return: a number of cores
+        :rtype: int
         """
         data = {"name": task_name}
-        r = requests.post(self.daemon_url + "/taskGetMinNumCores", json=data)
+        r = requests.post(f"{self.daemon_url}/taskGetMinNumCores", json=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
             return response["min_num_cores"]
-        else:
-            raise WRENCHException(response["failure_cause"])
+        raise WRENCHException(response["failure_cause"])
 
-    def task_get_max_num_cores(self, task_name):
+    def task_get_max_num_cores(self, task_name: str) -> int:
         """
-        Get the number of tasks in a standard job
+        Get the task's maximum number of required cores
+
         :param task_name: the task's name
+        :type task_name: str
 
         :return: a number of cores
+        :rtype: int
         """
         data = {"name": task_name}
-        r = requests.post(self.daemon_url + "/taskGetMaxNumCores", json=data)
+        r = requests.post(f"{self.daemon_url}/taskGetMaxNumCores", json=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
             return response["max_num_cores"]
-        else:
-            raise WRENCHException(response["failure_cause"])
+        raise WRENCHException(response["failure_cause"])
 
-    def task_get_memory(self, task_name):
+    def task_get_memory(self, task_name: str) -> int:
         """
-        Get the number of tasks in a standard job
+        Get the task's memory requirement
+
         :param task_name: the task's name
+        :type task_name: str
 
         :return: a memory footprint in bytes
+        :rtype: int
         """
         data = {"name": task_name}
-        r = requests.post(self.daemon_url + "/taskGetMemory", json=data)
+        r = requests.post(f"{self.daemon_url}/taskGetMemory", json=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
             return response["memory"]
-        else:
-            raise WRENCHException(response["failure_cause"])
+        raise WRENCHException(response["failure_cause"])
 
-    def standard_job_get_tasks(self, job_name):
+    def standard_job_get_tasks(self, job_name: str) -> List[Task]:
         """
         Get the number of tasks in a standard job
+
         :param job_name: the job's name
+        :type job_name: str
 
         :return: a list of task objects
+        :rtype: List[Task]
         """
         data = {"job_name": job_name}
-        r = requests.post(self.daemon_url + "/standardJobGetTasks", json=data)
+        r = requests.post(f"{self.daemon_url}/standardJobGetTasks", json=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
             return [self.tasks[x] for x in response["tasks"]]
-        else:
-            raise WRENCHException(response["failure_cause"])
+        raise WRENCHException(response["failure_cause"])
 
-    def sleep(self, seconds):
+    def sleep(self, seconds: int) -> None:
         """
         Sleep (in simulation) for a number of seconds
-        :param seconds: number of seconds
 
-        :return:
+        :param seconds: number of seconds
+        :type seconds: int
         """
         data = {"increment": seconds}
-        requests.post(self.daemon_url + "/advanceTime", json=data)
-        return
+        requests.post(f"{self.daemon_url}/advanceTime", json=data)
 
-    def get_simulated_time(self):
+    def get_simulated_time(self) -> int:
         """
         Get the current simulation date
+
         :return: the simulation date
+        :rtype: int
         """
-        r = requests.post(self.daemon_url + "/getTime", json={})
+        r = requests.post(f"{self.daemon_url}/getTime", json={})
         response = r.json()
         return response["time"]
 
-    def create_bare_metal_compute_service(self, hostname):
+    def create_bare_metal_compute_service(self, hostname: str) -> ComputeService:
         """
         Create a bare-metal compute service
 
         :param hostname: name of the (simulated) host on which the compute service should run
+        :type hostname: str
+
         :return: the service name
+        :rtype: ComputeService
         """
         data = {"head_host": hostname}
-        r = requests.post(self.daemon_url + "/addBareMetalComputeService", json=data)
+        r = requests.post(f"{self.daemon_url}/addBareMetalComputeService", json=data)
         response = r.json()
 
         if response["wrench_api_request_success"]:
             compute_service_name = response["service_name"]
             self.compute_services[compute_service_name] = ComputeService(self, compute_service_name)
             return self.compute_services[compute_service_name]
-        else:
-            raise WRENCHException(response["failure_cause"])
+        raise WRENCHException(response["failure_cause"])
 
-    def get_all_hostnames(self):
+    def get_all_hostnames(self) -> List[str]:
         """
         Get the list of hostnames in the simulated platform
+
         :return: list of hostnames
+        :rtype: List[str]
         """
-        r = requests.post(self.daemon_url + "/getAllHostnames", json={})
+        r = requests.post(f"{self.daemon_url}/getAllHostnames", json={})
         response = r.json()
         return response["hostnames"]
 
@@ -293,7 +319,15 @@ class WRENCHSimulation:
     # Private methods
     ###############################
 
-    def __json_event_to_dict(self, json_event) -> Dict[str, str]:
+    def _json_event_to_dict(self, json_event: Dict[str, str]) -> Dict[str, str]:
+        """
+
+        :param json_event:
+        :type json_event: Dict[str, str]
+
+        :return:
+        :rtype: Dict[str, str]
+        """
         event_dict = {}
         if json_event["event_type"] == "job_completion":
             event_dict["event_type"] = json_event["event_type"]
@@ -302,7 +336,32 @@ class WRENCHSimulation:
             event_dict["end_date"] = json_event["end_date"]
             event_dict["event_date"] = json_event["event_date"]
             event_dict["job"] = self.jobs[json_event["job_name"]]
-        else:
-            raise WRENCHException("Unknown event type " + json_event["event_type"])
+            return event_dict
 
-        return event_dict
+        raise WRENCHException("Unknown event type " + json_event["event_type"])
+
+
+def start_simulation(platform_file_path: pathlib.Path,
+                     controller_hostname: str,
+                     daemon_host: Optional[str] = "localhost",
+                     daemon_port: Optional[int] = 8101) -> WRENCHSimulation:
+    """
+    Start a new simulation
+
+    :param platform_file_path: path of a file that contains the simulated platform's description in XML
+    :type platform_file_path: pathlib.Path
+    :param controller_hostname: the name of the (simulated) host in the platform on which the simulation controller
+                                will run
+    :type controller_hostname: str
+    :param daemon_host: the name of the host on which the WRENCH daemon is running
+    :type daemon_host: Optional[str]
+    :param daemon_port: port number on which the WRENCH daemon is listening
+    :type daemon_port: Optional[int]
+
+    :return: A WRENCHSimulation object
+    :rtype: WRENCHSimulation
+    """
+    try:
+        return WRENCHSimulation(platform_file_path, controller_hostname, daemon_host, daemon_port)
+    except WRENCHException:
+        raise

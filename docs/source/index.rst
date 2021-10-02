@@ -13,6 +13,13 @@ API Github `Issues Track <https://github.com/wrench-project/wrench-api/issues>`_
 You can also reach the WRENCH team via our support email:
 support@wrench-project.org.
 
+.. toctree::
+    :caption: API Reference
+    :maxdepth: 1
+
+    api_simulation.rst
+    api_task.rst
+
 .. |build-badge| image:: https://github.com/wrench-project/wrench-api/workflows/Build/badge.svg
     :target: https://github.com/wrench-project/wrench-api/actions
 .. |license-badge| image:: https://img.shields.io/badge/License-LGPL%20v3-blue.svg
