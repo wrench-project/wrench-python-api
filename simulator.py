@@ -10,7 +10,7 @@ if __name__ == "__main__":
         exit(1)
 
     try:
-        simulation = pywrench.start_simulation("./three_host_platform.xml", "ControllerHost")
+        simulation = pywrench.start_simulation("three_host_platform.xml", "ControllerHost")
 
         print("New simulation, time is " + str(simulation.get_simulated_time()))
 
