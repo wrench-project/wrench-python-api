@@ -12,7 +12,7 @@ import atexit
 import requests
 import pathlib
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from .compute_service import ComputeService
 from .exception import WRENCHException
@@ -81,12 +81,12 @@ class WRENCHSimulation:
                 pass  # The server process was just killed by me!
         self.terminated = True
 
-    def wait_for_next_event(self) -> Dict[str, str]:
+    def wait_for_next_event(self) -> Dict[str, Union[str, StandardJob, ComputeService]]:
         """
         Wait for the next simulation event to occur
 
         :return: A JSON object
-        :rtype: Dict[str, str]
+        :rtype: Dict[str, Union[str, StandardJob, ComputeService]]
         """
         r = requests.post(f"{self.daemon_url}/waitForNextSimulationEvent", json={})
         print(r.text)
@@ -108,12 +108,12 @@ class WRENCHSimulation:
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
 
-    def get_simulation_events(self) -> List[Dict[str, str]]:
+    def get_simulation_events(self) -> List[Dict[str, Union[str, StandardJob, ComputeService]]]:
         """
         Get all simulation events since last time we checked
 
         :return: A list of events
-        :rtype: List[Dict[str, str]]
+        :rtype: List[Dict[str, Union[str, StandardJob, ComputeService]]]
         """
         r = requests.post(f"{self.daemon_url}/getSimulationEvents", json={})
         print(r.text)
@@ -319,14 +319,14 @@ class WRENCHSimulation:
     # Private methods
     ###############################
 
-    def _json_event_to_dict(self, json_event: Dict[str, str]) -> Dict[str, str]:
+    def _json_event_to_dict(self, json_event: Dict[str, str]) -> Dict[str, Union[str, StandardJob, ComputeService]]:
         """
 
         :param json_event:
         :type json_event: Dict[str, str]
 
         :return:
-        :rtype: Dict[str, str]
+        :rtype: Dict[str, Union[str, StandardJob, ComputeService]]
         """
         event_dict = {}
         if json_event["event_type"] == "job_completion":
