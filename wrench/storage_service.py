@@ -9,16 +9,15 @@
 # (at your option) any later version.
 
 from .simulation_item import SimulationItem
-from .standard_job import StandardJob
 
 
-class ComputeService(SimulationItem):
+class StorageService(SimulationItem):
     """
-    WRENCH Compute Service class
+    WRENCH Storage Service class
 
     :param simulation: simulation object
     :type simulation: WRENCHSimulation
-    :param name: Compute service name
+    :param name: Storage service name
     :type name: str
     """
 
@@ -27,12 +26,3 @@ class ComputeService(SimulationItem):
         Constructor
         """
         super().__init__(simulation, name)
-
-    def submit_standard_job(self, standard_job: StandardJob) -> None:
-        """
-        Submit a standard job to a compute service
-
-        :param standard_job: the standard job
-        :type standard_job: StandardJob
-        """
-        return self.simulation.submit_standard_job(standard_job.get_name(), self.name)

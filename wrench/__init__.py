@@ -17,4 +17,5 @@ from .compute_service import ComputeService
 from .exception import WRENCHException
 from .simulation import WRENCHSimulation, start_simulation
 from .standard_job import StandardJob
+from .storage_service import StorageService
 from .task import Task

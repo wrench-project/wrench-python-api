@@ -32,7 +32,12 @@ if __name__ == "__main__":
         print("Creating a bare-metal compute service on ComputeHost...")
         cs = simulation.create_bare_metal_compute_service("ComputeHost")
 
-        print(f"Created service has name {cs.get_name()}")
+        print(f"Created compute service has name {cs.get_name()}")
+
+        print("Creating a simple storage service on StorageHost...")
+        ss = simulation.create_simple_storage_service("StorageHost")
+
+        print(f"Created storage service has name {ss.get_name()}")
 
         print("Sleeping for 10 seconds...")
         simulation.sleep(10)

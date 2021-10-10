@@ -17,6 +17,7 @@ from typing import Dict, List, Optional, Union
 from .compute_service import ComputeService
 from .exception import WRENCHException
 from .standard_job import StandardJob
+from .storage_service import StorageService
 from .task import Task
 
 
@@ -69,6 +70,7 @@ class WRENCHSimulation:
         self.tasks = {}
         self.jobs = {}
         self.compute_services = {}
+        self.storage_services = {}
 
     def terminate(self):
         """
@@ -302,6 +304,26 @@ class WRENCHSimulation:
             compute_service_name = response["service_name"]
             self.compute_services[compute_service_name] = ComputeService(self, compute_service_name)
             return self.compute_services[compute_service_name]
+        raise WRENCHException(response["failure_cause"])
+
+    def create_simple_storage_service(self, hostname: str) -> StorageService:
+        """
+        Create a simple storage service
+
+        :param hostname: name of the (simulated) host on which the storage service should run
+        :type hostname: str
+
+        :return: the service name
+        :rtype: StorageService
+        """
+        data = {"head_host": hostname}
+        r = requests.post(f"{self.daemon_url}/addSimpleStorageService", json=data)
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            storage_service_name = response["service_name"]
+            self.storage_services[storage_service_name] = StorageService(self, storage_service_name)
+            return self.storage_services[storage_service_name]
         raise WRENCHException(response["failure_cause"])
 
     def get_all_hostnames(self) -> List[str]:
