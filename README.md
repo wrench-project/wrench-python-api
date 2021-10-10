@@ -4,6 +4,8 @@
 <a href="https://wrench-project.org" target="_blank"><img src="https://wrench-project.org/images/logo-horizontal.png" width="350" alt="WRENCH Project" /></a>
 <br/>_Cyberinfrastructure Simulation Workbench_
 
+**UNDER DEVELOPMENT**
+
 # Objective
 
 The objective of this repo is to implement a tiny "hello world" proof-of-concept of the envisioned system architecture for the WRENCH (re-?)implementation as part of the NSF-funded CSSI grant. The key ideas are:
