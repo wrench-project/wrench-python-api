@@ -33,6 +33,8 @@ class WRENCHSimulation:
     :type daemon_host: str
     :param daemon_port: port number on which the WRENCH daemon is listening
     :type daemon_port: int
+
+    :raises WRENCHException: if the platform file cannot be read or the daemon cannot be contacted or if there is any error in the response
     """
 
     def __init__(self, platform_file_path: pathlib.Path,
@@ -53,7 +55,7 @@ class WRENCHSimulation:
         try:
             r = requests.post(f"{self.daemon_url}/startSimulation", json=spec)
         except Exception:
-            raise WRENCHException("Cannot connect to WRENCH daemon. Perhaps it needs to be started?")
+            raise WRENCHException(f"Cannot connect to WRENCH daemon ({daemon_host}:{daemon_port}). Perhaps it needs to be started?")
 
         response = r.json()
         if not response["wrench_api_request_success"]:
@@ -91,7 +93,7 @@ class WRENCHSimulation:
         :rtype: Dict[str, Union[str, StandardJob, ComputeService]]
         """
         r = requests.post(f"{self.daemon_url}/waitForNextSimulationEvent", json={})
-        print(r.text)
+        # print(r.text)
         response = r.json()["event"]
         return self._json_event_to_dict(response)
 
@@ -103,6 +105,8 @@ class WRENCHSimulation:
         :type job_name: str
         :param cs_name: the name of the compute service
         :type cs_name: str
+
+        :raises WRENCHException: if there is any error in the response
         """
         data = {"job_name": job_name, "compute_service_name": cs_name}
         r = requests.post(f"{self.daemon_url}/submitStandardJob", json=data)
@@ -118,8 +122,8 @@ class WRENCHSimulation:
         :rtype: List[Dict[str, Union[str, StandardJob, ComputeService]]]
         """
         r = requests.post(f"{self.daemon_url}/getSimulationEvents", json={})
-        print(r.text)
-        print(r.json())
+        # print(r.text)
+        # print(r.json())
         response = r.json()["events"]
         response = [self._json_event_to_dict(e) for e in response]
         return response
@@ -133,6 +137,8 @@ class WRENCHSimulation:
 
         :return: A StandardJob object
         :rtype: StandardJob
+
+        :raises WRENCHException: if there is any error in the response
         """
         task_names = [t.name for t in tasks]
         data = {"tasks": task_names}
@@ -161,6 +167,8 @@ class WRENCHSimulation:
 
         :return: A task object
         :rtype: Task
+
+        :raises WRENCHException: if there is any error in the response
         """
         data = {"name": name,
                 "flops": flops,
@@ -184,6 +192,8 @@ class WRENCHSimulation:
 
         :return: a number of flops
         :rtype: float
+
+        :raises WRENCHException: if there is any error in the response
         """
         data = {"name": task_name}
         r = requests.post(f"{self.daemon_url}/taskGetFlops", json=data)
@@ -202,6 +212,8 @@ class WRENCHSimulation:
 
         :return: a number of cores
         :rtype: int
+
+        :raises WRENCHException: if there is any error in the response
         """
         data = {"name": task_name}
         r = requests.post(f"{self.daemon_url}/taskGetMinNumCores", json=data)
@@ -220,6 +232,8 @@ class WRENCHSimulation:
 
         :return: a number of cores
         :rtype: int
+
+        :raises WRENCHException: if there is any error in the response
         """
         data = {"name": task_name}
         r = requests.post(f"{self.daemon_url}/taskGetMaxNumCores", json=data)
@@ -238,6 +252,8 @@ class WRENCHSimulation:
 
         :return: a memory footprint in bytes
         :rtype: int
+
+        :raises WRENCHException: if there is any error in the response
         """
         data = {"name": task_name}
         r = requests.post(f"{self.daemon_url}/taskGetMemory", json=data)
@@ -256,6 +272,8 @@ class WRENCHSimulation:
 
         :return: a list of task objects
         :rtype: List[Task]
+
+        :raises WRENCHException: if there is any error in the response
         """
         data = {"job_name": job_name}
         r = requests.post(f"{self.daemon_url}/standardJobGetTasks", json=data)
@@ -295,6 +313,8 @@ class WRENCHSimulation:
 
         :return: the service name
         :rtype: ComputeService
+
+        :raises WRENCHException: if there is any error in the response
         """
         data = {"head_host": hostname}
         r = requests.post(f"{self.daemon_url}/addBareMetalComputeService", json=data)
@@ -315,6 +335,8 @@ class WRENCHSimulation:
 
         :return: the service name
         :rtype: StorageService
+
+        :raises WRENCHException: if there is any error in the response
         """
         data = {"head_host": hostname}
         r = requests.post(f"{self.daemon_url}/addSimpleStorageService", json=data)
@@ -349,6 +371,8 @@ class WRENCHSimulation:
 
         :return:
         :rtype: Dict[str, Union[str, StandardJob, ComputeService]]
+
+        :raises WRENCHException: if there is any error in the response
         """
         event_dict = {}
         if json_event["event_type"] == "job_completion":
@@ -382,6 +406,8 @@ def start_simulation(platform_file_path: pathlib.Path,
 
     :return: A WRENCHSimulation object
     :rtype: WRENCHSimulation
+
+    :raises WRENCHException: if there is any error during the simulation instantiation
     """
     try:
         return WRENCHSimulation(platform_file_path, controller_hostname, daemon_host, daemon_port)
