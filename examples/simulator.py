@@ -21,7 +21,8 @@ if __name__ == "__main__":
         exit(1)
 
     try:
-        platform_file_path = pathlib.Path("three_host_platform.xml")
+        current_dir = pathlib.Path(__file__).parent.resolve()
+        platform_file_path = pathlib.Path(current_dir / "three_host_platform.xml")
         simulation = start_simulation(platform_file_path, "ControllerHost")
 
         print(f"New simulation, time is {simulation.get_simulated_time()}")

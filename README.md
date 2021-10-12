@@ -23,7 +23,7 @@ The objective of this repo is to implement a tiny "hello world" proof-of-concept
 
   - Start the daemon: `./wrench-daemon/build/wrench-daemon` (use `--help` for all options)
 
-  - Run the Python simulator: `./python-client-demo/simulator.py` 
+  - Run the Python simulator: `./examples/simulator.py` 
 
 
 [build-badge]:         https://github.com/wrench-project/wrench-api/workflows/Build/badge.svg
