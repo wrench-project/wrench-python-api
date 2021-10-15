@@ -38,3 +38,19 @@ class StandardJob(SimulationItem):
         :rtype: List[Task]
         """
         return self.simulation.standard_job_get_tasks(self.name)
+    
+    def __str__(self) -> str:
+        """
+        :return: String representation of a standard job
+        :rtype: str
+        """
+        s = f"Standard Job {self.name} with {len(self.get_tasks())} tasks"
+        return s
+
+    def __repr__(self) -> str:
+        """
+        :return: String representation of a StandardJob object
+        :rtype: str
+        """
+        s = f"StandardJob(name={self.name})"
+        return s

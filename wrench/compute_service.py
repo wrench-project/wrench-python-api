@@ -36,3 +36,19 @@ class ComputeService(SimulationItem):
         :type standard_job: StandardJob
         """
         return self.simulation.submit_standard_job(standard_job.get_name(), self.name)
+
+    def __str__(self) -> str:
+        """
+        :return: String representation of a standard job
+        :rtype: str
+        """
+        s = f"Compute Service {self.name}"
+        return s
+
+    def __repr__(self) -> str:
+        """
+        :return: String representation of a StandardJob object
+        :rtype: str
+        """
+        s = f"ComputeService(name={self.name})"
+        return s

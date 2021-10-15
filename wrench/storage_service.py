@@ -26,3 +26,19 @@ class StorageService(SimulationItem):
         Constructor
         """
         super().__init__(simulation, name)
+
+    def __str__(self) -> str:
+        """
+        :return: String representation of the storage service
+        :rtype: str
+        """
+        s = f"Storage Service {self.name}"
+        return s
+
+    def __repr__(self) -> str:
+        """
+        :return: String representation of the StorageService object
+        :rtype: str
+        """
+        s = f"StorageService(name={self.name})"
+        return s
