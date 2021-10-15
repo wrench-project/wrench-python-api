@@ -18,4 +18,5 @@ from .exception import WRENCHException
 from .simulation import Simulation
 from .standard_job import StandardJob
 from .storage_service import StorageService
+from .file_registry_service import FileRegistryService
 from .task import Task

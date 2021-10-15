@@ -39,8 +39,11 @@ if __name__ == "__main__":
 
         print("Creating a simple storage service on StorageHost...")
         ss = simulation.create_simple_storage_service("StorageHost")
-
         print(f"Created storage service has name {ss.get_name()}")
+
+        print("Creating a file registry service on ControllerHost...")
+        frs = simulation.create_file_registry_service("ControllerHost")
+        print(f"Created file registry service has name {frs.get_name()}")
 
         print("Sleeping for 10 seconds...")
         simulation.sleep(10)

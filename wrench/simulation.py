@@ -18,6 +18,7 @@ from .compute_service import ComputeService
 from .exception import WRENCHException
 from .standard_job import StandardJob
 from .storage_service import StorageService
+from .file_registry_service import FileRegistryService
 from .task import Task
 
 
@@ -57,6 +58,7 @@ class Simulation:
         self.jobs = {}
         self.compute_services = {}
         self.storage_services = {}
+        self.file_registry_services = {}
 
     def start(self, platform_file_path: pathlib.Path,
                     controller_hostname: str) -> None:
@@ -373,6 +375,28 @@ class Simulation:
             storage_service_name = response["service_name"]
             self.storage_services[storage_service_name] = StorageService(self, storage_service_name)
             return self.storage_services[storage_service_name]
+        raise WRENCHException(response["failure_cause"])
+
+    def create_file_registry_service(self, hostname: str) -> FileRegistryService:
+        """
+        Create a file registry service
+
+        :param hostname: name of the (simulated) host on which the file registry service should run
+        :type hostname: str
+
+        :return: the service name
+        :rtype: FileRegistryService
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"head_host": hostname}
+        r = requests.post(f"{self.daemon_url}/addFileRegistryService", json=data)
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            file_registry_service_name = response["service_name"]
+            self.file_registry_services[file_registry_service_name] = FileRegistryService(self, file_registry_service_name)
+            return self.file_registry_services[file_registry_service_name]
         raise WRENCHException(response["failure_cause"])
 
     def get_all_hostnames(self) -> List[str]:
