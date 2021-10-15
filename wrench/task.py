@@ -16,7 +16,7 @@ class Task(SimulationItem):
     WRENCH Task class
 
     :param simulation: simulation object
-    :type simulation: WRENCHSimulation
+    :type simulation: Simulation
     :param name: Task name
     :type name: str
     """

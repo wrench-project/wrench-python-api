@@ -16,7 +16,7 @@ class SimulationItem(ABC):
     WRENCH Simulation Item class
 
     :param simulation: simulation object
-    :type simulation: WRENCHSimulation
+    :type simulation: Simulation
     :param name: simulation item name
     :type name: str
     """

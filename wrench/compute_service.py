@@ -17,7 +17,7 @@ class ComputeService(SimulationItem):
     WRENCH Compute Service class
 
     :param simulation: simulation object
-    :type simulation: WRENCHSimulation
+    :type simulation: Simulation
     :param name: Compute service name
     :type name: str
     """

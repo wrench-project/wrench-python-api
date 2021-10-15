@@ -21,7 +21,7 @@ from .storage_service import StorageService
 from .task import Task
 
 
-class WRENCHSimulation:
+class Simulation:
     """
     WRENCH client class
 
@@ -390,7 +390,7 @@ class WRENCHSimulation:
 def start_simulation(platform_file_path: pathlib.Path,
                      controller_hostname: str,
                      daemon_host: Optional[str] = "localhost",
-                     daemon_port: Optional[int] = 8101) -> WRENCHSimulation:
+                     daemon_port: Optional[int] = 8101) -> Simulation:
     """
     Start a new simulation
 
@@ -404,12 +404,12 @@ def start_simulation(platform_file_path: pathlib.Path,
     :param daemon_port: port number on which the WRENCH daemon is listening
     :type daemon_port: Optional[int]
 
-    :return: A WRENCHSimulation object
-    :rtype: WRENCHSimulation
+    :return: A Simulation object
+    :rtype: Simulation
 
     :raises WRENCHException: if there is any error during the simulation instantiation
     """
     try:
-        return WRENCHSimulation(platform_file_path, controller_hostname, daemon_host, daemon_port)
+        return Simulation(platform_file_path, controller_hostname, daemon_host, daemon_port)
     except WRENCHException:
         raise
