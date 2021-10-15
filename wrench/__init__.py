@@ -15,7 +15,7 @@ __credits__ = 'University of Hawaii at Manoa, Oak Ridge National Laboratory'
 
 from .compute_service import ComputeService
 from .exception import WRENCHException
-from .simulation import Simulation, start_simulation
+from .simulation import Simulation
 from .standard_job import StandardJob
 from .storage_service import StorageService
 from .task import Task

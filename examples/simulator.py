@@ -12,7 +12,7 @@ import pathlib
 import os
 import sys
 
-from wrench import start_simulation, WRENCHException
+import wrench
 
 if __name__ == "__main__":
 
@@ -23,7 +23,9 @@ if __name__ == "__main__":
     try:
         current_dir = pathlib.Path(__file__).parent.resolve()
         platform_file_path = pathlib.Path(current_dir / "three_host_platform.xml")
-        simulation = start_simulation(platform_file_path, "ControllerHost")
+        
+        simulation = wrench.Simulation()
+        simulation.start(platform_file_path, "ControllerHost")
 
         print(f"New simulation, time is {simulation.get_simulated_time()}")
 
@@ -98,6 +100,6 @@ if __name__ == "__main__":
         print("Terminating simulation daemon")
         simulation.terminate()
 
-    except WRENCHException as e:
+    except wrench.WRENCHException as e:
         print(f"Error: {e}")
         exit(1)

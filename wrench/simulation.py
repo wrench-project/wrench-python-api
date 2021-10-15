@@ -37,36 +37,20 @@ class Simulation:
     :raises WRENCHException: if the platform file cannot be read or the daemon cannot be contacted or if there is any error in the response
     """
 
-    def __init__(self, platform_file_path: pathlib.Path,
-                 controller_hostname: str,
-                 daemon_host: str,
-                 daemon_port: int) -> None:
+    def __init__(self, 
+                    daemon_host: Optional[str] = "localhost",
+                    daemon_port: Optional[int] = 8101
+                ) -> None:
         """ Constructor """
+        self.daemon_host = daemon_host
+        self.daemon_port = daemon_port
         self.daemon_url = f"http://{daemon_host}:{daemon_port}/api"
-
-        # Read the platform XML
-        try:
-            with open(platform_file_path, "r") as platform_file:
-                xml = platform_file.read()
-        except Exception as e:
-            raise WRENCHException(f"Cannot read platform file '{platform_file_path.absolute().name}' ({str(e)})")
-
-        spec = {"platform_xml": xml, "controller_hostname": controller_hostname}
-        try:
-            r = requests.post(f"{self.daemon_url}/startSimulation", json=spec)
-        except Exception:
-            raise WRENCHException(f"Cannot connect to WRENCH daemon ({daemon_host}:{daemon_port}). Perhaps it needs to be started?")
-
-        response = r.json()
-        if not response["wrench_api_request_success"]:
-            self.terminated = True
-            raise WRENCHException(response["failure_cause"])
-        self.daemon_port = response["port_number"]
-        self.daemon_url = f"http://{daemon_host}:{self.daemon_port}/api"
+        self.started = False
 
         # Setup atexit handler
         atexit.register(self.terminate)
         self.terminated = False
+        self.spec = None
 
         # Simulation Item Dictionaries
         self.tasks = {}
@@ -74,7 +58,50 @@ class Simulation:
         self.compute_services = {}
         self.storage_services = {}
 
-    def terminate(self):
+    def start(self, platform_file_path: pathlib.Path,
+                    controller_hostname: str) -> None:
+        """
+        Start a new simulation
+
+        :param platform_file_path: path of a file that contains the simulated platform's description in XML
+        :type platform_file_path: pathlib.Path
+        :param controller_hostname: the name of the (simulated) host in the platform on which the simulation controller will run
+        :type controller_hostname: str
+
+        :raises WRENCHException: if there is any error during the simulation instantiation
+        """
+        
+        if self.terminated:
+            raise WRENCHException("This simulation has been terminated.")
+
+        if not self.started:
+
+            # Read the platform XML
+            try:
+                with open(platform_file_path, "r") as platform_file:
+                    xml = platform_file.read()
+            except Exception as e:
+                raise WRENCHException(f"Cannot read platform file '{platform_file_path.absolute().name}' ({str(e)})")
+
+            self.spec = {"platform_xml": xml, "controller_hostname": controller_hostname}
+            try:
+                r = requests.post(f"{self.daemon_url}/startSimulation", json=self.spec)
+            except Exception:
+                raise WRENCHException(f"Cannot connect to WRENCH daemon ({self.daemon_host}:{self.daemon_port}). Perhaps it needs to be started?")
+
+
+            response = r.json()
+            if not response["wrench_api_request_success"]:
+                self.terminated = True
+                raise WRENCHException(response["failure_cause"])
+
+            self.daemon_port = response["port_number"]
+            self.daemon_url = f"http://{self.daemon_host}:{self.daemon_port}/api"
+            self.started = True
+        else:
+            pass
+
+    def terminate(self) -> None:
         """
         Terminate the simulation
         """
@@ -385,31 +412,3 @@ class Simulation:
             return event_dict
 
         raise WRENCHException("Unknown event type " + json_event["event_type"])
-
-
-def start_simulation(platform_file_path: pathlib.Path,
-                     controller_hostname: str,
-                     daemon_host: Optional[str] = "localhost",
-                     daemon_port: Optional[int] = 8101) -> Simulation:
-    """
-    Start a new simulation
-
-    :param platform_file_path: path of a file that contains the simulated platform's description in XML
-    :type platform_file_path: pathlib.Path
-    :param controller_hostname: the name of the (simulated) host in the platform on which the simulation controller
-                                will run
-    :type controller_hostname: str
-    :param daemon_host: the name of the host on which the WRENCH daemon is running
-    :type daemon_host: Optional[str]
-    :param daemon_port: port number on which the WRENCH daemon is listening
-    :type daemon_port: Optional[int]
-
-    :return: A Simulation object
-    :rtype: Simulation
-
-    :raises WRENCHException: if there is any error during the simulation instantiation
-    """
-    try:
-        return Simulation(platform_file_path, controller_hostname, daemon_host, daemon_port)
-    except WRENCHException:
-        raise
