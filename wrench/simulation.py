@@ -20,6 +20,7 @@ from .standard_job import StandardJob
 from .storage_service import StorageService
 from .file_registry_service import FileRegistryService
 from .task import Task
+from .file import File
 
 
 class Simulation:
@@ -56,6 +57,7 @@ class Simulation:
         # Simulation Item Dictionaries
         self.tasks = {}
         self.jobs = {}
+        self.files = {}
         self.compute_services = {}
         self.storage_services = {}
         self.file_registry_services = {}
@@ -211,6 +213,137 @@ class Simulation:
             self.tasks[name] = Task(self, name)
             return self.tasks[name]
         raise WRENCHException(response["failure_cause"])
+
+    def add_file(self, name: str, size: int) -> File:
+        """
+        Add a file to the workflow
+
+        :param name: file name
+        :type name: str
+        :param size: number of bytes
+        :type flops: int
+
+        :return: A file object
+        :rtype: File
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"name": name, "size": size}
+        r = requests.post(f"{self.daemon_url}/addFile", json=data)
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            self.files[name] = File(self, name)
+            return self.files[name]
+        raise WRENCHException(response["failure_cause"])
+
+    def add_input_file(self, task: str, file: File) -> None:
+        """
+        Add an input file to a task
+
+        :param task_name: the task's name
+        :type task_name: str
+        :param file_name: the file's object
+        :type file_name: File
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"task": task, "file": file.get_name()}
+        r = requests.post(f"{self.daemon_url}/addInputFile", json=data)
+
+        response = r.json()
+        if not response["wrench_api_request_success"]:
+            raise WRENCHException(response["failure_cause"])
+
+    def add_output_file(self, task: str, file: File) -> None:
+        """
+        Add an output file to a task
+
+        :param task_name: the task's name
+        :type task_name: str
+        :param file_name: the file's object
+        :type file_name: File
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"task": task, "file": file.get_name()}
+        r = requests.post(f"{self.daemon_url}/addOutputFile", json=data)
+
+        response = r.json()
+        if not response["wrench_api_request_success"]:
+            raise WRENCHException(response["failure_cause"])
+
+    def get_input_files(self) -> List[str]:
+        """
+        Get a list of all input files of the workflow
+
+        :return: The list of input files
+        :rtype: List[str]
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = requests.post(f"{self.daemon_url}/getInputFiles", json={})
+        
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["files"]
+        raise WRENCHException(response["failure_cause"])
+
+    def get_task_input_files(self, task: str) -> List[str]:
+        """
+        Get a list of input files for a given task
+
+        :return: The list of input files
+        :rtype: List[str]
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"task": task}
+
+        r = requests.post(f"{self.daemon_url}/getTaskInputFiles", json=data)
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["files"]
+        raise WRENCHException(response["failure_cause"])
+
+    def stage_files(self, storage_service: StorageService) -> None:
+        """
+        Stage all input files into the storage service
+
+        :param storage_service: Storage service's name
+        :type storage_service: StorageService
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"storage": storage_service.get_name()}
+
+        r = requests.post(f"{self.daemon_url}/stageInputFiles", json=data)
+
+        response = r.json()
+        if not response["wrench_api_request_success"]:
+            raise WRENCHException(response["failure_cause"])
+
+    def file_get_size(self, file_name: str) -> int:
+        """
+        Get the number of bytes for a given file
+
+        :param file_name: the file's name
+        :type file_name: str
+
+        :return: The size of the file in bytes
+        :rtype: int
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"name": file_name}
+        r = requests.post(f"{self.daemon_url}/fileGetSize", json=data)
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["size"]
+        raise WRENCHException(response["failure_cause"])
+
 
     def task_get_flops(self, task_name: str) -> float:
         """

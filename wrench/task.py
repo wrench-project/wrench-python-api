@@ -9,7 +9,8 @@
 # (at your option) any later version.
 
 from .simulation_item import SimulationItem
-
+from .file import File
+from typing import List
 
 class Task(SimulationItem):
     """
@@ -63,6 +64,33 @@ class Task(SimulationItem):
             f"max_num_cores={self.get_max_num_cores()}, " + \
             f"memory={self.get_memory()})"
         return s
+
+    def add_input_file(self, file: File) -> None:
+        """
+        Add a file as input file for this task
+
+        :param file: File name
+        :type file: File
+        """
+        return self.simulation.add_input_file(self.name, file)
+
+    def add_output_file(self, file: File) -> None:
+        """
+        Add a file as output file for this task
+
+        :return: List of input files
+        :rtype: List[str]
+        """
+        return self.simulation.add_output_file(self.name, file)
+
+    def get_input_files(self) -> List[str]:
+        """
+        Get the list of input files for this task
+
+        :param file: File name
+        :type file: File
+        """
+        return self.simulation.get_task_input_files(self.name)
 
     def get_flops(self) -> float:
         """

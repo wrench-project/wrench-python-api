@@ -45,6 +45,11 @@ if __name__ == "__main__":
         frs = simulation.create_file_registry_service("ControllerHost")
         print(f"Created file registry service has name {frs.get_name()}")
 
+        print("Adding a 1kB file to the workflow...")
+        file1 = simulation.add_file("file1", 1024)
+        print(f"Created file {file1}")
+
+
         print("Sleeping for 10 seconds...")
         simulation.sleep(10)
         print(f"Time now is {simulation.get_simulated_time()}")
@@ -55,6 +60,14 @@ if __name__ == "__main__":
               f", min_num_cores={task1.get_min_num_cores()}" +
               f", max_num_cores={task1.get_max_num_cores()}" +
               f", memory={task1.get_memory()}")
+
+        task1.add_input_file(file1)
+        print(f"Attached file {file1} as input file to task {task1.get_name()}")
+
+        print(f"All input files of the workflow: {simulation.get_input_files()}")
+        print(f"Input files of the task {task1.get_name()}: {task1.get_input_files()}")
+        simulation.stage_files(ss)
+        print(f"Input files staged on storage {ss}")
 
         print("Creating a standard job with a single 100.0 flop task")
         job = simulation.create_standard_job([task1])
