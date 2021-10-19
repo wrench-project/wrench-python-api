@@ -61,13 +61,13 @@ if __name__ == "__main__":
               f", max_num_cores={task1.get_max_num_cores()}" +
               f", memory={task1.get_memory()}")
 
-        task1.add_input_file(file1)
-        print(f"Attached file {file1} as input file to task {task1.get_name()}")
+        # task1.add_input_file(file1)
+        # print(f"Attached file {file1} as input file to task {task1.get_name()}")
 
-        print(f"All input files of the workflow: {simulation.get_input_files()}")
-        print(f"Input files of the task {task1.get_name()}: {task1.get_input_files()}")
-        simulation.stage_files(ss)
-        print(f"Input files staged on storage {ss}")
+        # print(f"All input files of the workflow: {simulation.get_input_files()}")
+        # print(f"Input files of the task {task1.get_name()}: {task1.get_input_files()}")
+        # simulation.stage_files(ss)
+        # print(f"Input files staged on storage {ss}")
 
         print("Creating a standard job with a single 100.0 flop task")
         job = simulation.create_standard_job([task1])
