@@ -9,6 +9,7 @@
 # (at your option) any later version.
 
 from .simulation_item import SimulationItem
+from .file import File
 
 
 class StorageService(SimulationItem):
@@ -28,8 +29,12 @@ class StorageService(SimulationItem):
         super().__init__(simulation, name)
 
     def create_file_copy(self, file: File) -> None:
+        """
+        Creates a copy of a file (ex nihilo) at this storage service
+        :param file: the file
+        :return:
+        """
         return self.simulation.create_file_copy_at_storage_service(file.name, self.name)
-
 
     def __str__(self) -> str:
         """
