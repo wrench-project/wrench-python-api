@@ -27,6 +27,10 @@ class StorageService(SimulationItem):
         """
         super().__init__(simulation, name)
 
+    def create_file_copy(self, file: File) -> None:
+        return self.simulation.create_file_copy_at_storage_service(file.name, self.name)
+
+
     def __str__(self) -> str:
         """
         :return: String representation of the storage service

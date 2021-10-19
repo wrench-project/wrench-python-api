@@ -145,6 +145,24 @@ class Simulation:
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
 
+    def create_file_copy_at_storage_service(self, file_name: str, storage_service_name: str):
+        """
+        Create a copy (ex nihilo) of a file at a storage service
+
+        :param file_name: the file name
+        :type file_name: str
+        :param storage_service_name: the name of the storage service
+        :type storage_service_name: str
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"storage_service_name": storage_service_name, "filename": file_name}
+        r = requests.post(f"{self.daemon_url}/createFileCopyAtStorageService", json=data)
+        response = r.json()
+        if not response["wrench_api_request_success"]:
+            raise WRENCHException(response["failure_cause"])
+
+
     def get_simulation_events(self) -> List[Dict[str, Union[str, StandardJob, ComputeService]]]:
         """
         Get all simulation events since last time we checked
