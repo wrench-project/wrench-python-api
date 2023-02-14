@@ -37,7 +37,7 @@ if __name__ == "__main__":
         cr_cores = (6, 4, 8)
         cr_memory = (16.0, 24.0, 32.0)
         print("Creating a bare-metal compute service on ComputeHost...")
-        cs = simulation.create_bare_metal_compute_service("ComputeHost", (cr_name, (cr_cores, cr_memory)))
+        cs = simulation.create_bare_metal_compute_service("ComputeHost", ("cr1", (6, 16.0)))
 
         print(f"Created compute service has name {cs.get_name()}")
 

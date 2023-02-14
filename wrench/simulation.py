@@ -484,7 +484,7 @@ class Simulation:
         response = r.json()
         return response["time"]
 
-    def create_bare_metal_compute_service(self, hostname: str, compute_resources: map, scratch_space: str,
+    def create_bare_metal_compute_service(self, hostname: str, compute_resources: tuple, scratch_space: str,
                                           property_list: list, messagepayload_list: list) -> ComputeService:
         """
         Create a bare-metal compute service
