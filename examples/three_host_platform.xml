@@ -20,6 +20,11 @@
             </disk>
         </host>
 
+        <!-- The host on which the batch compute service will run -->
+        <host id="BatchHeadNode" speed="10Gf" core="1">
+            <prop id="ram" value="16GB" />
+       </host>
+
         <!-- A network link -->
         <link id="network_link" bandwidth="50MBps" latency="20us"/>
 
