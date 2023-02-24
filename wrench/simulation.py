@@ -484,12 +484,8 @@ class Simulation:
         response = r.json()
         return response["time"]
 
-<<<<<<< HEAD
-    def create_bare_metal_compute_service(self, hostname: str, resource: dict(str, int, float),
-=======
     def create_bare_metal_compute_service(self, hostname: str,
                                           resources:  dict[str, tuple[int, double]],
->>>>>>> 971ca2c060722d902332d7ed3d38ca02f1377e42
                                           scratch_space: str) -> ComputeService:
         """
         Create a bare-metal compute service
