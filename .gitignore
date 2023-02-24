@@ -1,3 +1,6 @@
 .idea
 docs/build
 wrench/__pycache__/
+build/
+dist/
+wrench_api.egg-info/
