@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
         print(f"Creating compute resources")
         print("Creating a bare-metal compute service on ComputeHost...")
-        cs = simulation.create_bare_metal_compute_service("BatchHeadNode", 16, 64.0, "")
+        cs = simulation.create_bare_metal_compute_service("BatchHeadNode", 16, 64.0,"")
 
         print(f"Created compute service has name {cs.get_name()}")
 
