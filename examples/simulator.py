@@ -39,7 +39,7 @@ if __name__ == "__main__":
         cs = simulation.create_bare_metal_compute_service("BatchHeadNode",
                                                           {{"Host1": (6, 10.0)},
                                                            {"Host2": (6, 10.0)}},
-                                                          "/scratch")
+                                                          gi"/scratch")
 
         print(f"Created compute service has name {cs.get_name()}")
 

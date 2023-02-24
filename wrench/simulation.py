@@ -485,10 +485,9 @@ class Simulation:
         return response["time"]
 
     def create_bare_metal_compute_service(self, hostname: str,
-                                          resources:  dict[str, tuple[int, double]],
+                                          resources:  dict[str, tuple[int, float]],
                                           scratch_space: str) -> ComputeService:
         """
-        Create a bare-metal compute service
 
         :param hostname: name of the (simulated) host on which the compute service should run
         :type hostname: str
