@@ -484,17 +484,15 @@ class Simulation:
         response = r.json()
         return response["time"]
 
-    def create_bare_metal_compute_service(self, hostname: str, num_cores: int, num_memory: float,
+    def create_bare_metal_compute_service(self, hostname: str, resource: dict(str, int, float),
                                           scratch_space: str) -> ComputeService:
         """
         Create a bare-metal compute service
 
         :param hostname: name of the (simulated) host on which the compute service should run
         :type hostname: str
-        :param num_cores: the number of cores a compute host will have available
-        :type num_cores: int
-        :param num_memory: the RAM value a compute host wil have available
-        :type num_memory: float
+        :param resource: the number of cores a compute host will have available
+        :type resource: str, int float
         :param scratch_space:  the compute service’s scratch space’s mount point (”” means none)
         :type scratch_space: str
         :param property_list: a property list ({} means “use all defaults”)
@@ -506,7 +504,7 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {"head_host": hostname, "num_cores": num_cores, "num_memory": num_memory, "scratch_space": scratch_space}
+        data = {"head_host": hostname, "resource": resource, "scratch_space": scratch_space}
         r = requests.post(f"{self.daemon_url}/addBareMetalComputeService", json=data)
         response = r.json()
 
