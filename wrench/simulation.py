@@ -9,6 +9,8 @@
 # (at your option) any later version.
 
 import atexit
+import json
+
 import requests
 import pathlib
 
@@ -485,7 +487,7 @@ class Simulation:
         return response["time"]
 
     def create_bare_metal_compute_service(self, hostname: str,
-                                          resources:  dict[str, tuple[int, float]],
+                                          resources: dict[str, [int, float]],
                                           scratch_space: str) -> ComputeService:
         """
 
@@ -503,8 +505,7 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-
-        data = {"head_host": hostname, "resources": resources, "scratch_space": scratch_space}
+        data = {"head_host": hostname, "resources": json.dumps(resources), "scratch_space": scratch_space}
 
         r = requests.post(f"{self.daemon_url}/addBareMetalComputeService", json=data)
         response = r.json()
