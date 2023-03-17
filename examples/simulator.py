@@ -31,10 +31,11 @@ if __name__ == "__main__":
         print(f"Hosts in the platform are: {hosts}")
         print(f"Creating compute resources")
         print("Creating a bare-metal compute service on ComputeHost...")
-        cs = simulation.create_bare_metal_compute_service("ComputeHost",
+        cs = simulation.create_bare_metal_compute_service("BatchHeadNode",
                                                           {"Host1": (6, 10.0),
-                                                           "Host2": (6, 10.0)},
-                                                          "")
+                                                           "Host2": (6, 12.0)},
+                                                          "/scratch", [],
+                                                          [])
 
         print(f"Created compute service has name {cs.get_name()}")
 
