@@ -140,7 +140,12 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {"job_name": job_name, "compute_service_name": cs_name}
+        '''
+        ToDo: we already have job_name in route, do we have to put it in json
+        However, in wrench-openapi.json, job name was described as job_id - jid
+        '''
+        #ToDo: remove redundent field from json
+        data = {"compute_service_name": cs_name}
         r = requests.post(f"{self.daemon_url}/{self.simid}/{job_name}/submit", json=data)
         response = r.json()
         if not response["wrench_api_request_success"]:
@@ -157,7 +162,7 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {"storage_service_name": storage_service_name, "filename": file_name}
+        data = {"filename": file_name}
         r = requests.post(f"{self.daemon_url}/{self.simid}/{storage_service_name}/createFileCopy", json=data)
         response = r.json()
         if not response["wrench_api_request_success"]:
@@ -376,7 +381,7 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {"name": task_name}
+        data = {}
         r = requests.get(f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetFlops", json=data)
 
         response = r.json()
@@ -396,7 +401,7 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {"name": task_name}
+        data = {}
         r = requests.get(f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetMinNumCores", json=data)
 
         response = r.json()
@@ -416,7 +421,7 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {"name": task_name}
+        data = {}
         r = requests.get(f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetMaxNumCores", json=data)
 
         response = r.json()
@@ -436,7 +441,7 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {"name": task_name}
+        data = {}
         r = requests.get(f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetMemory", json=data)
 
         response = r.json()
@@ -472,7 +477,7 @@ class Simulation:
         :type seconds: int
         """
         data = {"increment": seconds}
-        requests.post(f"{self.daemon_url}/{self.simid}/advanceTime", json=data)
+        requests.put(f"{self.daemon_url}/{self.simid}/advanceTime", json=data)
 
     def get_simulated_time(self) -> int:
         """

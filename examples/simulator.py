@@ -118,6 +118,7 @@ if __name__ == "__main__":
 
         print(f"Time is {simulation.get_simulated_time()}")
 
+        # ToDo: In wrench daemon, the route starts with /api, anything to change?
         print("Terminating simulation daemon")
         simulation.terminate()
 
