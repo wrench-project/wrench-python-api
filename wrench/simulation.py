@@ -112,7 +112,7 @@ class Simulation:
         """
         if not self.terminated:
             try:
-                requests.post(f"{self.daemon_url}/terminateSimulation", json={})
+                requests.post(f"{self.daemon_url}/{self.simid}/terminateSimulation", json={})
             except requests.exceptions.ConnectionError:
                 pass  # The server process was just killed by me!
         self.terminated = True
