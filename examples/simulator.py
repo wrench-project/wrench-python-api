@@ -7,7 +7,6 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-
 import pathlib
 import os
 import sys
@@ -24,19 +23,22 @@ if __name__ == "__main__":
     try:
         current_dir = pathlib.Path(__file__).parent.resolve()
         platform_file_path = pathlib.Path(current_dir / "three_host_platform.xml")
-        
+
         simulation = wrench.Simulation()
         simulation.start(platform_file_path, "ControllerHost")
 
         time.sleep(5)
         #ToDo: fix the python api format make compatible with crowcpp
         print(f"New simulation, time is {simulation.get_simulated_time()}")
-
         hosts = simulation.get_all_hostnames()
         print(f"Hosts in the platform are: {hosts}")
-
+        print(f"Creating compute resources")
         print("Creating a bare-metal compute service on ComputeHost...")
-        cs = simulation.create_bare_metal_compute_service("ComputeHost")
+        cs = simulation.create_bare_metal_compute_service("BatchHeadNode",
+                                                          {"Host1": (6, 10.0),
+                                                           "Host2": (6, 12.0)},
+                                                          "/scratch", [],
+                                                          [])
 
         print(f"Created compute service has name {cs.get_name()}")
 
