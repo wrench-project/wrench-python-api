@@ -494,26 +494,29 @@ class Simulation:
 
     def create_bare_metal_compute_service(self, hostname: str,
                                           resources: dict[str, [int, float]],
-                                          scratch_space: str, property_list: list,
-                                          messagepayload_list: list) -> ComputeService:
+                                          scratch_space: str,
+                                          property_list: dict[str, str],
+                                          message_payload_list: dict[str, float]) -> ComputeService:
         """
 
         :param hostname: name of the (simulated) host on which the compute service should run
         :type hostname: str
         :param resources: compute resources as a dict of hostnames where values are tuples of #cores and ram in bytes
-        :param scratch_space:  the compute service’s scratch space’s mount point (”” means none)
+        :param scratch_space: the compute service’s scratch space’s mount point (”” means none)
         :type scratch_space: str
         :param property_list: a property list ({} means “use all defaults”)
-        :type property_list: list
-        :param messagepayload_list:  a message payload list ({} means “use all defaults”)
-        :type messagepayload_list: list
+        :type property_list: dict
+        :param message_payload_list: a message payload list ({} means “use all defaults”)
+        :type message_payload_list: dict
         :return: the service name
         :rtype: ComputeService
 
         :raises WRENCHException: if there is any error in the response
         """
         data = {"head_host": hostname, "resources": json.dumps(resources), "scratch_space": scratch_space,
-                "property_list": property_list}
+                "property_list": json.dumps(property_list),
+                "message_payload_list": json.dumps(message_payload_list),
+                }
         r = requests.post(f"{self.daemon_url}/{self.simid}/addBareMetalComputeService", json=data)
         response = r.json()
 
