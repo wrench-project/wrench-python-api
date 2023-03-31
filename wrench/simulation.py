@@ -526,6 +526,39 @@ class Simulation:
             return self.compute_services[compute_service_name]
         raise WRENCHException(response["failure_cause"])
 
+    def create_cloud_compute_service(self, hostname: str,
+                                     execution_host: list,
+                                     scratch_space: str,
+                                     property_list: dict[str, str],
+                                     message_payload_list: dict[str, float]) -> ComputeService:
+        """
+
+                :param hostname: name of the (simulated) host on which the compute service should run
+                :type hostname: str
+                :param execution_host: compute resources as a dict of hostnames where values are tuples of #cores and ram in bytes
+                :param scratch_space: the compute service’s scratch space’s mount point (”” means none)
+                :type scratch_space: str
+                :param property_list: a property list ({} means “use all defaults”)
+                :type property_list: dict
+                :param message_payload_list: a message payload list ({} means “use all defaults”)
+                :type message_payload_list: dict
+                :return: the service name
+                :rtype: ComputeService
+
+                :raises WRENCHException: if there is any error in the response
+                """
+        data = {"hostname": hostname, "execution_host": json.dumps(execution_host), "scratch_space": scratch_space,
+                "property_list": json.dumps(property_list),
+                "message_payload_list": json.dumps(message_payload_list)}
+        r = requests.post(f"{self.daemon_url}/{self.simid}/addCloudComputeService", json=data)
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            compute_service_name = response["service_name"]
+            self.compute_services[compute_service_name] = ComputeService(self, compute_service_name)
+            return self.compute_services[compute_service_name]
+        raise WRENCHException(response["failure_cause"])
+
     def create_simple_storage_service(self, hostname: str) -> StorageService:
         """
         Create a simple storage service
