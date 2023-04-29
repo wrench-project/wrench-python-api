@@ -28,12 +28,6 @@ if __name__ == "__main__":
         simulation.start(platform_file_path, "ControllerHost")
 
         time.sleep(5)
-        #ToDo: fix the python api format make compatible with crowcpp
-        print(f"New simulation, time is {simulation.get_simulated_time()}")
-        hosts = simulation.get_all_hostnames()
-        print(f"Hosts in the platform are: {hosts}")
-        print(f"Creating compute resources")
-        print("Creating a bare-metal compute service on ComputeHost...")
         cs = simulation.create_bare_metal_compute_service(
             "BatchHeadNode",
             {"Host1": (6, 10.0),
@@ -43,6 +37,12 @@ if __name__ == "__main__":
             {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
 
         print(f"Created compute service has name {cs.get_name()}")
+
+        print(f"Compute service supported jobs")
+
+        print(f"Compound Jobs: {cs.supportsCompoundJobs()}\n"
+              f"Pilot Jobs: {cs.supportsPilotJobs()}\n"
+              f"Standard Jobs: {cs.supportsStandardJobs}")
 
         print(f"Time is {simulation.get_simulated_time()}")
 
