@@ -49,11 +49,11 @@ if __name__ == "__main__":
         print(f"Created storage service has name {ss.get_name()}")
 
         # print(f"Creating a cloud compute service")
-        # ccs = simulation.create_cloud_compute_service("ComputeHost",
-        #                                               ["Host1"],
-        #                                               "/scratch",
-        #                                               {"CloudComputeServiceProperty": "5s"},
-        #                                               {"ServiceMessagePayload::STOP_DAEMON_PAYLAOD": 1024.0})
+        ccs = simulation.create_cloud_compute_service("ComputeHost",
+                                                      ["Host1"],
+                                                      "/scratch",
+                                                      {"CloudComputeServiceProperty": "5s"},
+                                                      {"ServiceMessagePayload::STOP_DAEMON_PAYLAOD": 1024.0})
         print(f"Create cloud service has name {ccs.get_name()}")
         print("Creating a file registry service on ControllerHost...")
         frs = simulation.create_file_registry_service("ControllerHost")
