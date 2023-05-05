@@ -16,28 +16,22 @@ import wrench
 
 if __name__ == "__main__":
 
-    if len(sys.argv) != 2:
-        sys.stderr.write(f"Usage: {sys.argv[0]} <# seconds of real time to sleep during simulation>\n")
-        exit(1)
-
     try:
         current_dir = pathlib.Path(__file__).parent.resolve()
-        platform_file_path = pathlib.Path(current_dir / "three_host_platform.xml")
+        platform_file_path = pathlib.Path(current_dir / "sample_platform.xml")
 
         simulation = wrench.Simulation()
         simulation.start(platform_file_path, "ControllerHost")
 
-        time.sleep(5)
-        #ToDo: fix the python api format make compatible with crowcpp
         print(f"New simulation, time is {simulation.get_simulated_time()}")
         hosts = simulation.get_all_hostnames()
         print(f"Hosts in the platform are: {hosts}")
         print(f"Creating compute resources")
         print("Creating a bare-metal compute service on ComputeHost...")
         cs = simulation.create_bare_metal_compute_service(
-            "BatchHeadNode",
-            {"Host1": (6, 10.0),
-             "Host2": (6, 12.0)},
+            "BatchHeadHost",
+            {"BatchHost1": (6, 10.0),
+             "BatchHost2": (6, 12.0)},
             "/scratch",
             {"BareMetalComputeServiceProperty::THREAD_STARTUP_OVERHEAD": "12s"},
             {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
@@ -48,12 +42,13 @@ if __name__ == "__main__":
         ss = simulation.create_simple_storage_service("StorageHost")
         print(f"Created storage service has name {ss.get_name()}")
 
-        # print(f"Creating a cloud compute service")
-        ccs = simulation.create_cloud_compute_service("ComputeHost",
-                                                      ["Host1"],
+        print(f"Creating a cloud compute service")
+        ccs = simulation.create_cloud_compute_service("CloudHeadHost",
+                                                      ["CloudHost1", "CloudHost2"],
                                                       "/scratch",
-                                                      {"CloudComputeServiceProperty": "5s"},
-                                                      {"ServiceMessagePayload::STOP_DAEMON_PAYLAOD": 1024.0})
+                                                      {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
+                                                      {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
+
         print(f"Create cloud service has name {ccs.get_name()}")
         print("Creating a file registry service on ControllerHost...")
         frs = simulation.create_file_registry_service("ControllerHost")
@@ -103,9 +98,6 @@ if __name__ == "__main__":
         events = simulation.get_simulation_events()
         for event in events:
             print(f"  - Event: {event}")
-
-        print(f"Sleeping {sys.argv[1]} seconds in real time")
-        os.system(f"sleep {sys.argv[1]}")
 
         print("Creating another task")
         task2 = simulation.create_task("task2", 100.0, 1, 1, 0)

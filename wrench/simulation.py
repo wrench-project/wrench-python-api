@@ -535,7 +535,7 @@ class Simulation:
 
                 :param hostname: name of the (simulated) host on which the compute service should run
                 :type hostname: str
-                :param execution_host: compute resources as a dict of hostnames where values are tuples of #cores and ram in bytes
+                :param execution_host: compute resources as a list of hostnames
                 :param scratch_space: the compute service’s scratch space’s mount point (”” means none)
                 :type scratch_space: str
                 :param property_list: a property list ({} means “use all defaults”)
@@ -547,11 +547,13 @@ class Simulation:
 
                 :raises WRENCHException: if there is any error in the response
                 """
-        data = {"hostname": hostname, "execution_host": json.dumps(execution_host), "scratch_space": scratch_space,
+        data = {"head_host": hostname, "resources": execution_host, "scratch_space": scratch_space,
                 "property_list": json.dumps(property_list),
                 "message_payload_list": json.dumps(message_payload_list)}
+
         r = requests.post(f"{self.daemon_url}/{self.simid}/addCloudComputeService", json=data)
         response = r.json()
+        print("RESPONSE: " + str(response))
 
         if response["wrench_api_request_success"]:
             compute_service_name = response["service_name"]
