@@ -553,7 +553,6 @@ class Simulation:
 
         r = requests.post(f"{self.daemon_url}/{self.simid}/addCloudComputeService", json=data)
         response = r.json()
-        print("RESPONSE: " + str(response))
 
         if response["wrench_api_request_success"]:
             compute_service_name = response["service_name"]
