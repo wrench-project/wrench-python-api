@@ -326,7 +326,7 @@ class Simulation:
         """
         data = {"task": task}
 
-        r = requests.post(f"{self.daemon_url}/getTaskInputFiles", json=data)
+        r = requests.post(f"{self.daemon_url}/inputFiles", json=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -363,7 +363,7 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
         data = {"name": file_name}
-        r = requests.get(f"{self.daemon_url}/{self.simid}/files/{file_name}/size", json=data)
+        r = requests.post(f"{self.daemon_url}/{self.simid}/files/{file_name}/size", json=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -464,7 +464,7 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
         data = {"job_name": job_name}
-        r = requests.get(f"{self.daemon_url}/{self.simid}/jobs/{job_name}/tasks", json=data)
+        r = requests.post(f"{self.daemon_url}/{self.simid}/jobs/{job_name}/tasks", json=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
