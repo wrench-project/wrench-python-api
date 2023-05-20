@@ -37,6 +37,13 @@ class ComputeService(SimulationItem):
         """
         return self.simulation.submit_standard_job(standard_job.get_name(), self.name)
 
+    def supports_compound_jobs(self) -> bool:
+        """
+        Returns true if the service supports compound jobs.
+        :return:
+        """
+        return self.simulation.supports_compound_jobs()
+
     def __str__(self) -> str:
         """
         :return: String representation of a standard job
@@ -52,3 +59,5 @@ class ComputeService(SimulationItem):
         """
         s = f"ComputeService(name={self.name})"
         return s
+
+

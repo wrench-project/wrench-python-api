@@ -616,6 +616,15 @@ class Simulation:
         response = r.json()
         return response["hostnames"]
 
+    def supports_compound_jobs(self) -> bool:
+        """
+        Returns true if the service supports compound jobs
+        :return: Boolean
+        """
+        r = requests.get(f"{self.daemon_url}/{self.simid}/supportsCompoundJobs", json={})
+        response = r.json()
+        return response
+
     ###############################
     # Private methods
     ###############################
