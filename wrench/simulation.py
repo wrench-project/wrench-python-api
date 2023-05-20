@@ -615,12 +615,13 @@ class Simulation:
         response = r.json()
         return response["hostnames"]
 
-    def supports_compound_jobs(self) -> bool:
+    def supports_compound_jobs(self, cs_name: str) -> bool:
         """
-        Returns true if the service supports compound jobs
+        Returns true if the compute service supports compound jobs
         :return: Boolean
         """
-        r = requests.get(f"{self.daemon_url}/{self.simid}/supportsCompoundJobs", json={})
+        data = {"compute_service_name": cs_name}
+        r = requests.get(f"{self.daemon_url}/{self.simid}/supportsCompoundJobs", json=data)
         response = r.json()
         return response
 

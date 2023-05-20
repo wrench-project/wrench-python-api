@@ -42,7 +42,7 @@ class ComputeService(SimulationItem):
         Returns true if the service supports compound jobs.
         :return:
         """
-        return self.simulation.supports_compound_jobs()
+        return self.simulation.supports_compound_jobs(self.name)
 
     def __str__(self) -> str:
         """
