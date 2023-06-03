@@ -40,9 +40,9 @@ if __name__ == "__main__":
         print(f"Created compute service has name {cs.get_name()}")
 
         print(f"Compute service supported jobs")
-        print(f"Compound Jobs: {cs.supports_compound_jobs()}\n")
-        #       f"Pilot Jobs: {cs.supportsPilotJobs()}\n"
-        #       f"Standard Jobs: {cs.supportsStandardJobs}")
+        print(f"Supports Compound Jobs: {cs.supports_compound_jobs()}\n"
+               f"Supports Pilot Jobs: {cs.supports_pilot_jobs()}\n"
+               f"Supports Standard Jobs: {cs.supports_standard_jobs()}")
 
         print(f"Time is {simulation.get_simulated_time()}")
 

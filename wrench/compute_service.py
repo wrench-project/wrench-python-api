@@ -44,6 +44,20 @@ class ComputeService(SimulationItem):
         """
         return self.simulation.supports_compound_jobs(self.name)
 
+    def supports_pilot_jobs(self) -> bool:
+        """
+        Returns true if the service supports pilot jobs.
+        :return:
+        """
+        return self.simulation.supports_pilot_jobs(self.name)
+
+    def supports_standard_jobs(self) -> bool:
+        """
+        Returns true if the service supports pilot jobs.
+        :return:
+        """
+        return self.simulation.supports_standard_jobs(self.name)
+
     def __str__(self) -> str:
         """
         :return: String representation of a standard job

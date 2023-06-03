@@ -623,7 +623,27 @@ class Simulation:
         data = {"compute_service_name": cs_name}
         r = requests.get(f"{self.daemon_url}/{self.simid}/supportsCompoundJobs", json=data)
         response = r.json()
-        return response
+        return response["result"]
+
+    def supports_pilot_jobs(self, cs_name: str) -> bool:
+        """
+        Returns true if the compute service supports pilot jobs
+        :return: Boolean
+        """
+        data = {"compute_service_name": cs_name}
+        r = requests.get(f"{self.daemon_url}/{self.simid}/supportsPilotJobs", json=data)
+        response = r.json()
+        return response["result"]
+
+    def supports_standard_jobs(self, cs_name: str) -> bool:
+        """
+        Returns true if the compute service supports pilot jobs
+        :return: Boolean
+        """
+        data = {"compute_service_name": cs_name}
+        r = requests.get(f"{self.daemon_url}/{self.simid}/supportsStandardJobs", json=data)
+        response = r.json()
+        return response["result"]
 
     ###############################
     # Private methods
