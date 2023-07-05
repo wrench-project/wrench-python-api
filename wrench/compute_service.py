@@ -74,4 +74,3 @@ class ComputeService(SimulationItem):
         s = f"ComputeService(name={self.name})"
         return s
 
-

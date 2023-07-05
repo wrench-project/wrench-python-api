@@ -560,6 +560,33 @@ class Simulation:
             return self.compute_services[compute_service_name]
         raise WRENCHException(response["failure_cause"])
 
+    def create_vm(self, num_cores: int,
+                  ram_memory: float,
+                  property_list: dict[str, str],
+                  message_payload_list: dict[str, float]) -> str:
+        """
+                :param Num_cores: the number of cores for the VM
+                :type num_cores: int
+                :param ram_memory: the VM’s RAM memory_manager_service capacity
+                :type ram_memory: float
+                :param property_list: a property list for the CloudComputeService that will run on the VM ({} means “use all defaults”)
+                :type property_list: dict
+                :param message_payload_list: a message payload list for the CloudComputeService that will run on the VM ({} means “use all defaults”))
+                :type message_payload_list: dict
+                :return: the service name
+                :rtype: ComputeService
+
+                :raises WRENCHException: if there is any error in the response
+        """
+
+        data = {"num_cores": num_cores, "ram_memory": ram_memory,
+                "property_list": json.dumps(property_list),
+                "message_payload_list": json.dumps(message_payload_list)}
+
+        r = requests.post(f"{self.daemon_url}/{self.simid}/createVM", json=data)
+        response = r.json()
+        return response["result"]
+
     def create_simple_storage_service(self, hostname: str) -> StorageService:
         """
         Create a simple storage service

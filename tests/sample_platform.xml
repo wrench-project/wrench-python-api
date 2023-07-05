@@ -60,7 +60,7 @@
         <route src="CloudHeadHost" dst="StorageHost"> <link_ctn id="network_link"/> </route>
         <route src="BatchHost1" dst="BatchHeadHost"> <link_ctn id="network_link"/> </route>
         <route src="BatchHost2" dst="BatchHeadHost"> <link_ctn id="network_link"/> </route>
-         <route src="CloudHost1" dst="CloudHeadHost"> <link_ctn id="network_link"/> </route>
+        <route src="CloudHost1" dst="CloudHeadHost"> <link_ctn id="network_link"/> </route>
         <route src="CloudHost2" dst="CloudHeadHost"> <link_ctn id="network_link"/> </route>
 
     </zone>
