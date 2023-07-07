@@ -58,6 +58,13 @@ class ComputeService(SimulationItem):
         """
         return self.simulation.supports_standard_jobs(self.name)
 
+    def create_vm(self, num_cores, ram_memory, property_list, message_payload_list) -> str:
+        """
+        Returns name of VM created.
+        :return:
+        """
+        return self.simulation.create_vm(num_cores, ram_memory, property_list, message_payload_list)
+
     def __str__(self) -> str:
         """
         :return: String representation of a standard job

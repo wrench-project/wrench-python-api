@@ -585,7 +585,12 @@ class Simulation:
 
         r = requests.post(f"{self.daemon_url}/{self.simid}/createVM", json=data)
         response = r.json()
-        return response["result"]
+
+        if response["wrench_api_request_success"]:
+            compute_service_name = response["service_name"]
+            self.compute_services[compute_service_name] = ComputeService(self, compute_service_name)
+            return self.compute_services[compute_service_name]
+        raise WRENCHException(response["failure_cause"])
 
     def create_simple_storage_service(self, hostname: str) -> StorageService:
         """
