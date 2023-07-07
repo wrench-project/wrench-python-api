@@ -15,7 +15,6 @@ from .standard_job import StandardJob
 class ComputeService(SimulationItem):
     """
     WRENCH Compute Service class
-
     :param simulation: simulation object
     :type simulation: Simulation
     :param name: Compute service name
@@ -60,10 +59,30 @@ class ComputeService(SimulationItem):
 
     def create_vm(self, num_cores, ram_memory, property_list, message_payload_list) -> str:
         """
-        Returns name of VM created.
-        :return:
+        Create a new VM instance on a cloud compute service
+
+        :param num_cores: number of cores in the VM
+        :type num_cores: int
+        :param ram_memory: RAM size in bytes
+        :type ram_memory: int
+        :param property_list: a property list ({} means “use all defaults”)
+        :type property_list: dict
+        :param message_payload_list: a message payload list ({} means “use all defaults”)
+        :type message_payload_list: dict
+        :return: a VM name
+        :rtype: str
         """
         return self.simulation.create_vm(self.name, num_cores, ram_memory, property_list, message_payload_list)
+
+    def start_vm(self, vm_name):
+        """
+        Starts a VM and get the name of its associated bare metal compute service
+        :param vm_name: name of the vm
+        :type vm_name: str
+        :return: a bare metal compute service name
+        :rtype: str
+        """
+        return self.simulation.start_vm(self.name, vm_name)
 
     def __str__(self) -> str:
         """

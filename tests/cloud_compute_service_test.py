@@ -23,21 +23,10 @@ if __name__ == "__main__":
         simulation = wrench.Simulation()
         simulation.start(platform_file_path, "ControllerHost")
 
-        print(f"New simulation, time is {simulation.get_simulated_time()}")
+        print(f"Simulation, time is {simulation.get_simulated_time()}")
         hosts = simulation.get_all_hostnames()
         print(f"Hosts in the platform are: {hosts}")
         print(f"Creating compute resources")
-        # print("Creating a bare-metal compute service on ComputeHost...")
-
-        # cs = simulation.create_bare_metal_compute_service(
-        #     "BatchHeadHost",
-        #     {"BatchHost1": (6, 10.0),
-        #      "BatchHost2": (6, 12.0)},
-        #     "/scratch",
-        #     {"BareMetalComputeServiceProperty::THREAD_STARTUP_OVERHEAD": "12s"},
-        #     {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
-        #
-        # print(f"Created compute service has name {cs.get_name()}")
 
         print("Creating a cloud compute service on CloudHeadHost...")
 
@@ -50,16 +39,27 @@ if __name__ == "__main__":
 
         print(f"Compute service supported jobs")
         print(f"Supports Compound Jobs: {ccs.supports_compound_jobs()}\n"
-               f"Supports Pilot Jobs: {ccs.supports_pilot_jobs()}\n"
-               f"Supports Standard Jobs: {ccs.supports_standard_jobs()}")
+              f"Supports Pilot Jobs: {ccs.supports_pilot_jobs()}\n"
+              f"Supports Standard Jobs: {ccs.supports_standard_jobs()}")
 
-        print("Creating VM")
-
-        vm = ccs.create_vm(8, 12.0,
+        print("Creating VM..")
+        vm_name = ccs.create_vm(1, 100.0,
                                   {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
                                   {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
 
-        print(f"Time is {simulation.get_simulated_time()}")
+        vm_cs = ccs.start_vm(vm_name)
+
+        print(f"Created and started a VM named {vm_name} that runs a bare metal compute service named {vm_cs.get_name()}")
+
+        print(f"Submitting a job do this bare metal compute service")
+        task1 = simulation.create_task("task1", 10000000000.0, 1, 1, 0) 
+        job = simulation.create_standard_job([task1])
+        vm_cs.submit_standard_job(job)
+        print(f"Simulation, time is {simulation.get_simulated_time()}")
+        print(f"Waiting for job completion...")
+        event = simulation.wait_for_next_event()
+        print(f"Simulation, time is {simulation.get_simulated_time()}")
+        print(f"Got this event: {event}")
 
         # ToDo: In wrench daemon, the route starts with /api, anything to change?
         print("Terminating simulation daemon")

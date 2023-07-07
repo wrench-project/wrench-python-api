@@ -498,6 +498,7 @@ class Simulation:
                                           property_list: dict[str, str],
                                           message_payload_list: dict[str, float]) -> ComputeService:
         """
+        Create a bare metal compute service
 
         :param hostname: name of the (simulated) host on which the compute service should run
         :type hostname: str
@@ -592,8 +593,29 @@ class Simulation:
 
         if response["wrench_api_request_success"]:
             return response["vm_name"]
-            # self.compute_services[compute_service_name] = ComputeService(self, compute_service_name)
-            # return self.compute_services[compute_service_name]
+        raise WRENCHException(response["failure_cause"])
+
+    def start_vm(self, service_name: str, vm_name: str) -> str:
+        """
+        Starts a VM the bare metal compute service associated to a vm
+        :param service_name: name of the cloud compute service
+        :type service_name: str
+        :param vm_name: name of the vm
+        :type vm_name: str
+        :return: the name of the bare metal compute service associated to the VM
+        :rtype: str
+        """
+        data = {"service_name": service_name, "vm_name": vm_name}
+
+        r = requests.post(f"{self.daemon_url}/{self.simid}/startVM", json=data)
+        response = r.json()
+
+        print("RESPONSE: " + str(response))
+
+        if response["wrench_api_request_success"]:
+            mbcs_name = response["service_name"]
+            self.compute_services[mbcs_name] = ComputeService(self, mbcs_name)
+            return self.compute_services[mbcs_name]
         raise WRENCHException(response["failure_cause"])
 
     def create_simple_storage_service(self, hostname: str) -> StorageService:
