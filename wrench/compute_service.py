@@ -63,7 +63,7 @@ class ComputeService(SimulationItem):
         Returns name of VM created.
         :return:
         """
-        return self.simulation.create_vm(num_cores, ram_memory, property_list, message_payload_list)
+        return self.simulation.create_vm(self.name, num_cores, ram_memory, property_list, message_payload_list)
 
     def __str__(self) -> str:
         """

@@ -560,11 +560,15 @@ class Simulation:
             return self.compute_services[compute_service_name]
         raise WRENCHException(response["failure_cause"])
 
-    def create_vm(self, num_cores: int,
+    def create_vm(self,
+                  service_name: str,
+                  num_cores: int,
                   ram_memory: float,
                   property_list: dict[str, str],
                   message_payload_list: dict[str, float]) -> str:
         """
+                :param Service_name: the name of the cloud compute service
+                :type service_name: str
                 :param Num_cores: the number of cores for the VM
                 :type num_cores: int
                 :param ram_memory: the VM’s RAM memory_manager_service capacity
@@ -579,7 +583,7 @@ class Simulation:
                 :raises WRENCHException: if there is any error in the response
         """
 
-        data = {"num_cores": num_cores, "ram_memory": ram_memory,
+        data = {"service_name": service_name, "num_cores": num_cores, "ram_memory": ram_memory,
                 "property_list": json.dumps(property_list),
                 "message_payload_list": json.dumps(message_payload_list)}
 
@@ -587,9 +591,9 @@ class Simulation:
         response = r.json()
 
         if response["wrench_api_request_success"]:
-            compute_service_name = response["service_name"]
-            self.compute_services[compute_service_name] = ComputeService(self, compute_service_name)
-            return self.compute_services[compute_service_name]
+            return response["vm_name"]
+            # self.compute_services[compute_service_name] = ComputeService(self, compute_service_name)
+            # return self.compute_services[compute_service_name]
         raise WRENCHException(response["failure_cause"])
 
     def create_simple_storage_service(self, hostname: str) -> StorageService:
