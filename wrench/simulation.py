@@ -17,6 +17,8 @@ import pathlib
 from typing import Dict, List, Optional, Union
 
 from .compute_service import ComputeService
+from .bare_metal_compute_service import BareMetalComputeService
+from .cloud_compute_service import CloudComputeService
 from .exception import WRENCHException
 from .standard_job import StandardJob
 from .storage_service import StorageService
@@ -510,7 +512,7 @@ class Simulation:
         :param message_payload_list: a message payload list ({} means “use all defaults”)
         :type message_payload_list: dict
         :return: the service name
-        :rtype: ComputeService
+        :rtype: BareMetalComputeService
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -523,7 +525,7 @@ class Simulation:
 
         if response["wrench_api_request_success"]:
             compute_service_name = response["service_name"]
-            self.compute_services[compute_service_name] = ComputeService(self, compute_service_name)
+            self.compute_services[compute_service_name] = BareMetalComputeService(self, compute_service_name)
             return self.compute_services[compute_service_name]
         raise WRENCHException(response["failure_cause"])
 
@@ -544,7 +546,7 @@ class Simulation:
                 :param message_payload_list: a message payload list ({} means “use all defaults”)
                 :type message_payload_list: dict
                 :return: the service name
-                :rtype: ComputeService
+                :rtype: CloudComputeService
 
                 :raises WRENCHException: if there is any error in the response
                 """
@@ -557,7 +559,7 @@ class Simulation:
 
         if response["wrench_api_request_success"]:
             compute_service_name = response["service_name"]
-            self.compute_services[compute_service_name] = ComputeService(self, compute_service_name)
+            self.compute_services[compute_service_name] = CloudComputeService(self, compute_service_name)
             return self.compute_services[compute_service_name]
         raise WRENCHException(response["failure_cause"])
 
@@ -602,19 +604,17 @@ class Simulation:
         :type service_name: str
         :param vm_name: name of the vm
         :type vm_name: str
-        :return: the name of the bare metal compute service associated to the VM
-        :rtype: str
+        :return: A bare metal compute service
+        :rtype: BareMetalComputeService
         """
         data = {"service_name": service_name, "vm_name": vm_name}
 
         r = requests.post(f"{self.daemon_url}/{self.simid}/startVM", json=data)
         response = r.json()
 
-        print("RESPONSE: " + str(response))
-
         if response["wrench_api_request_success"]:
             mbcs_name = response["service_name"]
-            self.compute_services[mbcs_name] = ComputeService(self, mbcs_name)
+            self.compute_services[mbcs_name] = BareMetalComputeService(self, mbcs_name)
             return self.compute_services[mbcs_name]
         raise WRENCHException(response["failure_cause"])
 

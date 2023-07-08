@@ -14,6 +14,8 @@ __author__ = 'WRENCH Team - https://wrench-project.org'
 __credits__ = 'University of Hawaii at Manoa, Oak Ridge National Laboratory'
 
 from .compute_service import ComputeService
+from .bare_metal_compute_service import BareMetalComputeService
+from .cloud_compute_service import CloudComputeService
 from .exception import WRENCHException
 from .simulation import Simulation
 from .standard_job import StandardJob

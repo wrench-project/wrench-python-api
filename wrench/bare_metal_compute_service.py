@@ -8,14 +8,14 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-from .simulation_item import SimulationItem
+from .compute_service import ComputeService
 from .standard_job import StandardJob
 
 
-class ComputeService(SimulationItem):
+class BareMetalComputeService(ComputeService):
     """
-    WRENCH Compute Service class
-    :param simulation: simulation object
+    WRENCH Bare Metal Compute Service class
+    :param compute_service: Compute Service
     :type simulation: Simulation
     :param name: Compute service name
     :type name: str
@@ -27,30 +27,18 @@ class ComputeService(SimulationItem):
         """
         super().__init__(simulation, name)
 
-    def supports_compound_jobs(self) -> bool:
+    def submit_standard_job(self, standard_job: StandardJob) -> None:
         """
-        Returns true if the service supports compound jobs.
-        :return:
-        """
-        return self.simulation.supports_compound_jobs(self.name)
+        Submit a standard job to a compute service
 
-    def supports_pilot_jobs(self) -> bool:
+        :param standard_job: the standard job
+        :type standard_job: StandardJob
         """
-        Returns true if the service supports pilot jobs.
-        :return:
-        """
-        return self.simulation.supports_pilot_jobs(self.name)
-
-    def supports_standard_jobs(self) -> bool:
-        """
-        Returns true if the service supports pilot jobs.
-        :return:
-        """
-        return self.simulation.supports_standard_jobs(self.name)
+        return self.simulation.submit_standard_job(standard_job.get_name(), self.name)
 
     def __str__(self) -> str:
         """
-        :return: String representation of a compute service
+        :return: String representation of a bare metal compute service
         :rtype: str
         """
         s = f"Compute Service {self.name}"
@@ -58,7 +46,7 @@ class ComputeService(SimulationItem):
 
     def __repr__(self) -> str:
         """
-        :return: String representation of a ComputeService object
+        :return: String representation of a BareMetalComputeService object
         :rtype: str
         """
         s = f"ComputeService(name={self.name})"
