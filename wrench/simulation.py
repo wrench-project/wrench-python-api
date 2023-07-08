@@ -618,6 +618,46 @@ class Simulation:
             return self.compute_services[mbcs_name]
         raise WRENCHException(response["failure_cause"])
 
+    def shutdown_vm(self,
+                  service_name: str,
+                  vm_name: str):
+        """
+        Shutdowns a VM
+        :param service_name: name of the cloud compute service
+        :type service_name: str
+        :param vm_name: name of the vm
+        :type vm_name: str
+        """
+
+        data = {"service_name": service_name, "vm_name": vm_name}
+
+        r = requests.post(f"{self.daemon_url}/{self.simid}/shutdownVM", json=data)
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            return
+        raise WRENCHException(response["failure_cause"])
+
+    def destroy_vm(self,
+                    service_name: str,
+                    vm_name: str):
+        """
+        Destroy a VM
+        :param service_name: name of the cloud compute service
+        :type service_name: str
+        :param vm_name: name of the vm
+        :type vm_name: str
+        """
+
+        data = {"service_name": service_name, "vm_name": vm_name}
+
+        r = requests.post(f"{self.daemon_url}/{self.simid}/destroyVM", json=data)
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            return
+        raise WRENCHException(response["failure_cause"])
+
     def create_simple_storage_service(self, hostname: str) -> StorageService:
         """
         Create a simple storage service

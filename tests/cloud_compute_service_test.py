@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
         print(f"Created and started a VM named {vm_name} that runs a bare metal compute service named {vm_cs.get_name()}")
 
-        print(f"Submitting a job do this bare metal compute service")
+        print(f"Submitting a job do the VM's bare metal compute service")
         task1 = simulation.create_task("task1", 10000000000.0, 1, 1, 0)
         job = simulation.create_standard_job([task1])
         vm_cs.submit_standard_job(job)
@@ -60,6 +60,33 @@ if __name__ == "__main__":
         event = simulation.wait_for_next_event()
         print(f"Simulation, time is {simulation.get_simulated_time()}")
         print(f"Got this event: {event}")
+
+        print(f"Shutting down the VM")
+        ccs.shutdown_vm(vm_name)
+
+        print(f"(Re)starting  the VM")
+        vm_cs = ccs.start_vm(vm_name)
+
+        print(f"Submitting another job do the VM's bare metal compute service")
+        task2 = simulation.create_task("task2", 10000000000.0, 1, 1, 0)
+        job = simulation.create_standard_job([task2])
+        vm_cs.submit_standard_job(job)
+        print(f"Simulation, time is {simulation.get_simulated_time()}")
+        print(f"Waiting for job completion...")
+        event = simulation.wait_for_next_event()
+        print(f"Simulation, time is {simulation.get_simulated_time()}")
+        print(f"Got this event: {event}")
+
+        print(f"(Re)Shutting down the VM")
+        ccs.shutdown_vm(vm_name)
+
+        print(f"Destroying the VM")
+        ccs.destroy_vm(vm_name)
+
+        try:
+            ccs.destroy_vm(vm_name)
+        except wrench.WRENCHException as e:
+            pass
 
         # ToDo: In wrench daemon, the route starts with /api, anything to change?
         print("Terminating simulation daemon")

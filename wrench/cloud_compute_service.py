@@ -54,6 +54,24 @@ class CloudComputeService(ComputeService):
         """
         return self.simulation.start_vm(self.name, vm_name)
 
+    def shutdown_vm(self, vm_name):
+        """
+        Shutdowns a VM
+        :param vm_name: name of the vm
+        :type vm_name: str
+        """
+        self.simulation.shutdown_vm(self.name, vm_name)
+        return
+
+    def destroy_vm(self, vm_name):
+        """
+        Destroys a VM
+        :param vm_name: name of the vm
+        :type vm_name: str
+        """
+        self.simulation.destroy_vm(self.name, vm_name)
+        return
+
     def __str__(self) -> str:
         """
         :return: String representation of a cloud compute service
