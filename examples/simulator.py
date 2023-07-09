@@ -56,8 +56,6 @@ if __name__ == "__main__":
 
         print("Adding a 1kB file to the workflow...")
         file1 = simulation.add_file("file1", 1024)
-        print("PRINTGIN FILE")
-        print(file1)
         print(f"Created file {file1}")
 
         print("Create a copy of the file on the storage service")

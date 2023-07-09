@@ -260,15 +260,8 @@ class Simulation:
         r = requests.put(f"{self.daemon_url}/{self.simid}/addFile", json=data)
 
         response = r.json()
-        print(response)
         if response["wrench_api_request_success"]:
-            # print("Printing File")
-            # print(File(self, name))
-            print("CREATING FILE")
             self.files[name] = File(self, name)
-            print("CRATED FIL")
-            print("PRINTING FILE")
-            print(self.files[name])
             return self.files[name]
         raise WRENCHException(response["failure_cause"])
 
@@ -373,12 +366,8 @@ class Simulation:
         """
         # data = {"name": file_name}
         data = {}
-        print(f"IN FILE GET SIZE: {file_name}\n")
-        print(f"{self.daemon_url}/{self.simid}/files/{file_name}/size")
         r = requests.get(f"{self.daemon_url}/{self.simid}/files/{file_name}/size", json=data)
-        print(r)
         response = r.json()
-        print(response)
         if response["wrench_api_request_success"]:
             return response["size"]
         raise WRENCHException(response["failure_cause"])
