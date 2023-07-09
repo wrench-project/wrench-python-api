@@ -248,8 +248,8 @@ class Simulation:
 
         :param name: file name
         :type name: str
-        :param size: number of bytes
-        :type flops: int
+        :param size: file size in bytes
+        :type size: int
 
         :return: A file object
         :rtype: File
@@ -260,8 +260,15 @@ class Simulation:
         r = requests.put(f"{self.daemon_url}/{self.simid}/addFile", json=data)
 
         response = r.json()
+        print(response)
         if response["wrench_api_request_success"]:
+            # print("Printing File")
+            # print(File(self, name))
+            print("CREATING FILE")
             self.files[name] = File(self, name)
+            print("CRATED FIL")
+            print("PRINTING FILE")
+            print(self.files[name])
             return self.files[name]
         raise WRENCHException(response["failure_cause"])
 
@@ -364,10 +371,14 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {"name": file_name}
+        # data = {"name": file_name}
+        data = {}
+        print(f"IN FILE GET SIZE: {file_name}\n")
+        print(f"{self.daemon_url}/{self.simid}/files/{file_name}/size")
         r = requests.get(f"{self.daemon_url}/{self.simid}/files/{file_name}/size", json=data)
-
+        print(r)
         response = r.json()
+        print(response)
         if response["wrench_api_request_success"]:
             return response["size"]
         raise WRENCHException(response["failure_cause"])
@@ -658,21 +669,23 @@ class Simulation:
             return
         raise WRENCHException(response["failure_cause"])
 
-    def create_simple_storage_service(self, hostname: str) -> StorageService:
+    def create_simple_storage_service(self, hostname: str, mount_points: List[str]) -> StorageService:
         """
         Create a simple storage service
 
         :param hostname: name of the (simulated) host on which the storage service should run
         :type hostname: str
-
+        :param mount_points: list of mount points (i.e., disks) that the storage service should use
+        :type mount_points: List[str]
         :return: the service name
         :rtype: StorageService
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {"head_host": hostname}
+        data = {"head_host": hostname, "mount_points": mount_points}
         r = requests.post(f"{self.daemon_url}/{self.simid}/addSimpleStorageService", json=data)
         response = r.json()
+
 
         if response["wrench_api_request_success"]:
             storage_service_name = response["service_name"]

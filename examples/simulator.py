@@ -39,7 +39,7 @@ if __name__ == "__main__":
         print(f"Created compute service has name {cs.get_name()}")
 
         print("Creating a simple storage service on StorageHost...")
-        ss = simulation.create_simple_storage_service("StorageHost")
+        ss = simulation.create_simple_storage_service("StorageHost", ["/"])
         print(f"Created storage service has name {ss.get_name()}")
 
         print(f"Creating a cloud compute service")
@@ -56,6 +56,8 @@ if __name__ == "__main__":
 
         print("Adding a 1kB file to the workflow...")
         file1 = simulation.add_file("file1", 1024)
+        print("PRINTGIN FILE")
+        print(file1)
         print(f"Created file {file1}")
 
         print("Create a copy of the file on the storage service")
