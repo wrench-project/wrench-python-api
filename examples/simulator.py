@@ -72,8 +72,8 @@ if __name__ == "__main__":
               f", max_num_cores={task1.get_max_num_cores()}" +
               f", memory={task1.get_memory()}")
 
-        # task1.add_input_file(file1)
-        # print(f"Attached file {file1} as input file to task {task1.get_name()}")
+        task1.add_input_file(file1)
+        print(f"Attached file {file1} as input file to task {task1.get_name()}")
 
         # print(f"All input files of the workflow: {simulation.get_input_files()}")
         # print(f"Input files of the task {task1.get_name()}: {task1.get_input_files()}")
@@ -81,7 +81,7 @@ if __name__ == "__main__":
         # print(f"Input files staged on storage {ss}")
 
         print("Creating a standard job with a single 100.0 flop task")
-        job = simulation.create_standard_job([task1])
+        job = simulation.create_standard_job([task1], {file1: ss})
 
         print(f"Created standard job has name {job.get_name()}")
 
@@ -103,7 +103,7 @@ if __name__ == "__main__":
         task2 = simulation.create_task("task2", 100.0, 1, 1, 0)
 
         print("Creating another job...")
-        other_job = simulation.create_standard_job([task2])
+        other_job = simulation.create_standard_job([task2], {})
         print(f"Created standard job has name {other_job.get_name()}")
 
         print("Submitting the standard job to the compute service...")
@@ -128,3 +128,5 @@ if __name__ == "__main__":
     except wrench.WRENCHException as e:
         print(f"Error: {e}")
         exit(1)
+    except Exception as e:
+        print("OTHER EXCEPTION" + str(e))
