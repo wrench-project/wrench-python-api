@@ -86,32 +86,47 @@ class Task(SimulationItem):
     def get_input_files(self) -> List[str]:
         """
         Get the list of input files for this task
-
-        :param file: File name
-        :type file: File
+        :return: List of input file names
+        :rtype: List[str]
         """
         return self.simulation.get_task_input_files(self.name)
+
+    def get_output_files(self) -> List[str]:
+        """
+        Get the list of output files for this task
+        :return: List of output file names
+        :rtype: List[str]
+        """
+        return self.simulation.get_task_output_files(self.name)
 
     def get_flops(self) -> float:
         """
         Get the number of flops in a task
+        :return: A number of flops
+        :rtype: double
         """
         return self.simulation.task_get_flops(self.name)
 
     def get_min_num_cores(self) -> int:
         """
         Get the task's minimum number of required cores
+        :return: A number of cores
+        :rtype: integer
         """
         return self.simulation.task_get_min_num_cores(self.name)
 
     def get_max_num_cores(self) -> int:
         """
         Get the task's maximum number of required cores
+        :return: A number of cores
+        :rtype: integer
         """
         return self.simulation.task_get_max_num_cores(self.name)
 
     def get_memory(self) -> int:
         """
         Get the task's memory requirement
+        :return: A memory size in bytes
+        :rtype: double
         """
         return self.simulation.task_get_memory(self.name)

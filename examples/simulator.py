@@ -57,6 +57,9 @@ if __name__ == "__main__":
         print("Adding a 1kB file to the workflow...")
         file1 = simulation.add_file("file1", 1024)
         print(f"Created file {file1}")
+        print("Adding another 1kB file to the workflow...")
+        file2 = simulation.add_file("file2", 1024)
+        print(f"Created file {file2}")
 
         print("Create a copy of the file on the storage service")
         ss.create_file_copy(file1)
@@ -74,6 +77,11 @@ if __name__ == "__main__":
 
         task1.add_input_file(file1)
         print(f"Attached file {file1} as input file to task {task1.get_name()}")
+        print(f"The list of input files for task {task1.get_name()} is: {task1.get_input_files()}")
+        task1.add_output_file(file2)
+        print(f"Attached file {file2} as output file to task {task1.get_name()}")
+        print(f"The list of output files for task {task1.get_name()} is: {task1.get_output_files()}")
+
 
         # print(f"All input files of the workflow: {simulation.get_input_files()}")
         # print(f"Input files of the task {task1.get_name()}: {task1.get_input_files()}")
@@ -81,9 +89,11 @@ if __name__ == "__main__":
         # print(f"Input files staged on storage {ss}")
 
         print("Creating a standard job with a single 100.0 flop task")
-        job = simulation.create_standard_job([task1], {file1: ss})
+        job = simulation.create_standard_job([task1], {file1: ss, file2: ss})
 
         print(f"Created standard job has name {job.get_name()}")
+
+        print(f"This job contains the following tasks: {job.get_tasks()}")
 
         print("Submitting the standard job to the compute service...")
         cs.submit_standard_job(job)
@@ -128,5 +138,3 @@ if __name__ == "__main__":
     except wrench.WRENCHException as e:
         print(f"Error: {e}")
         exit(1)
-    except Exception as e:
-        print("OTHER EXCEPTION" + str(e))
