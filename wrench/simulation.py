@@ -437,6 +437,7 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/files/{file_name}/size", json={})
+
         response = r.json()
         if response["wrench_api_request_success"]:
             return response["size"]
