@@ -180,6 +180,29 @@ class Simulation:
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
 
+    def lookup_file_at_storage_service(self, file_name: str, storage_service_name: str):
+        """
+        Checks whether a copy of a file is stored at a storage service
+
+        :param file_name: the file name
+        :type file_name: str
+        :param storage_service_name: the name of the storage service
+        :type storage_service_name: str
+
+        :return: True or false
+        :rtype: bool
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"filename": file_name}
+        r = self.__send_request_to_daemon(requests.post,
+                                          f"{self.daemon_url}/{self.simid}/{storage_service_name}/lookupFile",
+                                          json=data)
+        response = r.json()
+        if not response["wrench_api_request_success"]:
+            raise WRENCHException(response["failure_cause"])
+        return response["result"]
+
     def get_simulation_events(self) -> List[Dict[str, Union[str, StandardJob, ComputeService]]]:
         """
         Get all simulation events since last time we checked

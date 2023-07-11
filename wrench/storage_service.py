@@ -36,6 +36,15 @@ class StorageService(SimulationItem):
         """
         return self.simulation.create_file_copy_at_storage_service(file.name, self.name)
 
+    def lookup_file(self, file: File) -> bool:
+        """
+        Checks whether a copy of a file is stored on the storage service
+        :param file: the file
+        :return: true or false
+        :rtype: bool
+        """
+        return self.simulation.lookup_file_at_storage_service(file.name, self.name)
+
     def __str__(self) -> str:
         """
         :return: String representation of the storage service

@@ -52,11 +52,11 @@ if __name__ == "__main__":
         frs = simulation.create_file_registry_service("ControllerHost")
         print(f"Created file registry service has name {frs.get_name()}")
 
-        print("Creating a 2-task chain workflow...")
+        print("Creating a 2-task chain workflow as a single job, which will fail due to missing file locations...")
         file1 = simulation.add_file("file1", 1024)
+        ss.create_file_copy(file1)
         file2 = simulation.add_file("file2", 1024)
         file3 = simulation.add_file("file3", 1024)
-        ss.create_file_copy(file1)
         task1 = simulation.create_task("task1", 10000000000, 1, 1, 0)
         task1.add_input_file(file1)
         task1.add_output_file(file2)
@@ -64,26 +64,36 @@ if __name__ == "__main__":
         task2.add_input_file(file2)
         task2.add_output_file(file3)
 
-        print("Creating a standard job with both tasks")
-        job = simulation.create_standard_job([task1, task2], {file1: ss, file2: ss, file3: ss})
+        print("Creating a standard job with both tasks, but that doesn't specify file locations")
+        job = simulation.create_standard_job([task1, task2], {})
 
         print("Submitting the standard job to the compute service...")
         cs.submit_standard_job(job)
         print("Job submitted!")
 
-        print("Sleeping for 1000 seconds...")
-        simulation.sleep(1000)
-        print(f"Time now is {simulation.get_simulated_time()}")
+        print("Getting simulation events...")
+        event = simulation.wait_for_next_event()
+        print(f"Received this event: {event}")
+        if event["event_type"] != "job_failure":
+            raise wrench.WRENCHException("Was expecting a job failure event but instead got a: " + event["event_type"])
 
-        print("Getting simulation events that have occurred while I slept...")
-        events = simulation.get_simulation_events()
-        for event in events:
-            print(f"  - Event: {event}")
+        print("Trying again, but giving file locations for first and last file (second file will be on scratch!)...")
+        job = simulation.create_standard_job([task1, task2], {file1: ss, file3: ss})
+        cs.submit_standard_job(job)
+        print("Getting simulation events...")
+        event = simulation.wait_for_next_event()
+        print(f"Received this event: {event}")
+        if event["event_type"] != "job_completion":
+            raise wrench.WRENCHException("Was expecting a job completion event but instead got a: " + event["event_type"])
 
         print(f"Task1's start date was: {task1.get_start_date()}")
         print(f"Task1's end date was: {task1.get_end_date()}")
         print(f"Task2's start date was: {task2.get_start_date()}")
         print(f"Task2's end date was: {task2.get_end_date()}")
+
+        print(f"File1 present on the storage service: {ss.lookup_file(file1)}")
+        print(f"File2 present on the storage service: {ss.lookup_file(file2)}")
+        print(f"File3 present on the storage service: {ss.lookup_file(file3)}")
 
         print(f"Time is {simulation.get_simulated_time()}")
 
