@@ -42,12 +42,25 @@ if __name__ == "__main__":
               f"Supports Pilot Jobs: {ccs.supports_pilot_jobs()}\n"
               f"Supports Standard Jobs: {ccs.supports_standard_jobs()}")
 
-        print("Creating VM..")
+        print("Creating VM...")
         vm_name = ccs.create_vm(1, 100.0,
                                   {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
                                   {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
 
+        # Checking that we cannot shutdown a non-started VM
+        try:
+            ccs.shutdown_vm(vm_name)
+            raise wrench.WRENCHException("Should not be able to shutdown a non-started VM")
+        except wrench.WRENCHException as e:
+            pass
+
         vm_cs = ccs.start_vm(vm_name)
+        # Doing it again, checking that we get an exception
+        try:
+            ccs.start_vm(vm_name)
+            raise wrench.WRENCHException("Should not be able to start a VM twice")
+        except wrench.WRENCHException as e:
+            pass
 
         print(f"Created and started a VM named {vm_name} that runs a bare metal compute service named {vm_cs.get_name()}")
 
@@ -63,6 +76,12 @@ if __name__ == "__main__":
 
         print(f"Shutting down the VM")
         ccs.shutdown_vm(vm_name)
+        # Doing it again, checking that we get an exception
+        try:
+            ccs.shutdown_vm(vm_name)
+            raise wrench.WRENCHException("Should not be able to shutdown a VM twice")
+        except wrench.WRENCHException as e:
+            pass
 
         print(f"(Re)starting  the VM")
         vm_cs = ccs.start_vm(vm_name)
@@ -83,12 +102,13 @@ if __name__ == "__main__":
         print(f"Destroying the VM")
         ccs.destroy_vm(vm_name)
 
+        # Doing it again, checking that we get an exception
         try:
             ccs.destroy_vm(vm_name)
+            raise wrench.WRENCHException("Should not be able to destroy a VM twice")
         except wrench.WRENCHException as e:
             pass
 
-        # ToDo: In wrench daemon, the route starts with /api, anything to change?
         print("Terminating simulation daemon")
         simulation.terminate()
 
