@@ -67,7 +67,6 @@ if __name__ == "__main__":
 
         print("Creating a standard job with both tasks")
         job = simulation.create_standard_job([task1, task2], {})
-
         print(f"Created standard job has name {job.get_name()}")
 
         print(f"This job contains the following tasks: {job.get_tasks()}")

@@ -17,30 +17,30 @@ import wrench
 if __name__ == "__main__":
 
     try:
+        # Instantiating the simulation based on a platform description file
         current_dir = pathlib.Path(__file__).parent.resolve()
         platform_file_path = pathlib.Path(current_dir / "sample_platform.xml")
 
+        # Creating a new WRENCH simulation
         simulation = wrench.Simulation()
+        # Starting the simulation, with this simulated process running on the host ControllerHost
         simulation.start(platform_file_path, "ControllerHost")
 
-        print(f"New simulation, time is {simulation.get_simulated_time()}")
+        print(f"Simulation, time is {simulation.get_simulated_time()}")
+
         hosts = simulation.get_all_hostnames()
         print(f"Hosts in the platform are: {hosts}")
-        print(f"Creating compute resources")
+
+        # Creating a couple of compute services
+        print(f"Creating compute services")
         print("Creating a bare-metal compute service on ComputeHost...")
-        cs = simulation.create_bare_metal_compute_service(
+        bmcs = simulation.create_bare_metal_compute_service(
             "BatchHeadHost",
             {"BatchHost1": (6, 10.0),
              "BatchHost2": (6, 12.0)},
             "/scratch",
             {"BareMetalComputeServiceProperty::THREAD_STARTUP_OVERHEAD": "12s"},
             {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
-
-        print(f"Created compute service has name {cs.get_name()}")
-
-        print("Creating a simple storage service on StorageHost...")
-        ss = simulation.create_simple_storage_service("StorageHost", ["/"])
-        print(f"Created storage service has name {ss.get_name()}")
 
         print(f"Creating a cloud compute service")
         ccs = simulation.create_cloud_compute_service("CloudHeadHost",
@@ -49,10 +49,14 @@ if __name__ == "__main__":
                                                       {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
                                                       {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
 
-        print(f"Create cloud service has name {ccs.get_name()}")
-        print("Creating a file registry service on ControllerHost...")
-        frs = simulation.create_file_registry_service("ControllerHost")
-        print(f"Created file registry service has name {frs.get_name()}")
+        # Creating a storage service
+        print("Creating a simple storage service on StorageHost...")
+        ss = simulation.create_simple_storage_service("StorageHost", ["/"])
+        print(f"Created storage service has name {ss.get_name()}")
+
+        # print("Creating a file registry service on ControllerHost...")
+        # frs = simulation.create_file_registry_service("ControllerHost")
+        # print(f"Created file registry service has name {frs.get_name()}")
 
         print("Adding a 1kB file to the workflow...")
         file1 = simulation.add_file("file1", 1024)
@@ -61,7 +65,7 @@ if __name__ == "__main__":
         file2 = simulation.add_file("file2", 1024)
         print(f"Created file {file2}")
 
-        print("Create a copy of the file on the storage service")
+        print("Creating a copy of the file on the storage service")
         ss.create_file_copy(file1)
 
         print("Sleeping for 10 seconds...")
@@ -82,28 +86,16 @@ if __name__ == "__main__":
         print(f"Attached file {file2} as output file to task {task1.get_name()}")
         print(f"The list of output files for task {task1.get_name()} is: {task1.get_output_files()}")
 
-
-        # print(f"All input files of the workflow: {simulation.get_input_files()}")
-        # print(f"Input files of the task {task1.get_name()}: {task1.get_input_files()}")
-        # simulation.stage_files(ss)
-        # print(f"Input files staged on storage {ss}")
-
-        print("Creating a standard job with a single 100.0 flop task")
+        print("Creating a standard job with the task, so that input/output files will be on the storage service")
         job = simulation.create_standard_job([task1], {file1: ss, file2: ss})
 
-        print(f"Created standard job has name {job.get_name()}")
-
-        print(f"This job contains the following tasks: {job.get_tasks()}")
-
-        print("Submitting the standard job to the compute service...")
-        cs.submit_standard_job(job)
-        print("Job submitted!")
+        print("Submitting the standard job to the base metal compute service...")
+        bmcs.submit_standard_job(job)
 
         print("Sleeping for 1000 seconds...")
         simulation.sleep(1000)
 
         print(f"Time now is {simulation.get_simulated_time()}")
-
         print("Getting simulation events that have occurred while I slept...")
         events = simulation.get_simulation_events()
         for event in events:
@@ -114,24 +106,23 @@ if __name__ == "__main__":
 
         print("Creating another job...")
         other_job = simulation.create_standard_job([task2], {})
-        print(f"Created standard job has name {other_job.get_name()}")
 
-        print("Submitting the standard job to the compute service...")
-        cs.submit_standard_job(other_job)
-        print("Job submitted!")
+        print("Creating and starting a VM on the cloud compute service..")
+        vm_name = ccs.create_vm(1, 100.0,
+                                {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
+                                {})
+        vm_cs = ccs.start_vm(vm_name)
+
+
+        print("Submitting the standard job to the compute service running on the VM...")
+        vm_cs.submit_standard_job(other_job)
 
         print("Synchronously waiting for the next simulation event...")
         event = simulation.wait_for_next_event()
         print(f"  - Event: {event}")
 
-        print("That Job's tasks are:")
-        tasks = event["job"].get_tasks()
-        for t in tasks:
-            print(f"  - {t.get_name()}")
-
         print(f"Time is {simulation.get_simulated_time()}")
 
-        # ToDo: In wrench daemon, the route starts with /api, anything to change?
         print("Terminating simulation daemon")
         simulation.terminate()
 
