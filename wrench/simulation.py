@@ -254,6 +254,14 @@ class Simulation:
             return self.tasks[name]
         raise WRENCHException(response["failure_cause"])
 
+    def get_all_tasks(self) -> dict[str, Task]:
+        """
+        Get the list of all tasks
+        :return: A dictionary of Task objects where task names are keys
+        :rtype: dict[str, Task]
+        """
+        return self.tasks
+
     def add_file(self, name: str, size: int) -> File:
         """
         Add a file to the workflow
@@ -276,6 +284,14 @@ class Simulation:
             self.files[name] = File(self, name)
             return self.files[name]
         raise WRENCHException(response["failure_cause"])
+
+    def get_all_files(self) -> dict[str, File]:
+        """
+        Get the list of all files
+        :return: A dictionary of File objects where ta names are keys
+        :rtype: dict[str, File]
+        """
+        return self.files
 
     def add_input_file(self, task_name: str, file: File) -> None:
         """
@@ -482,6 +498,45 @@ class Simulation:
         response = r.json()
         if response["wrench_api_request_success"]:
             return response["memory"]
+        raise WRENCHException(response["failure_cause"])
+
+    def task_get_start_date(self, task_name: str) -> int:
+        """
+        Get the task's start date
+
+        :param task_name: the task's name
+        :type task_name: str
+
+        :return: a date in seconds
+        :rtype: number
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetStartDate", json={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["time"]
+        raise WRENCHException(response["failure_cause"])
+
+    def task_get_end_date(self, task_name: str) -> int:
+        """
+        Get the task's end date
+
+        :param task_name: the task's name
+        :type task_name: str
+
+        :return: a date in seconds
+        :rtype: number
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get,
+                                          f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetEndDate", json={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["time"]
         raise WRENCHException(response["failure_cause"])
 
     def standard_job_get_tasks(self, job_name: str) -> List[Task]:

@@ -103,7 +103,7 @@ class Task(SimulationItem):
         """
         Get the number of flops in a task
         :return: A number of flops
-        :rtype: double
+        :rtype: float
         """
         return self.simulation.task_get_flops(self.name)
 
@@ -127,6 +127,24 @@ class Task(SimulationItem):
         """
         Get the task's memory requirement
         :return: A memory size in bytes
-        :rtype: double
+        :rtype: float
         """
         return self.simulation.task_get_memory(self.name)
+
+    def get_start_date(self) -> float:
+        """
+        Get the task's start date
+        :return: A date in seconds
+        :rtype: float
+        """
+        return self.simulation.task_get_start_date(self.name)
+
+    def get_end_date(self) -> float:
+        """
+        Get the task's end date
+        :return: A date in seconds
+        :rtype: float
+        """
+        return self.simulation.task_get_end_date(self.name)
+
+
