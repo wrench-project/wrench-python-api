@@ -8,10 +8,10 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-from abc import ABC
+# from abc import ABC
 
 
-class SimulationItem(ABC):
+class SimulationItem:
     """
     WRENCH Simulation Item class
 
