@@ -855,6 +855,77 @@ class Simulation:
         response = r.json()
         return response["result"]
 
+    def is_vm_running(self, service_name: str, vm_name: str) -> bool:
+        """
+        Returns true if the VM is running
+        :return: Boolean
+        """
+        data = {"compute_service_name": service_name, "vm_name": vm_name}
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/isVMRunning", json=data)
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            return response["result"]
+        raise WRENCHException(response["failure_cause"])
+
+    def is_vm_down(self, service_name: str, vm_name: str) -> bool:
+        """
+        Returns true if the VM is down
+        :return: Boolean
+        """
+        data = {"compute_service_name": service_name, "vm_name": vm_name}
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/isVMDown", json=data)
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            return response["result"]
+        raise WRENCHException(response["failure_cause"])
+
+    def suspend_vm(self, service_name: str, vm_name: str):
+        """
+        Suspend a running VM
+        :param service_name: name of the cloud compute service
+        :type service_name: str
+        :param vm_name: name of the vm
+        :type vm_name: str
+        """
+        data = {"compute_service_name": service_name, "vm_name": vm_name}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/suspendVM", json=data)
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            return
+        raise WRENCHException(response["failure_cause"])
+
+    def is_vm_suspended(self, service_name: str, vm_name: str) -> bool:
+        """
+        Returns true if the VM is down
+        :return: Boolean
+        """
+        data = {"compute_service_name": service_name, "vm_name": vm_name}
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/isVMSuspended", json=data)
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            return response["result"]
+        raise WRENCHException(response["failure_cause"])
+
+    def resume_vm(self, service_name: str, vm_name: str):
+        """
+        Resume a suspended VM
+        :param service_name: name of the cloud compute service
+        :type service_name: str
+        :param vm_name: name of the vm
+        :type vm_name: str
+        """
+        data = {"compute_service_name": service_name, "vm_name": vm_name}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/resumeVM", json=data)
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            return
+        raise WRENCHException(response["failure_cause"])
+
     ###############################
     # Private methods
     ###############################

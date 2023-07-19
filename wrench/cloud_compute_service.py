@@ -69,8 +69,47 @@ class CloudComputeService(ComputeService):
         :param vm_name: name of the vm
         :type vm_name: str
         """
-        self.simulation.destroy_vm(self.name, vm_name)
-        return
+        return self.simulation.destroy_vm(self.name, vm_name)
+
+    def is_vm_running(self, vm_name) -> bool:
+        """
+        Returns true if VM is running
+        :param vm_name: name of the vm
+        :type vm_name: str
+        """
+        return self.simulation.is_vm_running(self.name, vm_name)
+
+    def is_vm_down(self, vm_name) -> bool:
+        """
+        Returns true if VM is down
+        :param vm_name: name of the vm
+        :type vm_name: str
+        """
+        return self.simulation.is_vm_down(self.name, vm_name)
+
+    def suspend_vm(self, vm_name):
+        """
+        Returns true if VM is down
+        :param vm_name: name of the vm
+        :type vm_name: str
+        """
+        return self.simulation.suspend_vm(self.name, vm_name)
+
+    def resume_vm(self, vm_name):
+        """
+        Returns true if VM is down
+        :param vm_name: name of the vm
+        :type vm_name: str
+        """
+        return self.simulation.resume_vm(self.name, vm_name)
+
+    def is_vm_suspended(self, vm_name):
+        """
+        Returns true if VM is suspended
+        :param vm_name:
+        :type vm_name: str
+        """
+        return self.simulation.is_vm_suspended(self.name, vm_name)
 
     def __str__(self) -> str:
         """
