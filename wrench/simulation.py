@@ -643,7 +643,7 @@ class Simulation:
                                      execution_host: list,
                                      scratch_space: str,
                                      property_list: dict[str, str],
-                                     message_payload_list: dict[str, float]) -> ComputeService:
+                                     message_payload_list: dict[str, float]) -> CloudComputeService:
         """
 
                 :param hostname: name of the (simulated) host on which the compute service should run

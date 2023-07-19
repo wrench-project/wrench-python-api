@@ -64,15 +64,20 @@ if __name__ == "__main__":
 
         print(f"Created and started a VM named {vm_name} that runs a bare metal compute service named {vm_cs.get_name()}")
 
-        print(f"VM Running: {ccs.is_vm_running(vm_name)}")
-        print(f"VM Down: {ccs.is_vm_down(vm_name)}")
+        print(f"VM Running? {ccs.is_vm_running(vm_name)}")
+        print(f"VM Down? {ccs.is_vm_down(vm_name)}")
+        print(f"VM Suspended? {ccs.is_vm_suspended(vm_name)}")
+
 
         print(f"Suspending VM {vm_name}")
-        # ccs.suspend_vm(vm_name)
-        # print(f"VM Suspended: {ccs.is_vm_suspended(vm_name)}")
-        # print(f"Resuming VM {vm_name}")
-        # ccs.resume_vm(vm_name)
-        
+        ccs.suspend_vm(vm_name)
+        print(f"VM Suspended: {ccs.is_vm_suspended(vm_name)}")
+
+
+        print(f"Resuming VM {vm_name}")
+        ccs.resume_vm(vm_name)
+        print(f"VM Suspended: {ccs.is_vm_suspended(vm_name)}")
+
         print(f"Submitting a job do the VM's bare metal compute service")
         task1 = simulation.create_task("task1", 10000000000.0, 1, 1, 0)
         job = simulation.create_standard_job([task1], {})
@@ -123,10 +128,12 @@ if __name__ == "__main__":
         except wrench.WRENCHException as e:
             pass
 
-        print(f"VM Running: {ccs.is_vm_running(vm_name)}")
-        print(f"VM Down: {ccs.is_vm_down(vm_name)}")
-        
-        # ToDo: In wrench daemon, the route starts with /api, anything to change?
+        try:
+            print(f"VM Running: {ccs.is_vm_running(vm_name)}")
+            raise wrench.WRENCHException("Should not be able to query the state of a VM thats been destroyed")
+        except wrench.WRENCHException as e:
+            pass
+
         print("Terminating simulation daemon")
         simulation.terminate()
 
