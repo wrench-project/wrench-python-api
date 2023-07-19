@@ -50,7 +50,7 @@ class CloudComputeService(ComputeService):
         :param vm_name: name of the vm
         :type vm_name: str
         :return: a bare metal compute service name
-        :rtype: str
+        :rtype: BareMetalComputeService
         """
         return self.simulation.start_vm(self.name, vm_name)
 

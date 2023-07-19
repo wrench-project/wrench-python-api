@@ -43,7 +43,7 @@ if __name__ == "__main__":
               f"Supports Standard Jobs: {ccs.supports_standard_jobs()}")
 
         print("Creating VM...")
-        vm_name = ccs.create_vm(1, 100.0,
+        vm_name = ccs.create_vm(1, 100,
                                   {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
                                   {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
 
@@ -55,6 +55,7 @@ if __name__ == "__main__":
             pass
 
         vm_cs = ccs.start_vm(vm_name)
+
         # Doing it again, checking that we get an exception
         try:
             ccs.start_vm(vm_name)
@@ -68,11 +69,9 @@ if __name__ == "__main__":
         print(f"VM Down? {ccs.is_vm_down(vm_name)}")
         print(f"VM Suspended? {ccs.is_vm_suspended(vm_name)}")
 
-
         print(f"Suspending VM {vm_name}")
         ccs.suspend_vm(vm_name)
         print(f"VM Suspended: {ccs.is_vm_suspended(vm_name)}")
-
 
         print(f"Resuming VM {vm_name}")
         ccs.resume_vm(vm_name)
