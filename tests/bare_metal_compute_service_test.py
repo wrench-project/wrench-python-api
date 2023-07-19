@@ -8,9 +8,6 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 import pathlib
-import os
-import sys
-import time
 
 import wrench
 

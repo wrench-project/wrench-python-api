@@ -9,14 +9,13 @@
 # (at your option) any later version.
 
 from .simulation_item import SimulationItem
-from .standard_job import StandardJob
 
 
 class ComputeService(SimulationItem):
     """
     WRENCH Compute Service class
     :param simulation: simulation object
-    :type simulation: Simulation
+    :type simulation
     :param name: Compute service name
     :type name: str
     """

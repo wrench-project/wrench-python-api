@@ -43,39 +43,39 @@ if __name__ == "__main__":
               f"Supports Standard Jobs: {ccs.supports_standard_jobs()}")
 
         print("Creating VM...")
-        vm_name = ccs.create_vm(1, 100,
-                                  {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
-                                  {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
+        my_vm = ccs.create_vm(1, 100,
+                              {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
+                              {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
 
-        # Checking that we cannot shutdown a non-started VM
+        # Checking that we cannot shut down a non-started VM
         try:
-            ccs.shutdown_vm(vm_name)
+            my_vm.shutdown()
             raise wrench.WRENCHException("Should not be able to shutdown a non-started VM")
         except wrench.WRENCHException as e:
             pass
 
-        vm_cs = ccs.start_vm(vm_name)
+        vm_cs = my_vm.start()
 
         # Doing it again, checking that we get an exception
         try:
-            ccs.start_vm(vm_name)
+            my_vm.start()
             raise wrench.WRENCHException("Should not be able to start a VM twice")
         except wrench.WRENCHException as e:
             pass
 
-        print(f"Created and started a VM named {vm_name} that runs a bare metal compute service named {vm_cs.get_name()}")
+        print(f"Created and started a VM named {my_vm.get_name()} that runs a bare metal compute service named {vm_cs.get_name()}")
 
-        print(f"VM Running? {ccs.is_vm_running(vm_name)}")
-        print(f"VM Down? {ccs.is_vm_down(vm_name)}")
-        print(f"VM Suspended? {ccs.is_vm_suspended(vm_name)}")
+        print(f"VM Running? {my_vm.get_name()}")
+        print(f"VM Down? {my_vm.is_down()}")
+        print(f"VM Suspended? {my_vm.is_suspended()}")
 
-        print(f"Suspending VM {vm_name}")
-        ccs.suspend_vm(vm_name)
-        print(f"VM Suspended: {ccs.is_vm_suspended(vm_name)}")
+        print(f"Suspending VM {my_vm.get_name()}")
+        my_vm.suspend()
+        print(f"VM Suspended: {my_vm.is_suspended()}")
 
-        print(f"Resuming VM {vm_name}")
-        ccs.resume_vm(vm_name)
-        print(f"VM Suspended: {ccs.is_vm_suspended(vm_name)}")
+        print(f"Resuming VM {my_vm.get_name()}")
+        my_vm.resume()
+        print(f"VM Suspended: {my_vm.is_suspended()}")
 
         print(f"Submitting a job do the VM's bare metal compute service")
         task1 = simulation.create_task("task1", 10000000000.0, 1, 1, 0)
@@ -88,16 +88,16 @@ if __name__ == "__main__":
         print(f"Got this event: {event}")
 
         print(f"Shutting down the VM")
-        ccs.shutdown_vm(vm_name)
+        my_vm.shutdown()
         # Doing it again, checking that we get an exception
         try:
-            ccs.shutdown_vm(vm_name)
+            my_vm.shutdown()
             raise wrench.WRENCHException("Should not be able to shutdown a VM twice")
         except wrench.WRENCHException as e:
             pass
 
         print(f"(Re)starting  the VM")
-        vm_cs = ccs.start_vm(vm_name)
+        vm_cs = my_vm.start()
 
         print(f"Submitting another job do the VM's bare metal compute service")
         task2 = simulation.create_task("task2", 10000000000.0, 1, 1, 0)
@@ -109,26 +109,26 @@ if __name__ == "__main__":
         print(f"Simulation, time is {simulation.get_simulated_time()}")
         print(f"Got this event: {event}")
 
-        print(f"VM Running: {ccs.is_vm_running(vm_name)}")
-        print(f"VM Down: {ccs.is_vm_down(vm_name)}")
+        print(f"VM Running: {my_vm.is_running()}")
+        print(f"VM Down: {my_vm.is_down()}")
 
         print(f"(Re)Shutting down the VM")
-        ccs.shutdown_vm(vm_name)
-        print(f"VM Down: {ccs.is_vm_down(vm_name)}")
-        print(f"VM Running: {ccs.is_vm_running(vm_name)}")
+        my_vm.shutdown()
+        print(f"VM Running: {my_vm.is_running()}")
+        print(f"VM Down: {my_vm.is_down()}")
 
         print(f"Destroying the VM")
-        ccs.destroy_vm(vm_name)
+        ccs.destroy_vm(my_vm)
 
         # Doing it again, checking that we get an exception
         try:
-            ccs.destroy_vm(vm_name)
+            ccs.destroy_vm(my_vm)
             raise wrench.WRENCHException("Should not be able to destroy a VM twice")
         except wrench.WRENCHException as e:
             pass
 
         try:
-            print(f"VM Running: {ccs.is_vm_running(vm_name)}")
+            print(f"VM Running: {my_vm.is_running()}")
             raise wrench.WRENCHException("Should not be able to query the state of a VM thats been destroyed")
         except wrench.WRENCHException as e:
             pass

@@ -17,7 +17,7 @@ class StorageService(SimulationItem):
     WRENCH Storage Service class
 
     :param simulation: simulation object
-    :type simulation: Simulation
+    :type simulation
     :param name: Storage service name
     :type name: str
     """

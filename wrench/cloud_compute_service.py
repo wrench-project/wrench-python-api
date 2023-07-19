@@ -9,14 +9,14 @@
 # (at your option) any later version.
 
 from .compute_service import ComputeService
-from .standard_job import StandardJob
+from .virtual_machine import VirtualMachine
 
 
 class CloudComputeService(ComputeService):
     """
     WRENCH Cloud Compute Service class
     :param simulation: simulation object
-    :type simulation: Simulation
+    :type simulation
     :param name: Compute service name
     :type name: str
     """
@@ -27,11 +27,11 @@ class CloudComputeService(ComputeService):
         """
         super().__init__(simulation, name)
 
-    def create_vm(self, num_cores, ram_memory, property_list, message_payload_list) -> str:
+    def create_vm(self, num_cores, ram_memory, property_list, message_payload_list) -> VirtualMachine:
         """
-        Create a new VM instance on a cloud compute service
+        Create a new virtual machine instance on a cloud compute service
 
-        :param num_cores: number of cores in the VM
+        :param num_cores: number of cores in the virtual machine
         :type num_cores: int
         :param ram_memory: RAM size in bytes
         :type ram_memory: int
@@ -39,77 +39,19 @@ class CloudComputeService(ComputeService):
         :type property_list: dict
         :param message_payload_list: a message payload list ({} means “use all defaults”)
         :type message_payload_list: dict
-        :return: a VM name
-        :rtype: str
+        :return: a VirtualMachine object
+        :rtype: VirtualMachine
         """
         return self.simulation.create_vm(self.name, num_cores, ram_memory, property_list, message_payload_list)
 
-    def start_vm(self, vm_name):
+    def destroy_vm(self, vm: VirtualMachine) -> None:
         """
-        Starts a VM and get the name of its associated bare metal compute service
-        :param vm_name: name of the vm
-        :type vm_name: str
-        :return: a bare metal compute service name
-        :rtype: BareMetalComputeService
-        """
-        return self.simulation.start_vm(self.name, vm_name)
+        Create a new virtual machine instance on a cloud compute service
 
-    def shutdown_vm(self, vm_name):
+        :param vm: A virtual machine
+        :type vm: VirtualMachine
         """
-        Shutdowns a VM
-        :param vm_name: name of the vm
-        :type vm_name: str
-        """
-        self.simulation.shutdown_vm(self.name, vm_name)
-        return
-
-    def destroy_vm(self, vm_name):
-        """
-        Destroys a VM
-        :param vm_name: name of the vm
-        :type vm_name: str
-        """
-        return self.simulation.destroy_vm(self.name, vm_name)
-
-    def is_vm_running(self, vm_name) -> bool:
-        """
-        Returns true if VM is running
-        :param vm_name: name of the vm
-        :type vm_name: str
-        """
-        return self.simulation.is_vm_running(self.name, vm_name)
-
-    def is_vm_down(self, vm_name) -> bool:
-        """
-        Returns true if VM is down
-        :param vm_name: name of the vm
-        :type vm_name: str
-        """
-        return self.simulation.is_vm_down(self.name, vm_name)
-
-    def suspend_vm(self, vm_name):
-        """
-        Returns true if VM is down
-        :param vm_name: name of the vm
-        :type vm_name: str
-        """
-        return self.simulation.suspend_vm(self.name, vm_name)
-
-    def resume_vm(self, vm_name):
-        """
-        Returns true if VM is down
-        :param vm_name: name of the vm
-        :type vm_name: str
-        """
-        return self.simulation.resume_vm(self.name, vm_name)
-
-    def is_vm_suspended(self, vm_name):
-        """
-        Returns true if VM is suspended
-        :param vm_name:
-        :type vm_name: str
-        """
-        return self.simulation.is_vm_suspended(self.name, vm_name)
+        return self.simulation.destroy_vm(self.name, vm.get_name())
 
     def __str__(self) -> str:
         """
@@ -126,4 +68,3 @@ class CloudComputeService(ComputeService):
         """
         s = f"ComputeService(name={self.name})"
         return s
-

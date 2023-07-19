@@ -8,9 +8,6 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 import pathlib
-import os
-import sys
-import time
 
 import wrench
 
@@ -23,6 +20,7 @@ if __name__ == "__main__":
 
         # Creating a new WRENCH simulation
         simulation = wrench.Simulation()
+
         # Starting the simulation, with this simulated process running on the host ControllerHost
         simulation.start(platform_file_path, "ControllerHost")
 
@@ -108,11 +106,10 @@ if __name__ == "__main__":
         other_job = simulation.create_standard_job([task2], {})
 
         print("Creating and starting a VM on the cloud compute service..")
-        vm_name = ccs.create_vm(1, 100.0,
+        my_vm = ccs.create_vm(1, 100,
                                 {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
                                 {})
-        vm_cs = ccs.start_vm(vm_name)
-
+        vm_cs = my_vm.start()
 
         print("Submitting the standard job to the compute service running on the VM...")
         vm_cs.submit_standard_job(other_job)

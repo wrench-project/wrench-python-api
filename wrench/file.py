@@ -16,7 +16,7 @@ class File(SimulationItem):
     WRENCH File class
 
     :param simulation: simulation object
-    :type simulation: Simulation
+    :type simulation
     :param name: Task name
     :type name: str
     """

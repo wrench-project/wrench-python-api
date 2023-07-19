@@ -13,12 +13,13 @@ from .version import __version__
 __author__ = 'WRENCH Team - https://wrench-project.org'
 __credits__ = 'University of Hawaii at Manoa, Oak Ridge National Laboratory'
 
-from .compute_service import ComputeService
 from .bare_metal_compute_service import BareMetalComputeService
+from .compute_service import ComputeService
 from .cloud_compute_service import CloudComputeService
+from .virtual_machine import VirtualMachine
 from .exception import WRENCHException
-from .simulation import Simulation
 from .standard_job import StandardJob
+from .simulation import Simulation
 from .storage_service import StorageService
 from .file_registry_service import FileRegistryService
 from .task import Task

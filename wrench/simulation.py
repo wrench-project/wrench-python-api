@@ -19,6 +19,7 @@ from typing import Dict, List, Optional, Union
 from .compute_service import ComputeService
 from .bare_metal_compute_service import BareMetalComputeService
 from .cloud_compute_service import CloudComputeService
+from .virtual_machine import VirtualMachine
 from .exception import WRENCHException
 from .standard_job import StandardJob
 from .storage_service import StorageService
@@ -31,18 +32,11 @@ class Simulation:
     """
     WRENCH client class
 
-    :param platform_file_path: path to the XML platform file
-    :type platform_file_path: pathlib.Path
-    :param controller_hostname: name of the simulated host on which the controller will run
-    :type controller_hostname: str
     :param daemon_host: name of the host on which the WRENCH daemon is running
     :type daemon_host: str
     :param daemon_port: port number on which the WRENCH daemon is listening
     :type daemon_port: int
-
-    :raises WRENCHException: if the platform file cannot be read or the daemon cannot be contacted or if there is any error in the response
     """
-
     def __init__(self,
                  daemon_host: Optional[str] = "localhost",
                  daemon_port: Optional[int] = 8101
@@ -608,7 +602,7 @@ class Simulation:
                                           resources: dict[str, [int, float]],
                                           scratch_space: str,
                                           property_list: dict[str, str],
-                                          message_payload_list: dict[str, float]) -> ComputeService:
+                                          message_payload_list: dict[str, float]) -> BareMetalComputeService:
         """
         Create a bare metal compute service
 
@@ -678,11 +672,11 @@ class Simulation:
                   num_cores: int,
                   ram_memory: float,
                   property_list: dict[str, str],
-                  message_payload_list: dict[str, float]) -> str:
+                  message_payload_list: dict[str, float]) -> VirtualMachine:
         """
-                :param Service_name: the name of the cloud compute service
+                :param service_name: the name of the cloud compute service
                 :type service_name: str
-                :param Num_cores: the number of cores for the VM
+                :param num_cores: the number of cores for the VM
                 :type num_cores: int
                 :param ram_memory: the VM’s RAM memory_manager_service capacity
                 :type ram_memory: float
@@ -690,8 +684,8 @@ class Simulation:
                 :type property_list: dict
                 :param message_payload_list: a message payload list for the CloudComputeService that will run on the VM ({} means “use all defaults”))
                 :type message_payload_list: dict
-                :return: the service name
-                :rtype: ComputeService
+                :return: A virtual machine object
+                :rtype: VirtualMachine
 
                 :raises WRENCHException: if there is any error in the response
         """
@@ -704,10 +698,10 @@ class Simulation:
         response = r.json()
 
         if response["wrench_api_request_success"]:
-            return response["vm_name"]
+            return VirtualMachine(self, service_name, response["vm_name"])
         raise WRENCHException(response["failure_cause"])
 
-    def start_vm(self, service_name: str, vm_name: str) -> str:
+    def start_vm(self, service_name: str, vm_name: str) -> BareMetalComputeService:
         """
         Starts a VM the bare metal compute service associated to a vm
         :param service_name: name of the cloud compute service

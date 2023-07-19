@@ -15,12 +15,11 @@ from .standard_job import StandardJob
 class BareMetalComputeService(ComputeService):
     """
     WRENCH Bare Metal Compute Service class
-    :param compute_service: Compute Service
-    :type simulation: Simulation
+    :param simulation: The simulation
+    :type simulation
     :param name: Compute service name
     :type name: str
     """
-
     def __init__(self, simulation, name: str) -> None:
         """
         Constructor

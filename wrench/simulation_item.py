@@ -8,15 +8,13 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-# from abc import ABC
-
 
 class SimulationItem:
     """
     WRENCH Simulation Item class
 
     :param simulation: simulation object
-    :type simulation: Simulation
+    :type simulation
     :param name: simulation item name
     :type name: str
     """
