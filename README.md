@@ -4,26 +4,34 @@
 <a href="https://wrench-project.org" target="_blank"><img src="https://wrench-project.org/images/logo-horizontal.png" width="350" alt="WRENCH Project" /></a>
 <br/>_Cyberinfrastructure Simulation Workbench_
 
-**UNDER DEVELOPMENT**
-
 # Objective
 
-The objective of this repo is to implement a tiny "hello world" proof-of-concept of the envisioned system architecture for the WRENCH (re-?)implementation as part of the NSF-funded CSSI grant. The key ideas are:
+Provide a Python API for [WRENCH](https://wrench-project.org) v.2.2 (soon to be released). This API is built on top of WRENCH 2.2's [REST API](https://wrench-project.org/wrench/2.2-dev/rest_api.html).
 
-# Current Design
+# Dependencies and Installation
 
-  - A simulation consists of a "client" (in this repo a Python client) that interacts with a "WRENCH daemon" process. 
-  - The "WRENCH daemon" process, when asked to run a simulation starts a 2-thread process:
-      1. A "Simulation Daemon" thread that handles all communication with the client
-      2. A simulation thread that runs the WRENCH simulation
-  -  The reason for the two threads is that all SimGrid calls must be placed by the same thread. So the Simulation Daemon thread, which has to acts as an HTTP server, places "please do this" requests in some thread-safe data structure that the simulation thread will then execute via WRENCH calls. 
- - The client, simulation daemon, and the simulation thread operate in locked-step w.r.t. the simulation clock.
+  - [WRENCH 2.2](https://github.com/wrench-project/wrench) and its dependencies
+    - You must compile/install the `wrench-daemon` target during the build process
 
-# How to run it
+  - Run `pyton3 ./setup.py install` to install the WRENCH Python API. 
 
-  - Start the daemon: `./wrench-daemon/build/wrench-daemon` (use `--help` for all options)
+# Example and API Documentation
 
-  - Run the Python simulator: `./examples/simulator.py` 
+An example simulator is provided in `example/simulator.py`, and can be executed as follows. In
+a terminal start the `wrench-daemon` as:
+
+```
+wrench-daemon
+```
+
+In another terminal, run the example simulator as:
+
+```
+python3 ./example/simulator.py
+```
+
+
+For complete documentation, see the [API Documentation page](https://wrench-python-api.readthedocs.io/en/latest/).
 
 
 [build-badge]:         https://github.com/wrench-project/wrench-api/workflows/Build/badge.svg
