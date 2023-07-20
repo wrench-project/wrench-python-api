@@ -15,15 +15,15 @@ from .virtual_machine import VirtualMachine
 class CloudComputeService(ComputeService):
     """
     WRENCH Cloud Compute Service class
-    :param simulation: simulation object
-    :type simulation
-    :param name: Compute service name
-    :type name: str
     """
 
     def __init__(self, simulation, name: str) -> None:
         """
         Constructor
+        :param simulation: simulation object
+        :type simulation
+        :param name: Compute service name
+        :type name: str
         """
         super().__init__(simulation, name)
 
