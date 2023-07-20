@@ -14,15 +14,15 @@ from .simulation_item import SimulationItem
 class ComputeService(SimulationItem):
     """
     WRENCH Compute Service class
-    :param simulation: simulation object
-    :type simulation
-    :param name: Compute service name
-    :type name: str
     """
 
     def __init__(self, simulation, name: str) -> None:
         """
         Constructor
+        :param simulation: simulation object
+        :type simulation
+        :param name: Compute service name
+        :type name: str
         """
         super().__init__(simulation, name)
 
