@@ -27,24 +27,14 @@ from .file_registry_service import FileRegistryService
 from .task import Task
 from .file import File
 
-# def create_simulation(daemon_host: Optional[str] = "localhost",
-#              daemon_port: Optional[int] = 8101
-#              ) -> Simulation:
-#     """
-#     Creates a WRENCH simulation
-#     :param daemon_host: name of the host on which the WRENCH daemon is running
-#     :type daemon_host: str
-#     :param daemon_port: port number on which the WRENCH daemon is listening
-#     :type daemon_port: int
-#     :return: A WRENCH simulation object
-#     :rtype: Simulation
-#
-#     :raises WRENCHException: if there is any error in the response
-#     """
 
 class Simulation:
     """
     WRENCH client class
+    :param daemon_host: name of the host on which the WRENCH daemon is running
+    :type daemon_host: str
+    :param daemon_port: port number on which the WRENCH daemon is listening
+    :type daemon_port: int
     """
 
     def __init__(self,
@@ -53,10 +43,6 @@ class Simulation:
                  ) -> None:
         """
         Constructor
-        :param daemon_host: name of the host on which the WRENCH daemon is running
-        :type daemon_host: str
-        :param daemon_port: port number on which the WRENCH daemon is listening
-        :type daemon_port: int
         """
         self.daemon_host = daemon_host
         self.daemon_port = daemon_port
