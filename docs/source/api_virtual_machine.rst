@@ -5,4 +5,3 @@ wrench.virtual_machine
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:

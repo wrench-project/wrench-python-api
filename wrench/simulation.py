@@ -31,7 +31,7 @@ from .file import File
 class Simulation:
     """
     WRENCH client class
-    
+
     :param daemon_host: name of the host on which the WRENCH daemon is running
     :type daemon_host: str
     :param daemon_port: port number on which the WRENCH daemon is listening
