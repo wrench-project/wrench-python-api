@@ -15,16 +15,17 @@ from .bare_metal_compute_service import BareMetalComputeService
 class VirtualMachine(SimulationItem):
     """
     WRENCH Virtual Machine class
-    :param simulation: simulation object
-    :type simulation
-    :param cloud_compute_service_name: cloud compute service name
-    :type cloud_compute_service_name: str
-    :param name: virtual machine name
-    :type name: str
     """
+    
     def __init__(self, simulation, cloud_compute_service_name: str, name: str) -> None:
         """
         Constructor
+        :param simulation: simulation object
+        :type simulation
+        :param cloud_compute_service_name: cloud compute service name
+        :type cloud_compute_service_name: str
+        :param name: virtual machine name
+        :type name: str
         """
         super().__init__(simulation, name)
         self.cloud_compute_service_name = cloud_compute_service_name
