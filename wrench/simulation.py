@@ -31,17 +31,19 @@ from .file import File
 class Simulation:
     """
     WRENCH client class
-
-    :param daemon_host: name of the host on which the WRENCH daemon is running
-    :type daemon_host: str
-    :param daemon_port: port number on which the WRENCH daemon is listening
-    :type daemon_port: int
     """
+
     def __init__(self,
                  daemon_host: Optional[str] = "localhost",
                  daemon_port: Optional[int] = 8101
                  ) -> None:
-        """ Constructor """
+        """
+        Constructor
+        :param daemon_host: name of the host on which the WRENCH daemon is running
+        :type daemon_host: str
+        :param daemon_port: port number on which the WRENCH daemon is listening
+        :type daemon_port: int
+        """
         self.daemon_host = daemon_host
         self.daemon_port = daemon_port
         self.daemon_url = f"http://{daemon_host}:{daemon_port}/api"

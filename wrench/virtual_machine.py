@@ -16,7 +16,7 @@ class VirtualMachine(SimulationItem):
     """
     WRENCH Virtual Machine class
     """
-    
+
     def __init__(self, simulation, cloud_compute_service_name: str, name: str) -> None:
         """
         Constructor

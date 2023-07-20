@@ -15,16 +15,15 @@ from .file import File
 class StorageService(SimulationItem):
     """
     WRENCH Storage Service class
-
-    :param simulation: simulation object
-    :type simulation
-    :param name: Storage service name
-    :type name: str
     """
 
     def __init__(self, simulation, name: str) -> None:
         """
         Constructor
+        :param simulation: simulation object
+        :type simulation
+        :param name: Storage service name
+        :type name: str
         """
         super().__init__(simulation, name)
 

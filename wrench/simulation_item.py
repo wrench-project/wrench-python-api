@@ -12,16 +12,15 @@
 class SimulationItem:
     """
     WRENCH Simulation Item class
-
-    :param simulation: simulation object
-    :type simulation
-    :param name: simulation item name
-    :type name: str
     """
 
     def __init__(self, simulation, name: str) -> None:
         """
         Constructor
+        :param simulation: simulation object
+        :type simulation
+        :param name: simulation item name
+        :type name: str
         """
         self.simulation = simulation
         self.name = name

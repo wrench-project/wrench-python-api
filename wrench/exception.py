@@ -11,12 +11,14 @@
 class WRENCHException(Exception):
     """
     Minimal exception class
-
-    :param message: Exception message
-    :type message: str
     """
 
     def __init__(self, message: str) -> None:
+        """
+        Constructor
+        :param message: Exception message
+        :type message: str
+        """
         super().__init__(message)
 
     pass
