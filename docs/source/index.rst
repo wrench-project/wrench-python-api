@@ -30,6 +30,7 @@ support@wrench-project.org.
     api_compute_service.rst
     api_bare_metal_compute_service.rst
     api_cloud_compute_service.rst
+    api_virtual_machine.rst
     api_storage_service.rst
     api_standard_job.rst
     api_task.rst
