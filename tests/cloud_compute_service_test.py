@@ -7,11 +7,8 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-import pathlib
-import os
-import sys
-import time
 
+import pathlib
 import wrench
 
 if __name__ == "__main__":
@@ -63,19 +60,25 @@ if __name__ == "__main__":
         except wrench.WRENCHException as e:
             pass
 
-        print(f"Created and started a VM named {my_vm.get_name()} that runs a bare metal compute service named {vm_cs.get_name()}")
+        print(f"Created and started a VM named {my_vm.get_name()} that runs a bare metal "
+              f"compute service named {vm_cs.get_name()}")
 
-        print(f"VM Running? {my_vm.get_name()}")
-        print(f"VM Down? {my_vm.is_down()}")
-        print(f"VM Suspended? {my_vm.is_suspended()}")
+        if not my_vm.is_running():
+            raise wrench.WRENCHException("VM should be running")
+        if my_vm.is_down():
+            raise wrench.WRENCHException("VM should not be down")
+        if my_vm.is_suspended():
+            raise wrench.WRENCHException("VM should not be suspended")
 
         print(f"Suspending VM {my_vm.get_name()}")
         my_vm.suspend()
-        print(f"VM Suspended: {my_vm.is_suspended()}")
+        if not my_vm.is_suspended():
+            raise wrench.WRENCHException("VM should be suspended")
 
         print(f"Resuming VM {my_vm.get_name()}")
         my_vm.resume()
-        print(f"VM Suspended: {my_vm.is_suspended()}")
+        if not my_vm.is_running():
+            raise wrench.WRENCHException("VM should be running")
 
         print(f"Submitting a job do the VM's bare metal compute service")
         task1 = simulation.create_task("task1", 10000000000.0, 1, 1, 0)
@@ -89,6 +92,9 @@ if __name__ == "__main__":
 
         print(f"Shutting down the VM")
         my_vm.shutdown()
+        if not my_vm.is_down():
+            raise wrench.WRENCHException("VM should be down")
+
         # Doing it again, checking that we get an exception
         try:
             my_vm.shutdown()
@@ -98,6 +104,8 @@ if __name__ == "__main__":
 
         print(f"(Re)starting  the VM")
         vm_cs = my_vm.start()
+        if not my_vm.is_running():
+            raise wrench.WRENCHException("VM should be running")
 
         print(f"Submitting another job do the VM's bare metal compute service")
         task2 = simulation.create_task("task2", 10000000000.0, 1, 1, 0)
@@ -109,13 +117,10 @@ if __name__ == "__main__":
         print(f"Simulation, time is {simulation.get_simulated_time()}")
         print(f"Got this event: {event}")
 
-        print(f"VM Running: {my_vm.is_running()}")
-        print(f"VM Down: {my_vm.is_down()}")
-
         print(f"(Re)Shutting down the VM")
         my_vm.shutdown()
-        print(f"VM Running: {my_vm.is_running()}")
-        print(f"VM Down: {my_vm.is_down()}")
+        if not my_vm.is_down():
+            raise wrench.WRENCHException("VM should be down")
 
         print(f"Destroying the VM")
         ccs.destroy_vm(my_vm)
@@ -129,7 +134,7 @@ if __name__ == "__main__":
 
         try:
             print(f"VM Running: {my_vm.is_running()}")
-            raise wrench.WRENCHException("Should not be able to query the state of a VM thats been destroyed")
+            raise wrench.WRENCHException("Should not be able to query the state of a VM that's been destroyed")
         except wrench.WRENCHException as e:
             pass
 
