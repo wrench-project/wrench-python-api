@@ -32,7 +32,7 @@ class File(SimulationItem):
         :return: Number of bytes of a file
         :rtype: int
         """
-        return self.simulation.file_get_size(self.name)
+        return self.simulation._file_get_size(self.name)
 
     def __str__(self) -> str:
         """

@@ -71,7 +71,7 @@ class Task(SimulationItem):
         :param file: File name
         :type file: File
         """
-        return self.simulation.add_input_file(self.name, file)
+        return self.simulation._add_input_file(self.name, file)
 
     def add_output_file(self, file: File) -> None:
         """
@@ -80,7 +80,7 @@ class Task(SimulationItem):
         :return: List of input files
         :rtype: List[str]
         """
-        return self.simulation.add_output_file(self.name, file)
+        return self.simulation._add_output_file(self.name, file)
 
     def get_input_files(self) -> List[str]:
         """
@@ -88,7 +88,7 @@ class Task(SimulationItem):
         :return: List of input file names
         :rtype: List[str]
         """
-        return self.simulation.get_task_input_files(self.name)
+        return self.simulation._get_task_input_files(self.name)
 
     def get_output_files(self) -> List[str]:
         """
@@ -96,7 +96,7 @@ class Task(SimulationItem):
         :return: List of output file names
         :rtype: List[str]
         """
-        return self.simulation.get_task_output_files(self.name)
+        return self.simulation._get_task_output_files(self.name)
 
     def get_flops(self) -> float:
         """
@@ -104,7 +104,7 @@ class Task(SimulationItem):
         :return: A number of flops
         :rtype: float
         """
-        return self.simulation.task_get_flops(self.name)
+        return self.simulation._task_get_flops(self.name)
 
     def get_min_num_cores(self) -> int:
         """
@@ -112,7 +112,7 @@ class Task(SimulationItem):
         :return: A number of cores
         :rtype: integer
         """
-        return self.simulation.task_get_min_num_cores(self.name)
+        return self.simulation._task_get_min_num_cores(self.name)
 
     def get_max_num_cores(self) -> int:
         """
@@ -120,7 +120,7 @@ class Task(SimulationItem):
         :return: A number of cores
         :rtype: integer
         """
-        return self.simulation.task_get_max_num_cores(self.name)
+        return self.simulation._task_get_max_num_cores(self.name)
 
     def get_memory(self) -> int:
         """
@@ -128,7 +128,7 @@ class Task(SimulationItem):
         :return: A memory size in bytes
         :rtype: float
         """
-        return self.simulation.task_get_memory(self.name)
+        return self.simulation._task_get_memory(self.name)
 
     def get_start_date(self) -> float:
         """
@@ -136,7 +136,7 @@ class Task(SimulationItem):
         :return: A date in seconds
         :rtype: float
         """
-        return self.simulation.task_get_start_date(self.name)
+        return self.simulation._task_get_start_date(self.name)
 
     def get_end_date(self) -> float:
         """
@@ -144,6 +144,6 @@ class Task(SimulationItem):
         :return: A date in seconds
         :rtype: float
         """
-        return self.simulation.task_get_end_date(self.name)
+        return self.simulation._task_get_end_date(self.name)
 
 

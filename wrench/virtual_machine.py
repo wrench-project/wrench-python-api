@@ -35,43 +35,43 @@ class VirtualMachine(SimulationItem):
         :return: A bare-metal compute service running on the VM
         :rtype: BareMetalComputeService
         """
-        return self.simulation.start_vm(self.cloud_compute_service_name, self.name)
+        return self.simulation._start_vm(self.cloud_compute_service_name, self.name)
 
     def suspend(self) -> None:
         """
         Suspends a virtual machine.
         """
-        return self.simulation.suspend_vm(self.cloud_compute_service_name, self.name)
+        return self.simulation._suspend_vm(self.cloud_compute_service_name, self.name)
 
     def resume(self) -> None:
         """
         Resumes a virtual machine.
         """
-        return self.simulation.resume_vm(self.cloud_compute_service_name, self.name)
+        return self.simulation._resume_vm(self.cloud_compute_service_name, self.name)
 
     def shutdown(self) -> None:
         """
         Shuts down a virtual machine.
         """
-        return self.simulation.shutdown_vm(self.cloud_compute_service_name, self.name)
+        return self.simulation._shutdown_vm(self.cloud_compute_service_name, self.name)
 
     def is_running(self) -> bool:
         """
         Determines whether a virtual machine is running.
         """
-        return self.simulation.is_vm_running(self.cloud_compute_service_name, self.name)
+        return self.simulation._is_vm_running(self.cloud_compute_service_name, self.name)
 
     def is_suspended(self) -> bool:
         """
         Determines whether a virtual machine is suspended.
         """
-        return self.simulation.is_vm_suspended(self.cloud_compute_service_name, self.name)
+        return self.simulation._is_vm_suspended(self.cloud_compute_service_name, self.name)
 
     def is_down(self) -> bool:
         """
         Determines whether a virtual machine is down.
         """
-        return self.simulation.is_vm_down(self.cloud_compute_service_name, self.name)
+        return self.simulation._is_vm_down(self.cloud_compute_service_name, self.name)
 
     def __str__(self) -> str:
         """

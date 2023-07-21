@@ -33,7 +33,7 @@ class BareMetalComputeService(ComputeService):
         :param standard_job: the standard job
         :type standard_job: StandardJob
         """
-        return self.simulation.submit_standard_job(standard_job.get_name(), self.name)
+        return self.simulation._submit_standard_job(standard_job.get_name(), self.name)
 
     def __str__(self) -> str:
         """

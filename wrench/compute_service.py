@@ -31,21 +31,21 @@ class ComputeService(SimulationItem):
         Returns true if the service supports compound jobs.
         :return:
         """
-        return self.simulation.supports_compound_jobs(self.name)
+        return self.simulation._supports_compound_jobs(self.name)
 
     def supports_pilot_jobs(self) -> bool:
         """
         Returns true if the service supports pilot jobs.
         :return:
         """
-        return self.simulation.supports_pilot_jobs(self.name)
+        return self.simulation._supports_pilot_jobs(self.name)
 
     def supports_standard_jobs(self) -> bool:
         """
         Returns true if the service supports pilot jobs.
         :return:
         """
-        return self.simulation.supports_standard_jobs(self.name)
+        return self.simulation._supports_standard_jobs(self.name)
 
     def __str__(self) -> str:
         """

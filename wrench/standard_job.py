@@ -36,7 +36,7 @@ class StandardJob(SimulationItem):
         :return: a list of task objects
         :rtype: List[Task]
         """
-        return self.simulation.standard_job_get_tasks(self.name)
+        return self.simulation._standard_job_get_tasks(self.name)
     
     def __str__(self) -> str:
         """

@@ -138,68 +138,6 @@ class Simulation:
         response = r.json()["event"]
         return self._json_event_to_dict(response)
 
-    def submit_standard_job(self, job_name: str, cs_name: str) -> None:
-        """
-        Submit a standard job to a compute service
-
-        :param job_name: the name of the job
-        :type job_name: str
-        :param cs_name: the name of the compute service
-        :type cs_name: str
-
-        :raises WRENCHException: if there is any error in the response
-        """
-        '''
-        ToDo: we already have job_name in route, do we have to put it in json
-        However, in wrench-openapi.json, job name was described as job_id - jid
-        '''
-        # ToDo: remove redundant field from json
-        data = {"compute_service_name": cs_name}
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/jobs/{job_name}/submit", json=data)
-        response = r.json()
-        if not response["wrench_api_request_success"]:
-            raise WRENCHException(response["failure_cause"])
-
-    def create_file_copy_at_storage_service(self, file_name: str, storage_service_name: str):
-        """
-        Create a copy (ex nihilo) of a file at a storage service
-
-        :param file_name: the file name
-        :type file_name: str
-        :param storage_service_name: the name of the storage service
-        :type storage_service_name: str
-
-        :raises WRENCHException: if there is any error in the response
-        """
-        data = {"filename": file_name}
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/{storage_service_name}/createFileCopy", json=data)
-        response = r.json()
-        if not response["wrench_api_request_success"]:
-            raise WRENCHException(response["failure_cause"])
-
-    def lookup_file_at_storage_service(self, file_name: str, storage_service_name: str):
-        """
-        Checks whether a copy of a file is stored at a storage service
-
-        :param file_name: the file name
-        :type file_name: str
-        :param storage_service_name: the name of the storage service
-        :type storage_service_name: str
-
-        :return: True or false
-        :rtype: bool
-
-        :raises WRENCHException: if there is any error in the response
-        """
-        data = {"filename": file_name}
-        r = self.__send_request_to_daemon(requests.post,
-                                          f"{self.daemon_url}/{self.simid}/{storage_service_name}/lookupFile",
-                                          json=data)
-        response = r.json()
-        if not response["wrench_api_request_success"]:
-            raise WRENCHException(response["failure_cause"])
-        return response["result"]
-
     def get_simulation_events(self) -> List[Dict[str, Union[str, StandardJob, ComputeService]]]:
         """
         Get all simulation events since last time we checked
@@ -313,42 +251,6 @@ class Simulation:
         """
         return self.files
 
-    def add_input_file(self, task_name: str, file: File) -> None:
-        """
-        Add an input file to a task
-
-        :param task_name: the task's name
-        :type task_name: str
-        :param file: the file
-        :type file: File
-
-        :raises WRENCHException: if there is any error in the response
-        """
-        data = {"file": file.get_name()}
-        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/tasks/{task_name}/addInputFile", json=data)
-
-        response = r.json()
-        if not response["wrench_api_request_success"]:
-            raise WRENCHException(response["failure_cause"])
-
-    def add_output_file(self, task_name: str, file: File) -> None:
-        """
-        Add an output file to a task
-
-        :param task_name: the task's name
-        :type task_name: str
-        :param file: the file
-        :type file: File
-
-        :raises WRENCHException: if there is any error in the response
-        """
-        data = {"file": file.get_name()}
-        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/tasks/{task_name}/addOutputFile", json=data)
-
-        response = r.json()
-        if not response["wrench_api_request_success"]:
-            raise WRENCHException(response["failure_cause"])
-
     def get_input_files(self) -> List[str]:
         """
         Get a list of all input files of the workflow
@@ -365,48 +267,9 @@ class Simulation:
             return response["files"]
         raise WRENCHException(response["failure_cause"])
 
-    def get_task_input_files(self, task_name: str) -> List[str]:
-        """
-        Get a list of input files for a given task
-
-        :param task_name: the task name
-        :type task_name: str
-
-        :return: The list of input files
-        :rtype: List[str]
-
-        :raises WRENCHException: if there is any error in the response
-        """
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/tasks/{task_name}/inputFiles", json={})
-
-        response = r.json()
-        if response["wrench_api_request_success"]:
-            return response["files"]
-        raise WRENCHException(response["failure_cause"])
-
-    def get_task_output_files(self, task_name: str) -> List[str]:
-        """
-        Get a list of output files for a given task
-
-        :param task_name: the task name
-        :type task_name: str
-
-        :return: The list of output files
-        :rtype: List[str]
-
-        :raises WRENCHException: if there is any error in the response
-        """
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/tasks/{task_name}/outputFiles",
-                                          json={})
-
-        response = r.json()
-        if response["wrench_api_request_success"]:
-            return response["files"]
-        raise WRENCHException(response["failure_cause"])
-
     def stage_files(self, storage_service: StorageService) -> None:
         """
-        Stage all input files into the storage service
+        Stage all input files at a storage service
 
         :param storage_service: Storage service's name
         :type storage_service: StorageService
@@ -420,164 +283,6 @@ class Simulation:
         response = r.json()
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
-
-    def file_get_size(self, file_name: str) -> int:
-        """
-        Get the number of bytes for a given file
-
-        :param file_name: the file's name
-        :type file_name: str
-
-        :return: The size of the file in bytes
-        :rtype: int
-
-        :raises WRENCHException: if there is any error in the response
-        """
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/files/{file_name}/size", json={})
-
-        response = r.json()
-        if response["wrench_api_request_success"]:
-            return response["size"]
-        raise WRENCHException(response["failure_cause"])
-
-    def task_get_flops(self, task_name: str) -> float:
-        """
-        Get the number of flops in a task
-
-        :param task_name: the task's name
-        :type task_name: str
-
-        :return: a number of flops
-        :rtype: float
-
-        :raises WRENCHException: if there is any error in the response
-        """
-        r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetFlops",
-                                          json={})
-
-        response = r.json()
-        if response["wrench_api_request_success"]:
-            return response["flops"]
-        raise WRENCHException(response["failure_cause"])
-
-    def task_get_min_num_cores(self, task_name: str) -> int:
-        """
-        Get the task's minimum number of required cores
-
-        :param task_name: the task's name
-        :type task_name: str
-
-        :return: a number of cores
-        :rtype: int
-
-        :raises WRENCHException: if there is any error in the response
-        """
-        data = {}
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetMinNumCores", json=data)
-
-        response = r.json()
-        if response["wrench_api_request_success"]:
-            return response["min_num_cores"]
-        raise WRENCHException(response["failure_cause"])
-
-    def task_get_max_num_cores(self, task_name: str) -> int:
-        """
-        Get the task's maximum number of required cores
-
-        :param task_name: the task's name
-        :type task_name: str
-
-        :return: a number of cores
-        :rtype: int
-
-        :raises WRENCHException: if there is any error in the response
-        """
-        data = {}
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetMaxNumCores", json=data)
-
-        response = r.json()
-        if response["wrench_api_request_success"]:
-            return response["max_num_cores"]
-        raise WRENCHException(response["failure_cause"])
-
-    def task_get_memory(self, task_name: str) -> int:
-        """
-        Get the task's memory requirement
-
-        :param task_name: the task's name
-        :type task_name: str
-
-        :return: a memory footprint in bytes
-        :rtype: int
-
-        :raises WRENCHException: if there is any error in the response
-        """
-        data = {}
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetMemory", json=data)
-
-        response = r.json()
-        if response["wrench_api_request_success"]:
-            return response["memory"]
-        raise WRENCHException(response["failure_cause"])
-
-    def task_get_start_date(self, task_name: str) -> int:
-        """
-        Get the task's start date
-
-        :param task_name: the task's name
-        :type task_name: str
-
-        :return: a date in seconds
-        :rtype: number
-
-        :raises WRENCHException: if there is any error in the response
-        """
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetStartDate", json={})
-
-        response = r.json()
-        if response["wrench_api_request_success"]:
-            return response["time"]
-        raise WRENCHException(response["failure_cause"])
-
-    def task_get_end_date(self, task_name: str) -> int:
-        """
-        Get the task's end date
-
-        :param task_name: the task's name
-        :type task_name: str
-
-        :return: a date in seconds
-        :rtype: number
-
-        :raises WRENCHException: if there is any error in the response
-        """
-        r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetEndDate", json={})
-
-        response = r.json()
-        if response["wrench_api_request_success"]:
-            return response["time"]
-        raise WRENCHException(response["failure_cause"])
-
-    def standard_job_get_tasks(self, job_name: str) -> List[Task]:
-        """
-        Get the number of tasks in a standard job
-
-        :param job_name: the job's name
-        :type job_name: str
-
-        :return: a list of task objects
-        :rtype: List[Task]
-
-        :raises WRENCHException: if there is any error in the response
-        """
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/jobs/{job_name}/tasks", json={})
-
-        response = r.json()
-        if response["wrench_api_request_success"]:
-            return [self.tasks[x] for x in response["tasks"]]
-        raise WRENCHException(response["failure_cause"])
 
     def sleep(self, seconds: int) -> None:
         """
@@ -627,7 +332,8 @@ class Simulation:
                 "property_list": json.dumps(property_list),
                 "message_payload_list": json.dumps(message_payload_list),
                 }
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/addBareMetalComputeService", json=data)
+        r = self.__send_request_to_daemon(requests.post,
+                                          f"{self.daemon_url}/{self.simid}/addBareMetalComputeService", json=data)
         response = r.json()
 
         if response["wrench_api_request_success"]:
@@ -661,108 +367,14 @@ class Simulation:
                 "property_list": json.dumps(property_list),
                 "message_payload_list": json.dumps(message_payload_list)}
 
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/addCloudComputeService", json=data)
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/addCloudComputeService",
+                                          json=data)
         response = r.json()
 
         if response["wrench_api_request_success"]:
             compute_service_name = response["service_name"]
             self.compute_services[compute_service_name] = CloudComputeService(self, compute_service_name)
             return self.compute_services[compute_service_name]
-        raise WRENCHException(response["failure_cause"])
-
-    def create_vm(self,
-                  service_name: str,
-                  num_cores: int,
-                  ram_memory: float,
-                  property_list: dict[str, str],
-                  message_payload_list: dict[str, float]) -> VirtualMachine:
-        """
-                :param service_name: the name of the cloud compute service
-                :type service_name: str
-                :param num_cores: the number of cores for the VM
-                :type num_cores: int
-                :param ram_memory: the VM’s RAM memory_manager_service capacity
-                :type ram_memory: float
-                :param property_list: a property list for the CloudComputeService that will run on the VM ({} means “use all defaults”)
-                :type property_list: dict
-                :param message_payload_list: a message payload list for the CloudComputeService that will run on the VM ({} means “use all defaults”))
-                :type message_payload_list: dict
-                :return: A virtual machine object
-                :rtype: VirtualMachine
-
-                :raises WRENCHException: if there is any error in the response
-        """
-
-        data = {"service_name": service_name, "num_cores": num_cores, "ram_memory": ram_memory,
-                "property_list": json.dumps(property_list),
-                "message_payload_list": json.dumps(message_payload_list)}
-
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/createVM", json=data)
-        response = r.json()
-
-        if response["wrench_api_request_success"]:
-            return VirtualMachine(self, service_name, response["vm_name"])
-        raise WRENCHException(response["failure_cause"])
-
-    def start_vm(self, service_name: str, vm_name: str) -> BareMetalComputeService:
-        """
-        Starts a VM the bare metal compute service associated to a vm
-        :param service_name: name of the cloud compute service
-        :type service_name: str
-        :param vm_name: name of the vm
-        :type vm_name: str
-        :return: A bare metal compute service
-        :rtype: BareMetalComputeService
-        """
-        data = {"service_name": service_name, "vm_name": vm_name}
-
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/startVM", json=data)
-        response = r.json()
-
-        if response["wrench_api_request_success"]:
-            mbcs_name = response["service_name"]
-            self.compute_services[mbcs_name] = BareMetalComputeService(self, mbcs_name)
-            return self.compute_services[mbcs_name]
-        raise WRENCHException(response["failure_cause"])
-
-    def shutdown_vm(self,
-                    service_name: str,
-                    vm_name: str):
-        """
-        Shutdowns a VM
-        :param service_name: name of the cloud compute service
-        :type service_name: str
-        :param vm_name: name of the vm
-        :type vm_name: str
-        """
-
-        data = {"service_name": service_name, "vm_name": vm_name}
-
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/shutdownVM", json=data)
-        response = r.json()
-
-        if response["wrench_api_request_success"]:
-            return
-        raise WRENCHException(response["failure_cause"])
-
-    def destroy_vm(self,
-                   service_name: str,
-                   vm_name: str):
-        """
-        Destroy a VM
-        :param service_name: name of the cloud compute service
-        :type service_name: str
-        :param vm_name: name of the vm
-        :type vm_name: str
-        """
-
-        data = {"service_name": service_name, "vm_name": vm_name}
-
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/destroyVM", json=data)
-        response = r.json()
-
-        if response["wrench_api_request_success"]:
-            return
         raise WRENCHException(response["failure_cause"])
 
     def create_simple_storage_service(self, hostname: str, mount_points: List[str]) -> StorageService:
@@ -822,7 +434,405 @@ class Simulation:
         response = r.json()
         return response["hostnames"]
 
-    def supports_compound_jobs(self, cs_name: str) -> bool:
+
+    ####################################################################################
+    ####################################################################################
+    # Below are "private" methods that are not part of the user API, but called by
+    # the wrapper classes that form the user API
+    ####################################################################################
+    ####################################################################################
+
+    def _submit_standard_job(self, job_name: str, cs_name: str) -> None:
+        """
+        Submit a standard job to a compute service
+
+        :param job_name: the name of the job
+        :type job_name: str
+        :param cs_name: the name of the compute service
+        :type cs_name: str
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        '''
+        ToDo: we already have job_name in route, do we have to put it in json
+        However, in wrench-openapi.json, job name was described as job_id - jid
+        '''
+        # ToDo: remove redundant field from json
+        data = {"compute_service_name": cs_name}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/jobs/{job_name}/submit", json=data)
+        response = r.json()
+        if not response["wrench_api_request_success"]:
+            raise WRENCHException(response["failure_cause"])
+
+    def _create_file_copy_at_storage_service(self, file_name: str, storage_service_name: str):
+        """
+        Create a copy (ex nihilo) of a file at a storage service
+
+        :param file_name: the file name
+        :type file_name: str
+        :param storage_service_name: the name of the storage service
+        :type storage_service_name: str
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"filename": file_name}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/{storage_service_name}/createFileCopy", json=data)
+        response = r.json()
+        if not response["wrench_api_request_success"]:
+            raise WRENCHException(response["failure_cause"])
+
+    def _lookup_file_at_storage_service(self, file_name: str, storage_service_name: str):
+        """
+        Checks whether a copy of a file is stored at a storage service
+
+        :param file_name: the file name
+        :type file_name: str
+        :param storage_service_name: the name of the storage service
+        :type storage_service_name: str
+
+        :return: True or false
+        :rtype: bool
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"filename": file_name}
+        r = self.__send_request_to_daemon(requests.post,
+                                          f"{self.daemon_url}/{self.simid}/{storage_service_name}/lookupFile",
+                                          json=data)
+        response = r.json()
+        if not response["wrench_api_request_success"]:
+            raise WRENCHException(response["failure_cause"])
+        return response["result"]
+
+    def _add_input_file(self, task_name: str, file: File) -> None:
+        """
+        Add an input file to a task
+
+        :param task_name: the task's name
+        :type task_name: str
+        :param file: the file
+        :type file: File
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"file": file.get_name()}
+        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/tasks/{task_name}/addInputFile", json=data)
+
+        response = r.json()
+        if not response["wrench_api_request_success"]:
+            raise WRENCHException(response["failure_cause"])
+
+    def _add_output_file(self, task_name: str, file: File) -> None:
+        """
+        Add an output file to a task
+
+        :param task_name: the task's name
+        :type task_name: str
+        :param file: the file
+        :type file: File
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"file": file.get_name()}
+        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/tasks/{task_name}/addOutputFile", json=data)
+
+        response = r.json()
+        if not response["wrench_api_request_success"]:
+            raise WRENCHException(response["failure_cause"])
+
+    def _get_task_input_files(self, task_name: str) -> List[str]:
+        """
+        Get a list of input files for a given task
+
+        :param task_name: the task name
+        :type task_name: str
+
+        :return: The list of input files
+        :rtype: List[str]
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/tasks/{task_name}/inputFiles", json={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["files"]
+        raise WRENCHException(response["failure_cause"])
+
+    def _get_task_output_files(self, task_name: str) -> List[str]:
+        """
+        Get a list of output files for a given task
+
+        :param task_name: the task name
+        :type task_name: str
+
+        :return: The list of output files
+        :rtype: List[str]
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/tasks/{task_name}/outputFiles",
+                                          json={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["files"]
+        raise WRENCHException(response["failure_cause"])
+
+    def _file_get_size(self, file_name: str) -> int:
+        """
+        Get the number of bytes for a given file
+
+        :param file_name: the file's name
+        :type file_name: str
+
+        :return: The size of the file in bytes
+        :rtype: int
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/files/{file_name}/size", json={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["size"]
+        raise WRENCHException(response["failure_cause"])
+
+    def _task_get_flops(self, task_name: str) -> float:
+        """
+        Get the number of flops in a task
+
+        :param task_name: the task's name
+        :type task_name: str
+
+        :return: a number of flops
+        :rtype: float
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get,
+                                          f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetFlops",
+                                          json={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["flops"]
+        raise WRENCHException(response["failure_cause"])
+
+    def _task_get_min_num_cores(self, task_name: str) -> int:
+        """
+        Get the task's minimum number of required cores
+
+        :param task_name: the task's name
+        :type task_name: str
+
+        :return: a number of cores
+        :rtype: int
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {}
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetMinNumCores", json=data)
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["min_num_cores"]
+        raise WRENCHException(response["failure_cause"])
+
+    def _task_get_max_num_cores(self, task_name: str) -> int:
+        """
+        Get the task's maximum number of required cores
+
+        :param task_name: the task's name
+        :type task_name: str
+
+        :return: a number of cores
+        :rtype: int
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {}
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetMaxNumCores", json=data)
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["max_num_cores"]
+        raise WRENCHException(response["failure_cause"])
+
+    def _task_get_memory(self, task_name: str) -> int:
+        """
+        Get the task's memory requirement
+
+        :param task_name: the task's name
+        :type task_name: str
+
+        :return: a memory footprint in bytes
+        :rtype: int
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {}
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetMemory", json=data)
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["memory"]
+        raise WRENCHException(response["failure_cause"])
+
+    def _task_get_start_date(self, task_name: str) -> int:
+        """
+        Get the task's start date
+
+        :param task_name: the task's name
+        :type task_name: str
+
+        :return: a date in seconds
+        :rtype: number
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetStartDate", json={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["time"]
+        raise WRENCHException(response["failure_cause"])
+
+    def _task_get_end_date(self, task_name: str) -> int:
+        """
+        Get the task's end date
+
+        :param task_name: the task's name
+        :type task_name: str
+
+        :return: a date in seconds
+        :rtype: number
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get,
+                                          f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetEndDate", json={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["time"]
+        raise WRENCHException(response["failure_cause"])
+
+    def _standard_job_get_tasks(self, job_name: str) -> List[Task]:
+        """
+        Get the number of tasks in a standard job
+
+        :param job_name: the job's name
+        :type job_name: str
+
+        :return: a list of task objects
+        :rtype: List[Task]
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/jobs/{job_name}/tasks", json={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return [self.tasks[x] for x in response["tasks"]]
+        raise WRENCHException(response["failure_cause"])
+
+    def _create_vm(self,
+                  service_name: str,
+                  num_cores: int,
+                  ram_memory: float,
+                  property_list: dict[str, str],
+                  message_payload_list: dict[str, float]) -> VirtualMachine:
+        """
+                :param service_name: the name of the cloud compute service
+                :type service_name: str
+                :param num_cores: the number of cores for the VM
+                :type num_cores: int
+                :param ram_memory: the VM’s RAM memory_manager_service capacity
+                :type ram_memory: float
+                :param property_list: a property list for the CloudComputeService that will run on the VM ({} means “use all defaults”)
+                :type property_list: dict
+                :param message_payload_list: a message payload list for the CloudComputeService that will run on the VM ({} means “use all defaults”))
+                :type message_payload_list: dict
+                :return: A virtual machine object
+                :rtype: VirtualMachine
+
+                :raises WRENCHException: if there is any error in the response
+        """
+
+        data = {"service_name": service_name, "num_cores": num_cores, "ram_memory": ram_memory,
+                "property_list": json.dumps(property_list),
+                "message_payload_list": json.dumps(message_payload_list)}
+
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/createVM", json=data)
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            return VirtualMachine(self, service_name, response["vm_name"])
+        raise WRENCHException(response["failure_cause"])
+
+    def _start_vm(self, service_name: str, vm_name: str) -> BareMetalComputeService:
+        """
+        Starts a VM the bare metal compute service associated to a vm
+        :param service_name: name of the cloud compute service
+        :type service_name: str
+        :param vm_name: name of the vm
+        :type vm_name: str
+        :return: A bare metal compute service
+        :rtype: BareMetalComputeService
+        """
+        data = {"service_name": service_name, "vm_name": vm_name}
+
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/startVM", json=data)
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            mbcs_name = response["service_name"]
+            self.compute_services[mbcs_name] = BareMetalComputeService(self, mbcs_name)
+            return self.compute_services[mbcs_name]
+        raise WRENCHException(response["failure_cause"])
+
+    def _shutdown_vm(self,
+                    service_name: str,
+                    vm_name: str):
+        """
+        Shutdowns a VM
+        :param service_name: name of the cloud compute service
+        :type service_name: str
+        :param vm_name: name of the vm
+        :type vm_name: str
+        """
+
+        data = {"service_name": service_name, "vm_name": vm_name}
+
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/shutdownVM", json=data)
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            return
+        raise WRENCHException(response["failure_cause"])
+
+    def _destroy_vm(self,
+                   service_name: str,
+                   vm_name: str):
+        """
+        Destroy a VM
+        :param service_name: name of the cloud compute service
+        :type service_name: str
+        :param vm_name: name of the vm
+        :type vm_name: str
+        """
+
+        data = {"service_name": service_name, "vm_name": vm_name}
+
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/destroyVM", json=data)
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            return
+        raise WRENCHException(response["failure_cause"])
+
+    def _supports_compound_jobs(self, cs_name: str) -> bool:
         """
         Returns true if the compute service supports compound jobs
         :return: Boolean
@@ -832,7 +842,7 @@ class Simulation:
         response = r.json()
         return response["result"]
 
-    def supports_pilot_jobs(self, cs_name: str) -> bool:
+    def _supports_pilot_jobs(self, cs_name: str) -> bool:
         """
         Returns true if the compute service supports pilot jobs
         :return: Boolean
@@ -842,7 +852,7 @@ class Simulation:
         response = r.json()
         return response["result"]
 
-    def supports_standard_jobs(self, cs_name: str) -> bool:
+    def _supports_standard_jobs(self, cs_name: str) -> bool:
         """
         Returns true if the compute service supports pilot jobs
         :return: Boolean
@@ -852,7 +862,7 @@ class Simulation:
         response = r.json()
         return response["result"]
 
-    def is_vm_running(self, service_name: str, vm_name: str) -> bool:
+    def _is_vm_running(self, service_name: str, vm_name: str) -> bool:
         """
         Returns true if the VM is running
         :return: Boolean
@@ -865,7 +875,7 @@ class Simulation:
             return response["result"]
         raise WRENCHException(response["failure_cause"])
 
-    def is_vm_down(self, service_name: str, vm_name: str) -> bool:
+    def _is_vm_down(self, service_name: str, vm_name: str) -> bool:
         """
         Returns true if the VM is down
         :return: Boolean
@@ -878,7 +888,7 @@ class Simulation:
             return response["result"]
         raise WRENCHException(response["failure_cause"])
 
-    def suspend_vm(self, service_name: str, vm_name: str):
+    def _suspend_vm(self, service_name: str, vm_name: str):
         """
         Suspend a running VM
         :param service_name: name of the cloud compute service
@@ -894,7 +904,7 @@ class Simulation:
             return
         raise WRENCHException(response["failure_cause"])
 
-    def is_vm_suspended(self, service_name: str, vm_name: str) -> bool:
+    def _is_vm_suspended(self, service_name: str, vm_name: str) -> bool:
         """
         Returns true if the VM is down
         :return: Boolean
@@ -907,7 +917,7 @@ class Simulation:
             return response["result"]
         raise WRENCHException(response["failure_cause"])
 
-    def resume_vm(self, service_name: str, vm_name: str):
+    def _resume_vm(self, service_name: str, vm_name: str):
         """
         Resume a suspended VM
         :param service_name: name of the cloud compute service
