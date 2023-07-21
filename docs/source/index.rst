@@ -29,7 +29,6 @@ support@wrench-project.org.
     :caption: API Reference
     :maxdepth: 1
 
-    api_simulation_item.rst
     api_simulation.rst
     api_file.rst
     api_workflow.rst

@@ -31,7 +31,9 @@ from .file import File
 
 class Simulation:
     """
-    WRENCH client class
+    WRENCH Simulation class. This class implements a simulation "client" that connects to
+    a local wrench-daemon that implements the WRENCH REST API (and which must be started independently).
+    It provides top-level methods for instantiating and running a simulation.
 
     :param daemon_host: name of the host on which the WRENCH daemon is running
     :type daemon_host: str

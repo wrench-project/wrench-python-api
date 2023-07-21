@@ -16,7 +16,7 @@ from typing import List
 
 class Workflow(SimulationItem):
     """
-    WRENCH Workflow class
+    WRENCH Workflow class.
     """
 
     def __init__(self, simulation) -> None:

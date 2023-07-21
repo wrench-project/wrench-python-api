@@ -14,7 +14,7 @@ from .bare_metal_compute_service import BareMetalComputeService
 
 class VirtualMachine(SimulationItem):
     """
-    WRENCH Virtual Machine class
+    WRENCH Virtual Machine class.
     """
 
     def __init__(self, simulation, cloud_compute_service_name: str, name: str) -> None:
