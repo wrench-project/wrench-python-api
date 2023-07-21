@@ -29,16 +29,17 @@ support@wrench-project.org.
     :caption: API Reference
     :maxdepth: 1
 
-    api_simulation.rst
     api_simulation_item.rst
+    api_simulation.rst
     api_file.rst
+    api_workflow.rst
+    api_task.rst
+    api_standard_job.rst
     api_compute_service.rst
     api_bare_metal_compute_service.rst
     api_cloud_compute_service.rst
     api_virtual_machine.rst
     api_storage_service.rst
-    api_standard_job.rst
-    api_task.rst
 
 .. |build-badge| image:: https://github.com/wrench-project/wrench-api/workflows/Build/badge.svg
     :target: https://github.com/wrench-project/wrench-api/actions

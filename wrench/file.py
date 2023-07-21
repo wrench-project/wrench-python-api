@@ -21,15 +21,15 @@ class File(SimulationItem):
         Constructor
         :param simulation: simulation object
         :type simulation
-        :param name: Task name
+        :param name: File name
         :type name: str
         """
         super().__init__(simulation, name)
 
     def get_size(self) -> int:
         """
-        Get the number of bytes of a file
-        :return: Number of bytes of a file
+        Get the file size in bytes
+        :return: A number of bytes
         :rtype: int
         """
         return self.simulation._file_get_size(self.name)
@@ -38,7 +38,7 @@ class File(SimulationItem):
         """
         String representation of a file when using print
         
-        :return: String representation of the task
+        :return: String representation of the file
         :rtype: str
         """
         s = f'File {self.name} of {self.get_size()} bytes'

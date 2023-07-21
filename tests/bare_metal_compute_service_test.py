@@ -54,10 +54,12 @@ if __name__ == "__main__":
         ss.create_file_copy(file1)
         file2 = simulation.add_file("file2", 1024)
         file3 = simulation.add_file("file3", 1024)
-        task1 = simulation.create_task("task1", 10000000000, 1, 1, 0)
+
+        workflow = simulation.create_workflow()
+        task1 = workflow.add_task("task1", 10000000000, 1, 1, 0)
         task1.add_input_file(file1)
         task1.add_output_file(file2)
-        task2 = simulation.create_task("task2", 200000000000, 1, 1, 0)
+        task2 = workflow.add_task("task2", 200000000000, 1, 1, 0)
         task2.add_input_file(file2)
         task2.add_output_file(file3)
 

@@ -81,7 +81,8 @@ if __name__ == "__main__":
             raise wrench.WRENCHException("VM should be running")
 
         print(f"Submitting a job do the VM's bare metal compute service")
-        task1 = simulation.create_task("task1", 10000000000.0, 1, 1, 0)
+        workflow = simulation.create_workflow()
+        task1 = workflow.add_task("task1", 10000000000.0, 1, 1, 0)
         job = simulation.create_standard_job([task1], {})
         vm_cs.submit_standard_job(job)
         print(f"Simulation, time is {simulation.get_simulated_time()}")
@@ -108,7 +109,7 @@ if __name__ == "__main__":
             raise wrench.WRENCHException("VM should be running")
 
         print(f"Submitting another job do the VM's bare metal compute service")
-        task2 = simulation.create_task("task2", 10000000000.0, 1, 1, 0)
+        task2 = workflow.add_task("task2", 10000000000.0, 1, 1, 0)
         job = simulation.create_standard_job([task2], {})
         vm_cs.submit_standard_job(job)
         print(f"Simulation, time is {simulation.get_simulated_time()}")

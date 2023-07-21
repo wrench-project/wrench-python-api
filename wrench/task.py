@@ -28,43 +28,6 @@ class Task(SimulationItem):
         """
         super().__init__(simulation, name)
 
-    def __str__(self) -> str:
-        """
-        String representation of a task when using print
-        
-        :return: String representation of the task
-        :rtype: str
-        """
-        text_flops = "FLOPS"
-        text_min_num_cores = "Minimum cores" 
-        text_max_num_cores = "Maximum cores" 
-        text_memory = "Memory requirement"
-
-        sep = ''
-        offset = ' '
-
-        s  = f"Task {self.name}:\n"
-        s += f"{offset}{text_flops:<18}{sep}{self.get_flops():10.2f}\n"
-        s += f"{offset}{text_min_num_cores:<18}{sep}{self.get_min_num_cores():10d}\n"
-        s += f"{offset}{text_max_num_cores:<18}{sep}{self.get_max_num_cores():10d}\n"
-        s += f"{offset}{text_memory:<18}{sep}{self.get_memory():10.2f}\n"
-
-        return s
-
-    def __repr__(self) -> str:
-        """
-        String representation of a Task object
-        
-        :return: String representation of a Task object
-        :rtype: str
-        """
-        s = f"Task(name={self.name}, " + \
-            f"flops={self.get_flops()}, " + \
-            f"min_num_cores={self.get_min_num_cores()}, " + \
-            f"max_num_cores={self.get_max_num_cores()}, " + \
-            f"memory={self.get_memory()})"
-        return s
-
     def add_input_file(self, file: File) -> None:
         """
         Add a file as input file for this task
@@ -147,4 +110,39 @@ class Task(SimulationItem):
         """
         return self.simulation._task_get_end_date(self.name)
 
+    def __str__(self) -> str:
+        """
+        String representation of a task when using print
 
+        :return: String representation of the task
+        :rtype: str
+        """
+        text_flops = "FLOPS"
+        text_min_num_cores = "Minimum cores"
+        text_max_num_cores = "Maximum cores"
+        text_memory = "Memory requirement"
+
+        sep = ''
+        offset = ' '
+
+        s = f"Task {self.name}:\n"
+        s += f"{offset}{text_flops:<18}{sep}{self.get_flops():10.2f}\n"
+        s += f"{offset}{text_min_num_cores:<18}{sep}{self.get_min_num_cores():10d}\n"
+        s += f"{offset}{text_max_num_cores:<18}{sep}{self.get_max_num_cores():10d}\n"
+        s += f"{offset}{text_memory:<18}{sep}{self.get_memory():10.2f}\n"
+
+        return s
+
+    def __repr__(self) -> str:
+        """
+        String representation of a Task object
+
+        :return: String representation of a Task object
+        :rtype: str
+        """
+        s = f"Task(name={self.name}, " + \
+            f"flops={self.get_flops()}, " + \
+            f"min_num_cores={self.get_min_num_cores()}, " + \
+            f"max_num_cores={self.get_max_num_cores()}, " + \
+            f"memory={self.get_memory()})"
+        return s

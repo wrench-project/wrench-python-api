@@ -56,10 +56,10 @@ if __name__ == "__main__":
         # frs = simulation.create_file_registry_service("ControllerHost")
         # print(f"Created file registry service has name {frs.get_name()}")
 
-        print("Adding a 1kB file to the workflow...")
+        print("Adding a 1kB file to the simulation...")
         file1 = simulation.add_file("file1", 1024)
         print(f"Created file {file1}")
-        print("Adding another 1kB file to the workflow...")
+        print("Adding another 1kB file to the simulation...")
         file2 = simulation.add_file("file2", 1024)
         print(f"Created file {file2}")
 
@@ -70,8 +70,11 @@ if __name__ == "__main__":
         simulation.sleep(10)
         print(f"Time now is {simulation.get_simulated_time()}")
 
+        print("Creating a workflow")
+        workflow = simulation.create_workflow()
+
         print("Creating a task")
-        task1 = simulation.create_task("task1", 100.0, 1, 1, 0)
+        task1 = workflow.add_task("task1", 100.0, 1, 1, 0)
         print(f"Just created a task with flops={task1.get_flops()}" +
               f", min_num_cores={task1.get_min_num_cores()}" +
               f", max_num_cores={task1.get_max_num_cores()}" +
@@ -100,7 +103,7 @@ if __name__ == "__main__":
             print(f"  - Event: {event}")
 
         print("Creating another task")
-        task2 = simulation.create_task("task2", 100.0, 1, 1, 0)
+        task2 = workflow.add_task("task2", 100.0, 1, 1, 0)
 
         print("Creating another job...")
         other_job = simulation.create_standard_job([task2], {})

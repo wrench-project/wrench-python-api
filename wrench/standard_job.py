@@ -24,7 +24,7 @@ class StandardJob(SimulationItem):
         Constructor
         :param simulation: simulation object
         :type simulation
-        :param name: Task name
+        :param name: Job name
         :type name: str
         """
         super().__init__(simulation, name)
