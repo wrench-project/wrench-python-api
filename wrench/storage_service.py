@@ -20,6 +20,7 @@ class StorageService(SimulationItem):
     def __init__(self, simulation, name: str) -> None:
         """
         Constructor
+        
         :param simulation: simulation object
         :type simulation
         :param name: Storage service name
@@ -30,6 +31,7 @@ class StorageService(SimulationItem):
     def create_file_copy(self, file: File) -> None:
         """
         Creates a copy of a file (ex nihilo) at this storage service
+
         :param file: the file
         :return:
         """
@@ -38,6 +40,7 @@ class StorageService(SimulationItem):
     def lookup_file(self, file: File) -> bool:
         """
         Checks whether a copy of a file is stored on the storage service
+
         :param file: the file
         :return: true or false
         :rtype: bool

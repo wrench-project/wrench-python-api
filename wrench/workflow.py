@@ -52,6 +52,7 @@ class Workflow(SimulationItem):
     def get_tasks(self) -> dict[str, Task]:
         """
         Get the list of all tasks in the workflow
+
         :return: A dictionary of Task objects where task names are keys
         :rtype: dict[str, Task]
         """
@@ -60,6 +61,7 @@ class Workflow(SimulationItem):
     def get_input_files(self) -> List[str]:
         """
         Get the list of all input files of the workflow
+
         :return: A dictionary of Task objects where task names are keys
         :rtype: dict[str, Task]
         """

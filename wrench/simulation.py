@@ -221,6 +221,7 @@ class Simulation:
     def get_all_files(self) -> dict[str, File]:
         """
         Get the list of all files
+
         :return: A dictionary of File objects where ta names are keys
         :rtype: dict[str, File]
         """
@@ -307,21 +308,22 @@ class Simulation:
                                      property_list: dict[str, str],
                                      message_payload_list: dict[str, float]) -> CloudComputeService:
         """
+        Create a cloud compute service
 
-                :param hostname: name of the (simulated) host on which the compute service should run
-                :type hostname: str
-                :param execution_host: compute resources as a list of hostnames
-                :param scratch_space: the compute service’s scratch space’s mount point (”” means none)
-                :type scratch_space: str
-                :param property_list: a property list ({} means “use all defaults”)
-                :type property_list: dict
-                :param message_payload_list: a message payload list ({} means “use all defaults”)
-                :type message_payload_list: dict
-                :return: the service name
-                :rtype: CloudComputeService
+        :param hostname: name of the (simulated) host on which the compute service should run
+        :type hostname: str
+        :param execution_host: compute resources as a list of hostnames
+        :param scratch_space: the compute service’s scratch space’s mount point (”” means none)
+        :type scratch_space: str
+        :param property_list: a property list ({} means “use all defaults”)
+        :type property_list: dict
+        :param message_payload_list: a message payload list ({} means “use all defaults”)
+        :type message_payload_list: dict
+        :return: the service name
+        :rtype: CloudComputeService
 
-                :raises WRENCHException: if there is any error in the response
-                """
+        :raises WRENCHException: if there is any error in the response
+        """
         data = {"head_host": hostname, "resources": execution_host, "scratch_space": scratch_space,
                 "property_list": json.dumps(property_list),
                 "message_payload_list": json.dumps(message_payload_list)}

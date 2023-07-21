@@ -1,5 +1,5 @@
-workflow.file
-=============
+wrench.workflow
+===============
 
 .. automodule:: wrench.workflow
    :members:
