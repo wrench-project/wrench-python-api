@@ -12,6 +12,7 @@ from .simulation_item import SimulationItem
 from .file import File
 from typing import List
 
+
 class Task(SimulationItem):
     """
     WRENCH Task class
