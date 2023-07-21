@@ -58,18 +58,27 @@ class VirtualMachine(SimulationItem):
     def is_running(self) -> bool:
         """
         Determines whether a virtual machine is running.
+
+        :return: True if the virtual machine is running, false otherwise
+        :rtype: bool
         """
         return self.simulation._is_vm_running(self.cloud_compute_service_name, self.name)
 
     def is_suspended(self) -> bool:
         """
         Determines whether a virtual machine is suspended.
+
+        :return: True if the virtual machine is suspended, false otherwise
+        :rtype: bool
         """
         return self.simulation._is_vm_suspended(self.cloud_compute_service_name, self.name)
 
     def is_down(self) -> bool:
         """
         Determines whether a virtual machine is down.
+
+        :return: True if the virtual machine is down, false otherwise
+        :rtype: bool
         """
         return self.simulation._is_vm_down(self.cloud_compute_service_name, self.name)
 

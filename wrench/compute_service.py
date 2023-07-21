@@ -19,6 +19,7 @@ class ComputeService(SimulationItem):
     def __init__(self, simulation, name: str) -> None:
         """
         Constructor
+
         :param simulation: simulation object
         :type simulation
         :param name: Compute service name
@@ -28,28 +29,35 @@ class ComputeService(SimulationItem):
 
     def supports_compound_jobs(self) -> bool:
         """
-        Returns true if the service supports compound jobs.
-        :return:
+        Determines whether the compute service supports compound jobs.
+
+        :return: True if compound jobs are supported, false otherwise
+        :rtype: bool
         """
         return self.simulation._supports_compound_jobs(self.name)
 
     def supports_pilot_jobs(self) -> bool:
         """
-        Returns true if the service supports pilot jobs.
-        :return:
+        Determines whether the compute service supports pilot jobs.
+
+        :return: True if pilot jobs are supported, false otherwise
+        :rtype: bool
         """
         return self.simulation._supports_pilot_jobs(self.name)
 
     def supports_standard_jobs(self) -> bool:
         """
-        Returns true if the service supports pilot jobs.
-        :return:
+        Determines whether the compute service supports standard jobs.
+
+        :return: True if standard jobs are supported, false otherwise
+        :rtype: bool
         """
         return self.simulation._supports_standard_jobs(self.name)
 
     def __str__(self) -> str:
         """
         :return: String representation of a compute service
+
         :rtype: str
         """
         s = f"Compute Service {self.name}"
