@@ -18,6 +18,7 @@ from typing import Dict, List, Optional, Union
 
 from .compute_service import ComputeService
 from .bare_metal_compute_service import BareMetalComputeService
+from .batch_compute_service import BatchComputeService
 from .cloud_compute_service import CloudComputeService
 from .virtual_machine import VirtualMachine
 from .exception import WRENCHException
@@ -301,6 +302,42 @@ class Simulation:
             self.compute_services[compute_service_name] = BareMetalComputeService(self, compute_service_name)
             return self.compute_services[compute_service_name]
         raise WRENCHException(response["failure_cause"])
+    
+    def create_batch_compute_service(self, hostname: str,
+                                          resources: list,
+                                          scratch_space: str,
+                                          property_list: dict[str, str],
+                                          message_payload_list: dict[str, float]) -> BatchComputeService:
+        """
+        Create a batch compute service
+
+        :param hostname: name of the (simulated) host on which the compute service should run
+        :type hostname: str
+        :param resources: compute resources as a dict of hostnames where values are tuples of #cores and ram in bytes
+        :param scratch_space: the compute service’s scratch space’s mount point (”” means none)
+        :type scratch_space: str
+        :param property_list: a property list ({} means “use all defaults”)
+        :type property_list: dict
+        :param message_payload_list: a message payload list ({} means “use all defaults”)
+        :type message_payload_list: dict
+        :return: the service name
+        :rtype: BatchComputeService
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"head_host": hostname, "resources": resources, "scratch_space": scratch_space,
+                "property_list": json.dumps(property_list),
+                "message_payload_list": json.dumps(message_payload_list),
+                }
+        r = self.__send_request_to_daemon(requests.post,
+                                          f"{self.daemon_url}/{self.simid}/addBatchComputeService", json=data)
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            compute_service_name = response["service_name"]
+            self.compute_services[compute_service_name] = BatchComputeService(self, compute_service_name)
+            return self.compute_services[compute_service_name]
+        raise WRENCHException(response["failure_cause"])
 
     def create_cloud_compute_service(self, hostname: str,
                                      execution_host: list,
@@ -404,7 +441,7 @@ class Simulation:
     ####################################################################################
     ####################################################################################
 
-    def _submit_standard_job(self, job_name: str, cs_name: str) -> None:
+    def _submit_standard_job(self, job_name: str, cs_name: str, service_specific_args = "{}") -> None:
         """
         Submit a standard job to a compute service
 
@@ -420,7 +457,7 @@ class Simulation:
         However, in wrench-openapi.json, job name was described as job_id - jid
         '''
         # ToDo: remove redundant field from json
-        data = {"compute_service_name": cs_name}
+        data = {"compute_service_name": cs_name, "service_specific_args": service_specific_args}
         r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/jobs/{job_name}/submit",
                                           json=data)
         response = r.json()
