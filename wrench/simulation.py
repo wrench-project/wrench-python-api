@@ -278,11 +278,11 @@ class Simulation:
         :param hostname: name of the (simulated) host on which the compute service should run
         :type hostname: str
         :param resources: compute resources as a dict of hostnames where values are tuples of #cores and ram in bytes
-        :param scratch_space: the compute service’s scratch space’s mount point (”” means none)
+        :param scratch_space: the compute service's scratch space’s mount point ("" means none)
         :type scratch_space: str
-        :param property_list: a property list ({} means “use all defaults”)
+        :param property_list: a property list ({} means "use all defaults")
         :type property_list: dict
-        :param message_payload_list: a message payload list ({} means “use all defaults”)
+        :param message_payload_list: a message payload list ({} means "use all defaults")
         :type message_payload_list: dict
         :return: the service name
         :rtype: BareMetalComputeService
@@ -313,8 +313,8 @@ class Simulation:
 
         :param hostname: name of the (simulated) host on which the compute service should run
         :type hostname: str
-        :param resources: compute resources as a dict of hostnames where values are tuples of #cores and ram in bytes
-        :param scratch_space: the compute service’s scratch space’s mount point (”” means none)
+        :param resources: compute resources as a list of hostnames
+        :param scratch_space: the compute service's scratch space's mount point ("" means none)
         :type scratch_space: str
         :param property_list: a property list ({} means “use all defaults”)
         :type property_list: dict

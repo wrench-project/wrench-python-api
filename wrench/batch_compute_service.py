@@ -14,7 +14,7 @@ import json
 
 class BatchComputeService(ComputeService):
     """
-    WRENCH Bare Metal Compute Service class
+    WRENCH Batch Compute Service class
     """
     def __init__(self, simulation, name: str) -> None:
         """
@@ -28,7 +28,7 @@ class BatchComputeService(ComputeService):
 
     def submit_standard_job(self, standard_job: StandardJob, service_specific_args: dict) -> None:
         """
-        Submit a standard job to a compute service
+        Submit a standard job to a batch compute service
 
         :param standard_job: the standard job
         :type standard_job: StandardJob
