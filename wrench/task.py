@@ -18,14 +18,17 @@ class Task(SimulationItem):
     WRENCH Task class
     """
 
-    def __init__(self, simulation, name: str) -> None:
+    def __init__(self, simulation, workflow_name: str, name: str) -> None:
         """
         Constructor
         :param simulation: simulation object
         :type simulation
+        :param workflow_name: Workflow name
+        :type workflow_name: str
         :param name: Task name
         :type name: str
         """
+        self.workflow_name = workflow_name
         super().__init__(simulation, name)
 
     def add_input_file(self, file: File) -> None:
@@ -35,7 +38,7 @@ class Task(SimulationItem):
         :param file: File name
         :type file: File
         """
-        return self.simulation._add_input_file(self.name, file)
+        return self.simulation._add_input_file(self.workflow_name, self.name, file)
 
     def add_output_file(self, file: File) -> None:
         """

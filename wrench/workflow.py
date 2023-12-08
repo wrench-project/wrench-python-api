@@ -19,13 +19,15 @@ class Workflow(SimulationItem):
     WRENCH Workflow class.
     """
 
-    def __init__(self, simulation) -> None:
+    def __init__(self, simulation, name) -> None:
         """
         Constructor
         :param simulation: simulation object
         :type simulation
+        :param name: the name of the workflow
+        :type name: str
         """
-        super().__init__(simulation, "the_workflow")
+        super().__init__(simulation, name)
 
     def add_task(self, name: str, flops: float, min_num_cores: int, max_num_cores: int, memory: float) -> Task:
         """
@@ -47,7 +49,7 @@ class Workflow(SimulationItem):
 
         :raises WRENCHException: if there is any error in the response
         """
-        return self.simulation._workflow_create_task(name, flops, min_num_cores, max_num_cores, memory)
+        return self.simulation._workflow_create_task(self.name, name, flops, min_num_cores, max_num_cores, memory)
 
     def get_tasks(self) -> dict[str, Task]:
         """
@@ -87,7 +89,7 @@ class Workflow(SimulationItem):
         :return: String representation of the workflow
         :rtype: str
         """
-        s = f'The workflow'
+        s = f'Workflow ' + self.name
         return s
 
     def __repr__(self) -> str:
@@ -97,5 +99,5 @@ class Workflow(SimulationItem):
         :return: String representation of a Workflow object
         :rtype: str
         """
-        s = f'Workflow()'
+        s = f"Workflow(name={self.name})"
         return s
