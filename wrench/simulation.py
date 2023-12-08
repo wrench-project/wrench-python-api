@@ -434,6 +434,24 @@ class Simulation:
         response = r.json()
         return response["hostnames"]
 
+    def create_workflow_from_json_string(self, json_string: str, reference_flop_rate: str, ignore_machine_specs: bool, redundant_dependencies: bool,
+                                         ignore_cycle_creating_dependencies: bool, min_cores_per_task: float, max_cores_per_task: float, enforce_num_cores: bool,
+                                         ignore_avg_cpu: bool, show_warnings: bool) -> str:
+        """
+        Simulate workflow from a JSON file
+
+        :return: Status of workflow
+        :rtype: str
+        """
+        data = {"jsonString": json_string, "referenceFlopRate": reference_flop_rate, "ignoreMachineSpecs": ignore_machine_specs,
+                "redundantDependencies": redundant_dependencies, "ignoreCycleCreatingDependencies": ignore_cycle_creating_dependencies,
+                "minCoresPerTask": min_cores_per_task, "maxCoresPerTask": max_cores_per_task, "enforceNumCores": enforce_num_cores,
+                "ignoreAvgCPU": ignore_avg_cpu, "showWarnings": show_warnings}
+
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/create_workflow_from_json_string", json={})
+        response = r.json()
+        return response["results"]
+
     ####################################################################################
     ####################################################################################
     # Below are "private" methods that are not part of the user API, but called by
