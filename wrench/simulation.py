@@ -155,10 +155,12 @@ class Simulation:
         response = [self._json_event_to_dict(e) for e in response]
         return response
 
-    def create_standard_job(self, tasks: List[Task], file_locations: dict[File, StorageService]) -> StandardJob:
+    def create_standard_job(self, workflow_name: str, tasks: List[Task], file_locations: dict[File, StorageService]) -> StandardJob:
         """
         Create a one-task standard job
 
+        :param workflow_name: the workflow's name
+        :type workflow_name: str
         :param tasks: list of tasks
         :type tasks: List[Task]
         :param file_locations: list of file locations
@@ -200,10 +202,12 @@ class Simulation:
         # code looks a bit more natural
         return Workflow(self, response["results"])
 
-    def add_file(self, name: str, size: int) -> File:
+    def add_file(self, workflow_name: str, name: str, size: int) -> File:
         """
         Add a file to the workflow
 
+        :param workflow_name: the workflow's name
+        :type workflow_name: str
         :param name: file name
         :type name: str
         :param size: file size in bytes
@@ -232,10 +236,12 @@ class Simulation:
         """
         return self.files
 
-    def stage_files(self, storage_service: StorageService) -> None:
+    def stage_files(self, workflow_name: str, storage_service: StorageService) -> None:
         """
         Stage all input files at a storage service
 
+        :param workflow_name: the workflow's name
+        :type workflow_name: str
         :param storage_service: Storage service's name
         :type storage_service: StorageService
 
@@ -486,10 +492,12 @@ class Simulation:
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
 
-    def _create_file_copy_at_storage_service(self, file_name: str, storage_service_name: str):
+    def _create_file_copy_at_storage_service(self, workflow_name: str, file_name: str, storage_service_name: str):
         """
         Create a copy (ex nihilo) of a file at a storage service
 
+        :param workflow_name: the workflow's name
+        :type workflow_name: str
         :param file_name: the file name
         :type file_name: str
         :param storage_service_name: the name of the storage service
@@ -505,10 +513,12 @@ class Simulation:
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
 
-    def _lookup_file_at_storage_service(self, file_name: str, storage_service_name: str):
+    def _lookup_file_at_storage_service(self, workflow_name: str, file_name: str, storage_service_name: str):
         """
         Checks whether a copy of a file is stored at a storage service
 
+        :param workflow_name: the workflow's name
+        :type workflow_name: str
         :param file_name: the file name
         :type file_name: str
         :param storage_service_name: the name of the storage service
@@ -549,10 +559,12 @@ class Simulation:
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
 
-    def _add_output_file(self, task_name: str, file: File) -> None:
+    def _add_output_file(self, workflow_name: str, task_name: str, file: File) -> None:
         """
         Add an output file to a task
 
+        :param workflow_name: the workflow's name
+        :type workflow_name: str
         :param task_name: the task's name
         :type task_name: str
         :param file: the file
@@ -568,10 +580,12 @@ class Simulation:
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
 
-    def _get_task_input_files(self, task_name: str) -> List[str]:
+    def _get_task_input_files(self, workflow_name: str, task_name: str) -> List[str]:
         """
         Get a list of input files for a given task
 
+        :param workflow_name: the workflow's name
+        :type workflow_name: str
         :param task_name: the task name
         :type task_name: str
 
@@ -588,10 +602,12 @@ class Simulation:
             return response["files"]
         raise WRENCHException(response["failure_cause"])
 
-    def _get_task_output_files(self, task_name: str) -> List[str]:
+    def _get_task_output_files(self, workflow_name: str, task_name: str) -> List[str]:
         """
         Get a list of output files for a given task
 
+        :param workflow_name: the workflow's name
+        :type workflow_name: str
         :param task_name: the task name
         :type task_name: str
 
@@ -608,10 +624,12 @@ class Simulation:
             return response["files"]
         raise WRENCHException(response["failure_cause"])
 
-    def _file_get_size(self, file_name: str) -> int:
+    def _file_get_size(self, workflow_name: str, file_name: str) -> int:
         """
         Get the number of bytes for a given file
 
+        :param workflow_name: the workflow's name
+        :type workflow_name: str
         :param file_name: the file's name
         :type file_name: str
 
@@ -628,10 +646,12 @@ class Simulation:
             return response["size"]
         raise WRENCHException(response["failure_cause"])
 
-    def _task_get_flops(self, task_name: str) -> float:
+    def _task_get_flops(self, workflow_name: str, task_name: str) -> float:
         """
         Get the number of flops in a task
 
+        :param workflow_name: the workflow's name
+        :type workflow_name: sttr
         :param task_name: the task's name
         :type task_name: str
 
@@ -649,10 +669,12 @@ class Simulation:
             return response["flops"]
         raise WRENCHException(response["failure_cause"])
 
-    def _task_get_min_num_cores(self, task_name: str) -> int:
+    def _task_get_min_num_cores(self, workflow_name: str, task_name: str) -> int:
         """
         Get the task's minimum number of required cores
 
+        :param workflow_name: the workflow's name
+        :type workflow_name: str
         :param task_name: the task's name
         :type task_name: str
 
@@ -671,10 +693,12 @@ class Simulation:
             return response["min_num_cores"]
         raise WRENCHException(response["failure_cause"])
 
-    def _task_get_max_num_cores(self, task_name: str) -> int:
+    def _task_get_max_num_cores(self, workflow_name: str, task_name: str) -> int:
         """
         Get the task's maximum number of required cores
 
+        :param workflow_name: the workflow's name
+        :type workflow_name: str
         :param task_name: the task's name
         :type task_name: str
 
@@ -693,10 +717,11 @@ class Simulation:
             return response["max_num_cores"]
         raise WRENCHException(response["failure_cause"])
 
-    def _task_get_memory(self, task_name: str) -> float:
+    def _task_get_memory(self, workflow_name: str, task_name: str) -> float:
         """
         Get the task's memory requirement
-
+        :param workflow_name: the workflow's name
+        :type workflow_name: str
         :param task_name: the task's name
         :type task_name: str
 
@@ -714,10 +739,11 @@ class Simulation:
             return response["memory"]
         raise WRENCHException(response["failure_cause"])
 
-    def _task_get_start_date(self, task_name: str) -> float:
+    def _task_get_start_date(self, workflow_name: str, task_name: str) -> float:
         """
         Get the task's start date
-
+        :param workflow_name: the workflow's name
+        :type workflow_name: sttr
         :param task_name: the task's name
         :type task_name: str
 
@@ -734,10 +760,12 @@ class Simulation:
             return response["time"]
         raise WRENCHException(response["failure_cause"])
 
-    def _task_get_end_date(self, task_name: str) -> float:
+    def _task_get_end_date(self, workflow_name: str, task_name: str) -> float:
         """
         Get the task's end date
 
+        :param workflow_name: the workflow's name
+        :type workflow_name: str
         :param task_name: the task's name
         :type task_name: str
 
