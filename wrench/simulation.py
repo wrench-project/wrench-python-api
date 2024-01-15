@@ -177,8 +177,8 @@ class Simulation:
         for fl in file_locations:
             file_locations_specs[fl.get_name()] = file_locations[fl].get_name()
 
-        data = {"tasks": task_names, "file_locations": file_locations_specs}
-        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/createStandardJob", json=data)
+        data = {"workflow_name": workflow_name, "tasks": task_names, "file_locations": file_locations_specs}
+        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/{workflow_name}/createStandardJob", json=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -594,7 +594,7 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/tasks/{task_name}/inputFiles",
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/{workflow_name}/tasks/{task_name}/inputFiles",
                                           json={})
 
         response = r.json()
@@ -616,7 +616,7 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/tasks/{task_name}/outputFiles",
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/{workflow_name}/tasks/{task_name}/outputFiles",
                                           json={})
 
         response = r.json()
@@ -638,7 +638,7 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/files/{file_name}/size",
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/{workflow_name}/files/{file_name}/size",
                                           json={})
 
         response = r.json()
@@ -661,7 +661,7 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetFlops",
+                                          f"{self.daemon_url}/{self.simid}/{workflow_name}/tasks/{task_name}/taskGetFlops",
                                           json={})
 
         response = r.json()
@@ -685,7 +685,7 @@ class Simulation:
         """
         data = {}
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetMinNumCores",
+                                          f"{self.daemon_url}/{self.simid}/{workflow_name}/tasks/{task_name}/taskGetMinNumCores",
                                           json=data)
 
         response = r.json()
@@ -709,7 +709,7 @@ class Simulation:
         """
         data = {}
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetMaxNumCores",
+                                          f"{self.daemon_url}/{self.simid}/{workflow_name}/tasks/{task_name}/taskGetMaxNumCores",
                                           json=data)
 
         response = r.json()
@@ -732,7 +732,7 @@ class Simulation:
         """
         data = {}
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetMemory", json=data)
+                                          f"{self.daemon_url}/{self.simid}/{workflow_name}/tasks/{task_name}/taskGetMemory", json=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -753,7 +753,7 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetStartDate", json={})
+                                          f"{self.daemon_url}/{self.simid}/{workflow_name}/tasks/{task_name}/taskGetStartDate", json={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -775,7 +775,7 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/tasks/{task_name}/taskGetEndDate", json={})
+                                          f"{self.daemon_url}/{self.simid}/{workflow_name}/tasks/{task_name}/taskGetEndDate", json={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -1028,7 +1028,7 @@ class Simulation:
                 "min_num_cores": min_num_cores,
                 "max_num_cores": max_num_cores,
                 "memory": memory}
-        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/createTask", json=data)
+        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/{workflow_name}/createTask", json=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -1044,7 +1044,7 @@ class Simulation:
         """
         return self.tasks
 
-    def _workflow_get_input_files(self) -> List[str]:
+    def _workflow_get_input_files(self, workflow_name: str) -> List[str]:
         """
         Get a list of all input files of the workflow
 
@@ -1053,7 +1053,7 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/getInputFiles", json={})
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/{workflow_name}/getInputFiles", json={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
