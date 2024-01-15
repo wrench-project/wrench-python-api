@@ -200,7 +200,7 @@ class Simulation:
         response = r.json()
         # This is really just a cosmetic place-holder class so that the user
         # code looks a bit more natural
-        return Workflow(self, response["results"])
+        return Workflow(self, response["result"])
 
     def add_file(self, workflow_name: str, name: str, size: int) -> File:
         """
@@ -1022,7 +1022,8 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {"name": name,
+        data = {"workflow_name": workflow_name,
+                "name": name,
                 "flops": flops,
                 "min_num_cores": min_num_cores,
                 "max_num_cores": max_num_cores,

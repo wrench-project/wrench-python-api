@@ -82,6 +82,7 @@ if __name__ == "__main__":
 
         print(f"Submitting a job do the VM's bare metal compute service")
         workflow = simulation.create_workflow()
+        print(f"Created Workflow {workflow}")
         task1 = workflow.add_task("task1", 10000000000.0, 1, 1, 0)
         job = simulation.create_standard_job([task1], {})
         vm_cs.submit_standard_job(job)

@@ -49,7 +49,7 @@ class Workflow(SimulationItem):
 
         :raises WRENCHException: if there is any error in the response
         """
-        return self.simulation._workflow_create_task(self.name, name, flops, min_num_cores, max_num_cores, memory)
+        return self.simulation._workflow_create_task(name, flops, min_num_cores, max_num_cores, memory)
 
     def get_tasks(self) -> dict[str, Task]:
         """
