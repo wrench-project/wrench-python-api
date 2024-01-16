@@ -155,12 +155,12 @@ class Simulation:
         response = [self._json_event_to_dict(e) for e in response]
         return response
 
-    def create_standard_job(self, workflow_name: str, tasks: List[Task], file_locations: dict[File, StorageService]) -> StandardJob:
+    def create_standard_job(self, workflow: Workflow, tasks: List[Task], file_locations: dict[File, StorageService]) -> StandardJob:
         """
         Create a one-task standard job
 
-        :param workflow_name: the workflow's name
-        :type workflow_name: str
+        :param workflow: the workflow
+        :type workflow: Workflow
         :param tasks: list of tasks
         :type tasks: List[Task]
         :param file_locations: list of file locations
@@ -177,8 +177,8 @@ class Simulation:
         for fl in file_locations:
             file_locations_specs[fl.get_name()] = file_locations[fl].get_name()
 
-        data = {"workflow_name": workflow_name, "tasks": task_names, "file_locations": file_locations_specs}
-        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/{workflow_name}/createStandardJob", json=data)
+        data = {"workflow_name": workflow.name, "tasks": task_names, "file_locations": file_locations_specs}
+        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/{workflow.name}/createStandardJob", json=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
