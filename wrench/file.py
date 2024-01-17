@@ -16,7 +16,7 @@ class File(SimulationItem):
     WRENCH File class
     """
 
-    def __init__(self, simulation, name: str) -> None:
+    def __init__(self, simulation, workflow, name: str) -> None:
         """
         Constructor
         :param simulation: simulation object
@@ -25,6 +25,7 @@ class File(SimulationItem):
         :type name: str
         """
         super().__init__(simulation, name)
+        self.workflow = workflow
 
     def get_size(self) -> int:
         """
@@ -32,7 +33,7 @@ class File(SimulationItem):
         :return: A number of bytes
         :rtype: int
         """
-        return self.simulation._file_get_size(self.name)
+        return self.simulation._file_get_size(self.workflow, self.name)
 
     def __str__(self) -> str:
         """

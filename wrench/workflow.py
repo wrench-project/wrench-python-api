@@ -29,12 +29,12 @@ class Workflow(SimulationItem):
         """
         super().__init__(simulation, name)
 
-    def add_task(self, workflow_name: str, name: str, flops: float, min_num_cores: int, max_num_cores: int, memory: float) -> Task:
+    def add_task(self, workflow, name: str, flops: float, min_num_cores: int, max_num_cores: int, memory: float) -> Task:
         """
         Add a task to the workflow
 
-        :param workflow_name: the name of the workflow
-        :type workflow_name: str
+        :param workflow: the workflow
+        :type workflow: Workflow
         :param name: task name
         :type name: str
         :param flops: number of flops
@@ -51,7 +51,7 @@ class Workflow(SimulationItem):
 
         :raises WRENCHException: if there is any error in the response
         """
-        return self.simulation._workflow_create_task(workflow_name, name, flops, min_num_cores, max_num_cores, memory)
+        return self.simulation._workflow_create_task(workflow, name, flops, min_num_cores, max_num_cores, memory)
 
     def get_tasks(self) -> dict[str, Task]:
         """

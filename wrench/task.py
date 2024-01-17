@@ -31,23 +31,25 @@ class Task(SimulationItem):
         self.workflow_name = workflow_name
         super().__init__(simulation, name)
 
-    def add_input_file(self, file: File) -> None:
+    def add_input_file(self, workflow, file: File) -> None:
         """
         Add a file as input file for this task
 
+        :param workflow: the workflow
+        :type workflow: Workflow
         :param file: File name
         :type file: File
         """
-        return self.simulation._add_input_file(self.workflow_name, self.name, file)
+        return self.simulation._add_input_file(workflow, self.name, file)
 
-    def add_output_file(self, file: File) -> None:
+    def add_output_file(self, workflow, file: File) -> None:
         """
         Add a file as output file for this task
 
         :return: List of input files
         :rtype: List[str]
         """
-        return self.simulation._add_output_file(self.workflow_name, self.name, file)
+        return self.simulation._add_output_file(workflow, self.name, file)
 
     def get_input_files(self) -> List[str]:
         """

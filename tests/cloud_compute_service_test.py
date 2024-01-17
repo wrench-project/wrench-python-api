@@ -82,11 +82,9 @@ if __name__ == "__main__":
 
         print(f"Submitting a job do the VM's bare metal compute service")
         workflow = simulation.create_workflow()
-        print(f"Created workflow {workflow.name}")
+        print(f"Created {workflow.name}")
         task1 = workflow.add_task(workflow, "task1", 10000000000.0, 1, 1, 0)
-        print(f"{task1}")
         job = simulation.create_standard_job(workflow, [task1], {})
-        print(f"{job}")
         vm_cs.submit_standard_job(job)
         print(f"Simulation, time is {simulation.get_simulated_time()}")
         print(f"Waiting for job completion...")
