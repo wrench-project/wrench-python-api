@@ -50,21 +50,22 @@ if __name__ == "__main__":
         print(f"Created file registry service has name {frs.get_name()}")
 
         print("Creating a 2-task chain workflow as a single job, which will fail due to missing file locations...")
-        file1 = simulation.add_file("file1", 1024)
-        ss.create_file_copy(file1)
-        file2 = simulation.add_file("file2", 1024)
-        file3 = simulation.add_file("file3", 1024)
-
         workflow = simulation.create_workflow()
-        task1 = workflow.add_task("task1", 10000000000, 1, 1, 0)
-        task1.add_input_file(file1)
-        task1.add_output_file(file2)
-        task2 = workflow.add_task("task2", 200000000000, 1, 1, 0)
-        task2.add_input_file(file2)
-        task2.add_output_file(file3)
+
+        file1 = simulation.add_file(workflow, "file1", 1024)
+        ss.create_file_copy(file1)
+        file2 = simulation.add_file(workflow, "file2", 1024)
+        file3 = simulation.add_file(workflow, "file3", 1024)
+
+        task1 = workflow.add_task(workflow, "task1", 10000000000, 1, 1, 0)
+        task1.add_input_file(workflow, file1)
+        task1.add_output_file(workflow, file2)
+        task2 = workflow.add_task(workflow, "task2", 200000000000, 1, 1, 0)
+        task2.add_input_file(workflow, file2)
+        task2.add_output_file(workflow, file3)
 
         print("Creating a standard job with both tasks, but that doesn't specify file locations")
-        job = simulation.create_standard_job([task1, task2], {})
+        job = simulation.create_standard_job(workflow, [task1, task2], {})
 
         print("Submitting the standard job to the compute service...")
         cs.submit_standard_job(job)
@@ -77,7 +78,7 @@ if __name__ == "__main__":
             raise wrench.WRENCHException("Was expecting a job failure event but instead got a: " + event["event_type"])
 
         print("Trying again, but giving file locations for first and last file (second file will be on scratch!)...")
-        job = simulation.create_standard_job([task1, task2], {file1: ss, file3: ss})
+        job = simulation.create_standard_job(workflow, [task1, task2], {file1: ss, file3: ss})
         cs.submit_standard_job(job)
         print("Getting simulation events...")
         event = simulation.wait_for_next_event()

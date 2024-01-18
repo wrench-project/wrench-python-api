@@ -453,13 +453,14 @@ class Simulation:
         :return: Name of workflow
         :rtype: str
         """
-        data = {"jsonString": json_string, "referenceFlopRate": reference_flop_rate, "ignoreMachineSpecs": ignore_machine_specs,
-                "redundantDependencies": redundant_dependencies, "ignoreCycleCreatingDependencies": ignore_cycle_creating_dependencies,
-                "minCoresPerTask": min_cores_per_task, "maxCoresPerTask": max_cores_per_task, "enforceNumCores": enforce_num_cores,
-                "ignoreAvgCPU": ignore_avg_cpu, "showWarnings": show_warnings}
+        data = {"json_string": json_string, "reference_flop_rate": reference_flop_rate, "ignore_machine_specs": ignore_machine_specs,
+                "redundant_dependencies": redundant_dependencies, "ignore_cycle_creating_dependencies": ignore_cycle_creating_dependencies,
+                "min_cores_per_task": min_cores_per_task, "max_cores_per_task": max_cores_per_task, "enforce_num_cores": enforce_num_cores,
+                "ignore_avg_cpu": ignore_avg_cpu, "show_warnings": show_warnings}
 
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/createWorkflowFromJSONString", json={})
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/createWorkflowFromJSONString", json=data)
         response = r.json()
+        print(response)
         return response["results"]
 
     ####################################################################################
@@ -492,12 +493,12 @@ class Simulation:
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
 
-    def _create_file_copy_at_storage_service(self, workflow_name: str, file_name: str, storage_service_name: str):
+    def _create_file_copy_at_storage_service(self, workflow: Workflow, file_name: str, storage_service_name: str):
         """
         Create a copy (ex nihilo) of a file at a storage service
 
-        :param workflow_name: the workflow's name
-        :type workflow_name: str
+        :param workflow: the workflow
+        :type workflow: Workflow
         :param file_name: the file name
         :type file_name: str
         :param storage_service_name: the name of the storage service
@@ -507,18 +508,18 @@ class Simulation:
         """
         data = {"filename": file_name}
         r = self.__send_request_to_daemon(requests.post,
-                                          f"{self.daemon_url}/{self.simid}/{storage_service_name}/createFileCopy",
+                                          f"{self.daemon_url}/{self.simid}/{workflow.name}/{storage_service_name}/createFileCopy",
                                           json=data)
         response = r.json()
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
 
-    def _lookup_file_at_storage_service(self, workflow_name: str, file_name: str, storage_service_name: str):
+    def _lookup_file_at_storage_service(self, workflow: Workflow, file_name: str, storage_service_name: str):
         """
         Checks whether a copy of a file is stored at a storage service
 
-        :param workflow_name: the workflow's name
-        :type workflow_name: str
+        :param workflow: the workflow
+        :type workflow: Workflow
         :param file_name: the file name
         :type file_name: str
         :param storage_service_name: the name of the storage service
@@ -531,7 +532,7 @@ class Simulation:
         """
         data = {"filename": file_name}
         r = self.__send_request_to_daemon(requests.post,
-                                          f"{self.daemon_url}/{self.simid}/{storage_service_name}/lookupFile",
+                                          f"{self.daemon_url}/{self.simid}/{workflow.name}/{storage_service_name}/lookupFile",
                                           json=data)
         response = r.json()
         if not response["wrench_api_request_success"]:
@@ -647,7 +648,7 @@ class Simulation:
             return response["size"]
         raise WRENCHException(response["failure_cause"])
 
-    def _task_get_flops(self, workflow_name: str, task_name: str) -> float:
+    def _task_get_flops(self, workflow_name, task_name: str) -> float:
         """
         Get the number of flops in a task
 

@@ -35,7 +35,7 @@ class StorageService(SimulationItem):
         :param file: the file
         :return:
         """
-        return self.simulation._create_file_copy_at_storage_service(file.name, self.name)
+        return self.simulation._create_file_copy_at_storage_service(file.workflow, file.name, self.name)
 
     def lookup_file(self, file: File) -> bool:
         """
@@ -45,7 +45,7 @@ class StorageService(SimulationItem):
         :return: true or false
         :rtype: bool
         """
-        return self.simulation._lookup_file_at_storage_service(file.name, self.name)
+        return self.simulation._lookup_file_at_storage_service(file.workflow, file.name, self.name)
 
     def __str__(self) -> str:
         """
