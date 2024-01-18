@@ -69,7 +69,7 @@ if __name__ == "__main__":
         print(f"This job contains the following tasks: {job.get_tasks()}")
 
         print(f"Creating workflow from JSON")
-        workflow2 = simulation.create_workflow_from_json_string("sample_platform.xml", "2", False,
+        workflow2 = simulation.create_workflow_from_json_string("1000genome-chameleon-2ch-100k-001.json", "2", False,
                                                                 False,
                                                                 False, 3.0, 3.0, False,
                                                                 False, False)
