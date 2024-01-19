@@ -76,8 +76,8 @@ class Workflow(SimulationItem):
         return self.simulation._workflow_get_input_files()
 
     def create_workflow_from_json(self, json_object: json, reference_flop_rate: str, ignore_machine_specs: bool,
-                                         redundant_dependencies: bool, ignore_cycle_creating_dependencies: bool, min_cores_per_task: float,
-                                         max_cores_per_task: float, enforce_num_cores: bool, ignore_avg_cpu: bool, show_warnings: bool) -> str:
+                                  redundant_dependencies: bool, ignore_cycle_creating_dependencies: bool, min_cores_per_task: float,
+                                  max_cores_per_task: float, enforce_num_cores: bool, ignore_avg_cpu: bool, show_warnings: bool) -> str:
         """
         Create a workflow from a WfCommons JSON
         :param json_object: A JSON object created from a WfCommons JSON file
@@ -105,9 +105,9 @@ class Workflow(SimulationItem):
         :rtype: str
         """
         return self.simulation._create_workflow_from_json(json_object, reference_flop_rate, ignore_machine_specs,
-                                                                redundant_dependencies, ignore_cycle_creating_dependencies,
-                                                                 min_cores_per_task, max_cores_per_task, enforce_num_cores,
-                                                                 ignore_avg_cpu, show_warnings)
+                                                          redundant_dependencies, ignore_cycle_creating_dependencies,
+                                                          min_cores_per_task, max_cores_per_task, enforce_num_cores,
+                                                          ignore_avg_cpu, show_warnings)
 
     def __str__(self) -> str:
         """
