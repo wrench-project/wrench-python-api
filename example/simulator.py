@@ -63,7 +63,7 @@ if __name__ == "__main__":
         file2 = simulation.add_file("file2", 1024)
         print(f"Created file {file2}")
 
-        print("Creating a copy of the file on the storage service")
+        print(f"Creating a copy of {file1} on the storage service")
         ss.create_file_copy(file1)
 
         print("Sleeping for 10 seconds...")

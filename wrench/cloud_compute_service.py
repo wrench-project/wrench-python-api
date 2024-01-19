@@ -8,8 +8,8 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-from .compute_service import ComputeService
-from .virtual_machine import VirtualMachine
+from wrench.compute_service import ComputeService
+from wrench.virtual_machine import VirtualMachine
 
 
 class CloudComputeService(ComputeService):

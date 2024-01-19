@@ -8,8 +8,8 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-from .simulation_item import SimulationItem
-from .bare_metal_compute_service import BareMetalComputeService
+from wrench.simulation_item import SimulationItem
+from wrench.bare_metal_compute_service import BareMetalComputeService
 
 
 class VirtualMachine(SimulationItem):

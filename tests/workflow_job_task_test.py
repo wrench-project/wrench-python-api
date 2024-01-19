@@ -21,49 +21,49 @@ if __name__ == "__main__":
         simulation.start(platform_file_path, "ControllerHost")
         workflow = simulation.create_workflow()
         print("Adding a a 1kB file to the simulation...")
-        file1 = simulation.add_file(workflow, "file1", 1024)
+        file1 = simulation.add_file("file1", 1024)
         print(f"Created file {file1}")
         print("Adding another 1kB file to the workflow...")
-        file2 = simulation.add_file(workflow, "file2", 2048)
+        file2 = simulation.add_file("file2", 2048)
         print(f"Created file {file2}")
         print("Adding another 1kB file to the workflow...")
-        file3 = simulation.add_file(workflow, "file3", 10000)
+        file3 = simulation.add_file("file3", 10000)
         print(f"Created file {file3}")
 
         print(f"The files in the simulation are {simulation.get_all_files()}")
 
         print("Creating a task")
-        task1 = workflow.add_task(workflow, "task1", 100.0, 1, 8, 1024)
+        task1 = workflow.add_task("task1", 100.0, 1, 8, 1024)
         print(f"Just created a task with flops={task1.get_flops()}" +
               f", min_num_cores={task1.get_min_num_cores()}" +
               f", max_num_cores={task1.get_max_num_cores()}" +
               f", memory={task1.get_memory()}")
 
-        task1.add_input_file(workflow, file1)
+        task1.add_input_file(file1)
         print(f"Attached file {file1} as input file to task {task1.get_name()}")
         print(f"The list of input files for task {task1.get_name()} is: {task1.get_input_files()}")
-        task1.add_output_file(workflow, file2)
+        task1.add_output_file(file2)
         print(f"Attached file {file2} as output file to task {task1.get_name()}")
         print(f"The list of output files for task {task1.get_name()} is: {task1.get_output_files()}")
 
         print("Creating another task")
-        task2 = workflow.add_task(workflow, "task2", 1000.0, 4, 4, 0)
+        task2 = workflow.add_task("task2", 1000.0, 4, 4, 0)
         print(f"Just created a task with flops={task2.get_flops()}" +
               f", min_num_cores={task2.get_min_num_cores()}" +
               f", max_num_cores={task2.get_max_num_cores()}" +
               f", memory={task2.get_memory()}")
 
-        task2.add_input_file(workflow, file2)
+        task2.add_input_file(file2)
         print(f"Attached file {file2} as input file to task {task2.get_name()}")
         print(f"The list of input files for task {task2.get_name()} is: {task2.get_input_files()}")
-        task1.add_output_file(workflow, file3)
+        task1.add_output_file(file3)
         print(f"Attached file {file3} as output file to task {task2.get_name()}")
         print(f"The list of output files for task {task2.get_name()} is: {task2.get_output_files()}")
 
-        print(f"The tasks in the simulation are: {simulation._workflow_get_all_tasks()}")
+        print(f"The tasks in the simulation are: {workflow.get_tasks()}")
 
         print("Creating a standard job with both tasks")
-        job = simulation.create_standard_job(workflow, [task1, task2], {})
+        job = simulation.create_standard_job([task1, task2], {})
         print(f"Created standard job has name {job.get_name()}")
 
         print(f"This job contains the following tasks: {job.get_tasks()}")

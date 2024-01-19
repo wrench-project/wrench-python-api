@@ -8,8 +8,8 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-from .compute_service import ComputeService
-from .standard_job import StandardJob
+from wrench.compute_service import ComputeService
+from wrench.standard_job import StandardJob
 import json
 
 class BatchComputeService(ComputeService):

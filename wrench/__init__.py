@@ -20,9 +20,11 @@ from .virtual_machine import VirtualMachine
 from .exception import WRENCHException
 from .standard_job import StandardJob
 from .simulation import Simulation
+from .simulation_item import SimulationItem
 from .storage_service import StorageService
 from .file_registry_service import FileRegistryService
 from .task import Task
+from .workflow import Workflow
 from .file import File
 
 

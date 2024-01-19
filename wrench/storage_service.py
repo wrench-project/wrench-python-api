@@ -8,8 +8,8 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-from .simulation_item import SimulationItem
-from .file import File
+from wrench.simulation_item import SimulationItem
+from wrench.file import File
 
 
 class StorageService(SimulationItem):
@@ -35,7 +35,7 @@ class StorageService(SimulationItem):
         :param file: the file
         :return:
         """
-        return self.simulation._create_file_copy_at_storage_service(file.workflow, file.name, self.name)
+        return self.simulation._create_file_copy_at_storage_service(file, self)
 
     def lookup_file(self, file: File) -> bool:
         """
@@ -45,7 +45,7 @@ class StorageService(SimulationItem):
         :return: true or false
         :rtype: bool
         """
-        return self.simulation._lookup_file_at_storage_service(file.workflow, file.name, self.name)
+        return self.simulation._lookup_file_at_storage_service(file, self)
 
     def __str__(self) -> str:
         """

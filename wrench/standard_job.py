@@ -10,8 +10,8 @@
 
 from typing import List
 
-from .simulation_item import SimulationItem
-from .task import Task
+from wrench.simulation_item import SimulationItem
+from wrench.task import Task
 
 
 class StandardJob(SimulationItem):
@@ -19,14 +19,17 @@ class StandardJob(SimulationItem):
     WRENCH Standard Job class
     """
 
-    def __init__(self, simulation, name: str) -> None:
+    def __init__(self, simulation, name: str, tasks: List[Task]) -> None:
         """
         Constructor
         :param simulation: simulation object
         :type simulation
         :param name: Job name
         :type name: str
+        :param tasks: List of tasks in the job
+        :type tasks: List[Task]
         """
+        self.tasks = tasks
         super().__init__(simulation, name)
 
     def get_tasks(self) -> List[Task]:
@@ -36,14 +39,14 @@ class StandardJob(SimulationItem):
         :return: a list of task objects
         :rtype: List[Task]
         """
-        return self.simulation._standard_job_get_tasks(self.name)
+        return self.tasks
     
     def __str__(self) -> str:
         """
         :return: String representation of a standard job
         :rtype: str
         """
-        s = f"Standard Job {self.name} with {len(self.get_tasks())} tasks"
+        s = f"Standard Job {self.name} with {len(self.tasks)} tasks"
         return s
 
     def __repr__(self) -> str:

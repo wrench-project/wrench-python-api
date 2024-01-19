@@ -8,8 +8,15 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-from .simulation_item import SimulationItem
-from .file import File
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+
+from wrench.simulation_item import SimulationItem
+from wrench.file import File
+if TYPE_CHECKING:
+    from wrench.workflow import Workflow
+
 from typing import List
 
 
@@ -18,38 +25,42 @@ class Task(SimulationItem):
     WRENCH Task class
     """
 
-    def __init__(self, simulation, workflow_name: str, name: str) -> None:
+    def __init__(self, simulation, workflow: Workflow, name: str) -> None:
         """
         Constructor
         :param simulation: simulation object
         :type simulation
-        :param workflow_name: Workflow name
-        :type workflow_name: str
+        :param workflow: The workflow this task belongs to
+        :type workflow: Workflow
         :param name: Task name
         :type name: str
         """
-        self.workflow_name = workflow_name
+        self.workflow = workflow
         super().__init__(simulation, name)
 
-    def add_input_file(self, workflow, file: File) -> None:
+    def get_workflow(self) -> Workflow:
+        """
+        Get the task's workflow
+        :rtype Workflow
+        """
+        return self.workflow
+
+    def add_input_file(self, file: File) -> None:
         """
         Add a file as input file for this task
-
-        :param workflow: the workflow
-        :type workflow: Workflow
         :param file: File name
         :type file: File
         """
-        return self.simulation._add_input_file(workflow, self.name, file)
+        return self.simulation._add_input_file(self, file)
 
-    def add_output_file(self, workflow, file: File) -> None:
+    def add_output_file(self, file: File) -> None:
         """
         Add a file as output file for this task
 
         :return: List of input files
         :rtype: List[str]
         """
-        return self.simulation._add_output_file(workflow, self.name, file)
+        return self.simulation._add_output_file(self.workflow, self.name, file)
 
     def get_input_files(self) -> List[str]:
         """
@@ -57,7 +68,7 @@ class Task(SimulationItem):
         :return: List of input file names
         :rtype: List[str]
         """
-        return self.simulation._get_task_input_files(self.workflow_name, self.name)
+        return self.simulation._get_task_input_files(self.workflow, self.name)
 
     def get_output_files(self) -> List[str]:
         """
@@ -65,7 +76,7 @@ class Task(SimulationItem):
         :return: List of output file names
         :rtype: List[str]
         """
-        return self.simulation._get_task_output_files(self.workflow_name, self.name)
+        return self.simulation._get_task_output_files(self.workflow, self.name)
 
     def get_flops(self) -> float:
         """
@@ -73,7 +84,7 @@ class Task(SimulationItem):
         :return: A number of flops
         :rtype: float
         """
-        return self.simulation._task_get_flops(self.workflow_name, self.name)
+        return self.simulation._task_get_flops(self.workflow, self.name)
 
     def get_min_num_cores(self) -> int:
         """
@@ -81,7 +92,7 @@ class Task(SimulationItem):
         :return: A number of cores
         :rtype: integer
         """
-        return self.simulation._task_get_min_num_cores(self.workflow_name, self.name)
+        return self.simulation._task_get_min_num_cores(self.workflow, self.name)
 
     def get_max_num_cores(self) -> int:
         """
@@ -89,7 +100,7 @@ class Task(SimulationItem):
         :return: A number of cores
         :rtype: integer
         """
-        return self.simulation._task_get_max_num_cores(self.workflow_name, self.name)
+        return self.simulation._task_get_max_num_cores(self.workflow, self.name)
 
     def get_memory(self) -> int:
         """
@@ -97,7 +108,7 @@ class Task(SimulationItem):
         :return: A memory size in bytes
         :rtype: float
         """
-        return self.simulation._task_get_memory(self.workflow_name, self.name)
+        return self.simulation._task_get_memory(self.workflow, self.name)
 
     def get_start_date(self) -> float:
         """
@@ -105,7 +116,7 @@ class Task(SimulationItem):
         :return: A date in seconds
         :rtype: float
         """
-        return self.simulation._task_get_start_date(self.workflow_name, self.name)
+        return self.simulation._task_get_start_date(self.workflow, self.name)
 
     def get_end_date(self) -> float:
         """
@@ -113,7 +124,7 @@ class Task(SimulationItem):
         :return: A date in seconds
         :rtype: float
         """
-        return self.simulation._task_get_end_date(self.workflow_name, self.name)
+        return self.simulation._task_get_end_date(self.workflow, self.name)
 
     def __str__(self) -> str:
         """

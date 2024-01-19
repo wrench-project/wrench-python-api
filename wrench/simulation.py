@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2021 The WRENCH Team.
@@ -16,18 +16,18 @@ import pathlib
 
 from typing import Dict, List, Optional, Union
 
-from .compute_service import ComputeService
-from .bare_metal_compute_service import BareMetalComputeService
-from .batch_compute_service import BatchComputeService
-from .cloud_compute_service import CloudComputeService
-from .virtual_machine import VirtualMachine
-from .exception import WRENCHException
-from .standard_job import StandardJob
-from .storage_service import StorageService
-from .file_registry_service import FileRegistryService
-from .workflow import Workflow
-from .task import Task
-from .file import File
+from wrench.compute_service import ComputeService
+from wrench.bare_metal_compute_service import BareMetalComputeService
+from wrench.batch_compute_service import BatchComputeService
+from wrench.cloud_compute_service import CloudComputeService
+from wrench.virtual_machine import VirtualMachine
+from wrench.exception import WRENCHException
+from wrench.standard_job import StandardJob
+from wrench.storage_service import StorageService
+from wrench.file_registry_service import FileRegistryService
+from wrench.workflow import Workflow
+from wrench.task import Task
+from wrench.file import File
 
 
 class Simulation:
@@ -60,7 +60,7 @@ class Simulation:
         self.spec = None
 
         # Simulation Item Dictionaries
-        self.tasks = {}
+        # self.tasks = {}
         self.jobs = {}
         self.files = {}
         self.compute_services = {}
@@ -155,12 +155,10 @@ class Simulation:
         response = [self._json_event_to_dict(e) for e in response]
         return response
 
-    def create_standard_job(self, workflow: Workflow, tasks: List[Task], file_locations: dict[File, StorageService]) -> StandardJob:
+    def create_standard_job(self, tasks: List[Task], file_locations: dict[File, StorageService]) -> StandardJob:
         """
         Create a one-task standard job
 
-        :param workflow: the workflow
-        :type workflow: Workflow
         :param tasks: list of tasks
         :type tasks: List[Task]
         :param file_locations: list of file locations
@@ -171,18 +169,25 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
+
+        # Check all tasks are in the same workflow
+        workflow = tasks[0].get_workflow()
+        for task in tasks:
+            if task.get_workflow() != workflow:
+                raise WRENCHException("Cannot create a standard job with tasks from different workflows")
+
         task_names = [t.name for t in tasks]
 
         file_locations_specs = {}
         for fl in file_locations:
             file_locations_specs[fl.get_name()] = file_locations[fl].get_name()
 
-        data = {"workflow_name": workflow.name, "tasks": task_names, "file_locations": file_locations_specs}
-        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/{workflow.name}/createStandardJob", json=data)
+        data = {"tasks": task_names, "file_locations": file_locations_specs}
+        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/{workflow.get_name()}/createStandardJob", json=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
-            self.jobs[response["job_name"]] = StandardJob(self, response["job_name"])
+            self.jobs[response["job_name"]] = StandardJob(self, response["job_name"], tasks)
             return self.jobs[response["job_name"]]
         raise WRENCHException(response["failure_cause"])
 
@@ -200,14 +205,12 @@ class Simulation:
         response = r.json()
         # This is really just a cosmetic place-holder class so that the user
         # code looks a bit more natural
-        return Workflow(self, response["result"])
+        return Workflow(self, response["workflow_name"])
 
-    def add_file(self, workflow: Workflow, name: str, size: int) -> File:
+    def add_file(self, name: str, size: int) -> File:
         """
-        Add a file to the workflow
+        Add a file to the simulation
 
-        :param workflow: the workflow
-        :type workflow: Workflow
         :param name: file name
         :type name: str
         :param size: file size in bytes
@@ -218,12 +221,13 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {"workflow_name": workflow.name, "name": name, "size": size}
-        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/{workflow.name}/addFile", json=data)
+        data = {"name": name, "size": size}
+        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/addFile", json=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
-            self.files[name] = File(self, workflow, name)
+            new_file = File(self, name)
+            self.files[name] = File(self, name)
             return self.files[name]
         raise WRENCHException(response["failure_cause"])
 
@@ -444,24 +448,49 @@ class Simulation:
         response = r.json()
         return response["hostnames"]
 
-    def create_workflow_from_json_string(self, json_string: str, reference_flop_rate: str, ignore_machine_specs: bool, redundant_dependencies: bool,
+    def create_workflow_from_json(self, json_object: json, reference_flop_rate: str, ignore_machine_specs: bool, redundant_dependencies: bool,
                                          ignore_cycle_creating_dependencies: bool, min_cores_per_task: float, max_cores_per_task: float, enforce_num_cores: bool,
-                                         ignore_avg_cpu: bool, show_warnings: bool) -> str:
+                                         ignore_avg_cpu: bool, show_warnings: bool) -> Workflow:
         """
-        Simulate workflow from a JSON file
+        Create a workflow from a JSON file
+        :param json_object: A JSON object created from a WfCommons JSON file
+        :type json_object: json
+        :param reference_flop_rate: reference flop rate
+        :type reference_flop_rate: str
+        :param ignore_machine_specs: whether to ignore machine specifications in the JSON
+        :type ignore_machine_specs: bool
+        :param redundant_dependencies: whether to take into account redundant task dependencies
+        :type redundant_dependencies: bool
+        :param ignore_cycle_creating_dependencies: whether to ignore cycles when creating task dependenciess
+        :type ignore_cycle_creating_dependencies: bool
+        :param min_cores_per_task: the minimum cores for a task if not specified in the JSON
+        :type min_cores_per_task: float
+        :param max_cores_per_task: the maximum cores for a task if not specified in the JSON
+        :type max_cores_per_task: float
+        :param enforce_num_cores: whether to enforce the number of cores for a task even if specified in the JSON
+        :type enforce_num_cores: bool
+        :param ignore_avg_cpu: whether to ignore the average CPU time information in the JSON to compute sequential task execution times
+        :type ignore_avg_cpu: bool
+        :param show_warnings: whether to show warnings when importing the JSON (displayed on the wrench-daemon console)
+        :type show_warnings: bool
 
-        :return: Name of workflow
-        :rtype: str
+        :return: A workflow
+        :rtype: Workflow
         """
-        data = {"json_string": json_string, "reference_flop_rate": reference_flop_rate, "ignore_machine_specs": ignore_machine_specs,
+
+        data = {"json_string": json.dumps(json_object), "reference_flop_rate": reference_flop_rate, "ignore_machine_specs": ignore_machine_specs,
                 "redundant_dependencies": redundant_dependencies, "ignore_cycle_creating_dependencies": ignore_cycle_creating_dependencies,
                 "min_cores_per_task": min_cores_per_task, "max_cores_per_task": max_cores_per_task, "enforce_num_cores": enforce_num_cores,
                 "ignore_avg_cpu": ignore_avg_cpu, "show_warnings": show_warnings}
 
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/createWorkflowFromJSONString", json=data)
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/createWorkflowFromJSON", json=data)
         response = r.json()
-        print(response)
-        return response["results"]
+        # Create the worklow
+        workflow = Workflow(self, response["workflow_name"])
+        # Create the tasks
+        for task_name in response["tasks"]:
+            workflow.tasks[task_name] = Task(self, workflow, task_name)
+        return workflow
 
     ####################################################################################
     ####################################################################################
@@ -493,68 +522,62 @@ class Simulation:
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
 
-    def _create_file_copy_at_storage_service(self, workflow: Workflow, file_name: str, storage_service_name: str):
+    def _create_file_copy_at_storage_service(self, file: File, storage_service: StorageService):
         """
         Create a copy (ex nihilo) of a file at a storage service
 
-        :param workflow: the workflow
-        :type workflow: Workflow
-        :param file_name: the file name
-        :type file_name: str
-        :param storage_service_name: the name of the storage service
-        :type storage_service_name: str
+        :param file: File
+        :type file: the file
+        :param storage_service: the storage service
+        :type storage_service: StorageService
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {"filename": file_name}
+        data = {"filename": file.get_name()}
         r = self.__send_request_to_daemon(requests.post,
-                                          f"{self.daemon_url}/{self.simid}/{workflow.name}/{storage_service_name}/createFileCopy",
+                                          f"{self.daemon_url}/{self.simid}/{storage_service.get_name()}/createFileCopy",
                                           json=data)
         response = r.json()
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
 
-    def _lookup_file_at_storage_service(self, workflow: Workflow, file_name: str, storage_service_name: str):
+    def _lookup_file_at_storage_service(self, file: File, storage_service: StorageService) -> bool:
         """
         Checks whether a copy of a file is stored at a storage service
 
-        :param workflow: the workflow
-        :type workflow: Workflow
-        :param file_name: the file name
-        :type file_name: str
-        :param storage_service_name: the name of the storage service
-        :type storage_service_name: str
+        :param file: File
+        :type file: the file
+        :param storage_service: the storage service
+        :type storage_service: StorageService
 
         :return: True or false
         :rtype: bool
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {"filename": file_name}
+        data = {"filename": file.get_name()}
         r = self.__send_request_to_daemon(requests.post,
-                                          f"{self.daemon_url}/{self.simid}/{workflow.name}/{storage_service_name}/lookupFile",
+                                          f"{self.daemon_url}/{self.simid}/{storage_service.get_name()}/lookupFile",
                                           json=data)
         response = r.json()
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
         return response["result"]
 
-    def _add_input_file(self, workflow: Workflow, task_name: str, file: File) -> None:
+    def _add_input_file(self, task: Task, file: File) -> None:
         """
         Add an input file to a task
 
-        :param workflow: the workflow
-        :type workflow_name: Workflow
-        :param task_name: the task's name
-        :type task_name: str
+        :param task: the task
+        :type task: Task
         :param file: the file
         :type file: File
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {"workflow_name": workflow.name, "file": file.get_name()}
+        data = {"file": file.get_name()}
         r = self.__send_request_to_daemon(requests.put,
-                                          f"{self.daemon_url}/{self.simid}/{workflow.name}/tasks/{task_name}/addInputFile", json=data)
+                                          f"{self.daemon_url}/{self.simid}/{task.workflow.get_name()}/tasks/{task.get_name()}/addInputFile", json=data)
 
         response = r.json()
         if not response["wrench_api_request_success"]:
@@ -581,12 +604,12 @@ class Simulation:
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
 
-    def _get_task_input_files(self, workflow_name: str, task_name: str) -> List[str]:
+    def _get_task_input_files(self, workflow: Workflow, task_name: str) -> List[str]:
         """
         Get a list of input files for a given task
 
-        :param workflow_name: the workflow's name
-        :type workflow_name: str
+        :param workflow: The task's workflow
+        :type workflow: Workflow
         :param task_name: the task name
         :type task_name: str
 
@@ -595,7 +618,7 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/{workflow_name}/tasks/{task_name}/inputFiles",
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/{workflow.name}/tasks/{task_name}/inputFiles",
                                           json={})
 
         response = r.json()
@@ -603,12 +626,12 @@ class Simulation:
             return response["files"]
         raise WRENCHException(response["failure_cause"])
 
-    def _get_task_output_files(self, workflow_name: str, task_name: str) -> List[str]:
+    def _get_task_output_files(self, workflow: Workflow, task_name: str) -> List[str]:
         """
         Get a list of output files for a given task
 
-        :param workflow_name: the workflow's name
-        :type workflow_name: str
+        :param workflow: the task's workflow
+        :type workflow: Workflow
         :param task_name: the task name
         :type task_name: str
 
@@ -617,7 +640,7 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/{workflow_name}/tasks/{task_name}/outputFiles",
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/{workflow.name}/tasks/{task_name}/outputFiles",
                                           json={})
 
         response = r.json()
@@ -625,12 +648,10 @@ class Simulation:
             return response["files"]
         raise WRENCHException(response["failure_cause"])
 
-    def _file_get_size(self, workflow, file_name: str) -> int:
+    def _file_get_size(self, file_name: str) -> int:
         """
         Get the number of bytes for a given file
 
-        :param workflow: the workflow
-        :type workflow: Workflow
         :param file_name: the file's name
         :type file_name: str
 
@@ -640,7 +661,7 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         :raises WRENCHException: if there is any error in the response
         """
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/{workflow.name}/files/{file_name}/size",
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/files/{file_name}/size",
                                           json={})
 
         response = r.json()
@@ -648,12 +669,12 @@ class Simulation:
             return response["size"]
         raise WRENCHException(response["failure_cause"])
 
-    def _task_get_flops(self, workflow_name, task_name: str) -> float:
+    def _task_get_flops(self, workflow: Workflow, task_name: str) -> float:
         """
         Get the number of flops in a task
 
-        :param workflow_name: the workflow's name
-        :type workflow_name: sttr
+        :param workflow: the task's workflow
+        :type workflow: Workflow
         :param task_name: the task's name
         :type task_name: str
 
@@ -663,7 +684,7 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/{workflow_name}/tasks/{task_name}/taskGetFlops",
+                                          f"{self.daemon_url}/{self.simid}/{workflow.name}/tasks/{task_name}/taskGetFlops",
                                           json={})
 
         response = r.json()
@@ -671,12 +692,12 @@ class Simulation:
             return response["flops"]
         raise WRENCHException(response["failure_cause"])
 
-    def _task_get_min_num_cores(self, workflow_name: str, task_name: str) -> int:
+    def _task_get_min_num_cores(self, workflow: Workflow, task_name: str) -> int:
         """
         Get the task's minimum number of required cores
 
-        :param workflow_name: the workflow's name
-        :type workflow_name: str
+        :param workflow: the task's workflow
+        :type workflow: Workflow
         :param task_name: the task's name
         :type task_name: str
 
@@ -687,7 +708,7 @@ class Simulation:
         """
         data = {}
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/{workflow_name}/tasks/{task_name}/taskGetMinNumCores",
+                                          f"{self.daemon_url}/{self.simid}/{workflow.name}/tasks/{task_name}/taskGetMinNumCores",
                                           json=data)
 
         response = r.json()
@@ -695,12 +716,12 @@ class Simulation:
             return response["min_num_cores"]
         raise WRENCHException(response["failure_cause"])
 
-    def _task_get_max_num_cores(self, workflow_name: str, task_name: str) -> int:
+    def _task_get_max_num_cores(self, workflow: Workflow, task_name: str) -> int:
         """
         Get the task's maximum number of required cores
 
-        :param workflow_name: the workflow's name
-        :type workflow_name: str
+        :param workflow: the task's workflow
+        :type workflow: Workflow
         :param task_name: the task's name
         :type task_name: str
 
@@ -711,7 +732,7 @@ class Simulation:
         """
         data = {}
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/{workflow_name}/tasks/{task_name}/taskGetMaxNumCores",
+                                          f"{self.daemon_url}/{self.simid}/{workflow.name}/tasks/{task_name}/taskGetMaxNumCores",
                                           json=data)
 
         response = r.json()
@@ -719,11 +740,11 @@ class Simulation:
             return response["max_num_cores"]
         raise WRENCHException(response["failure_cause"])
 
-    def _task_get_memory(self, workflow_name: str, task_name: str) -> float:
+    def _task_get_memory(self, workflow: Workflow, task_name: str) -> float:
         """
         Get the task's memory requirement
-        :param workflow_name: the workflow's name
-        :type workflow_name: str
+        :param workflow: the task's workflow
+        :type workflow: workflow
         :param task_name: the task's name
         :type task_name: str
 
@@ -734,18 +755,18 @@ class Simulation:
         """
         data = {}
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/{workflow_name}/tasks/{task_name}/taskGetMemory", json=data)
+                                          f"{self.daemon_url}/{self.simid}/{workflow.name}/tasks/{task_name}/taskGetMemory", json=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
             return response["memory"]
         raise WRENCHException(response["failure_cause"])
 
-    def _task_get_start_date(self, workflow_name: str, task_name: str) -> float:
+    def _task_get_start_date(self, workflow: Workflow, task_name: str) -> float:
         """
         Get the task's start date
-        :param workflow_name: the workflow's name
-        :type workflow_name: sttr
+        :param workflow: the task's workflow
+        :type workflow: Workflow
         :param task_name: the task's name
         :type task_name: str
 
@@ -755,19 +776,19 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/{workflow_name}/tasks/{task_name}/taskGetStartDate", json={})
+                                          f"{self.daemon_url}/{self.simid}/{workflow.name}/tasks/{task_name}/taskGetStartDate", json={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
             return response["time"]
         raise WRENCHException(response["failure_cause"])
 
-    def _task_get_end_date(self, workflow_name: str, task_name: str) -> float:
+    def _task_get_end_date(self, workflow: Workflow, task_name: str) -> float:
         """
         Get the task's end date
 
-        :param workflow_name: the workflow's name
-        :type workflow_name: str
+        :param workflow: the task's workflow
+        :type workflow: Workflow
         :param task_name: the task's name
         :type task_name: str
 
@@ -777,7 +798,7 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/{workflow_name}/tasks/{task_name}/taskGetEndDate", json={})
+                                          f"{self.daemon_url}/{self.simid}/{workflow.name}/tasks/{task_name}/taskGetEndDate", json={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -796,13 +817,14 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/jobs/{job_name}/tasks",
-                                          json={})
-
-        response = r.json()
-        if response["wrench_api_request_success"]:
-            return [self.tasks[x] for x in response["tasks"]]
-        raise WRENCHException(response["failure_cause"])
+        # # r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/jobs/{job_name}/tasks",
+        # #                                   json={})
+        #
+        # response = r.json()
+        # if response["wrench_api_request_success"]:
+        #     return [self.tasks[x] for x in response["tasks"]]
+        # raise WRENCHException(response["failure_cause"])
+        return self.jobs[job_name].tasks
 
     def _create_vm(self,
                    service_name: str,
@@ -1034,17 +1056,9 @@ class Simulation:
 
         response = r.json()
         if response["wrench_api_request_success"]:
-            self.tasks[name] = Task(self, workflow.name, name)
-            return self.tasks[name]
+            workflow.tasks[name] = Task(self, workflow, name)
+            return workflow.tasks[name]
         raise WRENCHException(response["failure_cause"])
-
-    def _workflow_get_all_tasks(self) -> dict[str, Task]:
-        """
-        Get the list of all tasks
-        :return: A dictionary of Task objects where task names are keys
-        :rtype: dict[str, Task]
-        """
-        return self.tasks
 
     def _workflow_get_input_files(self, workflow_name: str) -> List[str]:
         """

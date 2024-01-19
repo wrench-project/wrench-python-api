@@ -8,7 +8,13 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-from .simulation_item import SimulationItem
+
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+from wrench.simulation_item import SimulationItem
+if TYPE_CHECKING:
+    from wrench.simulation import Simulation
 
 
 class File(SimulationItem):
@@ -16,16 +22,15 @@ class File(SimulationItem):
     WRENCH File class
     """
 
-    def __init__(self, simulation, workflow, name: str) -> None:
+    def __init__(self, simulation: Simulation, name: str) -> None:
         """
         Constructor
         :param simulation: simulation object
-        :type simulation
+        :type simulation: Simulation
         :param name: File name
         :type name: str
         """
         super().__init__(simulation, name)
-        self.workflow = workflow
 
     def get_size(self) -> int:
         """
@@ -33,7 +38,7 @@ class File(SimulationItem):
         :return: A number of bytes
         :rtype: int
         """
-        return self.simulation._file_get_size(self.workflow, self.name)
+        return self.simulation._file_get_size(self.name)
 
     def __str__(self) -> str:
         """
