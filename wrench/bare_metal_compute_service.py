@@ -19,6 +19,7 @@ class BareMetalComputeService(ComputeService):
     def __init__(self, simulation, name: str) -> None:
         """
         Constructor
+
         :param simulation: The simulation
         :type simulation
         :param name: Compute service name
@@ -33,20 +34,20 @@ class BareMetalComputeService(ComputeService):
         :param standard_job: the standard job
         :type standard_job: StandardJob
         """
-        return self.simulation._submit_standard_job(standard_job.get_name(), self.name)
+        return self.simulation._submit_standard_job(standard_job, self)
 
     def __str__(self) -> str:
         """
-        :return: String representation of a bare metal compute service
-        :rtype: str
+        :return String representation of a bare metal compute service
+        :rtype str
         """
         s = f"Compute Service {self.name}"
         return s
 
     def __repr__(self) -> str:
         """
-        :return: String representation of a BareMetalComputeService object
-        :rtype: str
+        :return String representation of a BareMetalComputeService object
+        :rtype str
         """
         s = f"ComputeService(name={self.name})"
         return s

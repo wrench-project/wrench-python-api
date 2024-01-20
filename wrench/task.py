@@ -56,82 +56,81 @@ class Task(SimulationItem):
     def add_output_file(self, file: File) -> None:
         """
         Add a file as output file for this task
-
-        :return: List of input files
-        :rtype: List[str]
+        :param file: File name
+        :type file: File
         """
-        return self.simulation._add_output_file(self.workflow, self.name, file)
+        return self.simulation._add_output_file(self, file)
 
-    def get_input_files(self) -> List[str]:
+    def get_input_files(self) -> List[File]:
         """
         Get the list of input files for this task
-        :return: List of input file names
-        :rtype: List[str]
+        :return List of input file names
+        :rtype List[File]
         """
-        return self.simulation._get_task_input_files(self.workflow, self.name)
+        return self.simulation._get_task_input_files(self)
 
-    def get_output_files(self) -> List[str]:
+    def get_output_files(self) -> List[File]:
         """
         Get the list of output files for this task
-        :return: List of output file names
-        :rtype: List[str]
+        :return List of output file names
+        :rtype List[File]
         """
-        return self.simulation._get_task_output_files(self.workflow, self.name)
+        return self.simulation._get_task_output_files(self)
 
     def get_flops(self) -> float:
         """
         Get the number of flops in a task
-        :return: A number of flops
-        :rtype: float
+        :return A number of flops
+        :rtype float
         """
-        return self.simulation._task_get_flops(self.workflow, self.name)
+        return self.simulation._task_get_flops(self)
 
     def get_min_num_cores(self) -> int:
         """
         Get the task's minimum number of required cores
-        :return: A number of cores
-        :rtype: integer
+        :return A number of cores
+        :rtype integer
         """
-        return self.simulation._task_get_min_num_cores(self.workflow, self.name)
+        return self.simulation._task_get_min_num_cores(self)
 
     def get_max_num_cores(self) -> int:
         """
         Get the task's maximum number of required cores
-        :return: A number of cores
-        :rtype: integer
+        :return A number of cores
+        :rtype integer
         """
-        return self.simulation._task_get_max_num_cores(self.workflow, self.name)
+        return self.simulation._task_get_max_num_cores(self)
 
     def get_memory(self) -> int:
         """
         Get the task's memory requirement
-        :return: A memory size in bytes
-        :rtype: float
+        :return A memory size in bytes
+        :rtype float
         """
-        return self.simulation._task_get_memory(self.workflow, self.name)
+        return self.simulation._task_get_memory(self)
 
     def get_start_date(self) -> float:
         """
         Get the task's start date
-        :return: A date in seconds
-        :rtype: float
+        :return A date in seconds
+        :rtype float
         """
-        return self.simulation._task_get_start_date(self.workflow, self.name)
+        return self.simulation._task_get_start_date(self)
 
     def get_end_date(self) -> float:
         """
         Get the task's end date
-        :return: A date in seconds
-        :rtype: float
+        :return A date in seconds
+        :rtype float
         """
-        return self.simulation._task_get_end_date(self.workflow, self.name)
+        return self.simulation._task_get_end_date(self)
 
     def __str__(self) -> str:
         """
         String representation of a task when using print
 
-        :return: String representation of the task
-        :rtype: str
+        :return String representation of the task
+        :rtype str
         """
         text_flops = "FLOPS"
         text_min_num_cores = "Minimum cores"
@@ -153,8 +152,8 @@ class Task(SimulationItem):
         """
         String representation of a Task object
 
-        :return: String representation of a Task object
-        :rtype: str
+        :return String representation of a Task object
+        :rtype str
         """
         s = f"Task(name={self.name}, " + \
             f"flops={self.get_flops()}, " + \

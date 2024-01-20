@@ -20,6 +20,7 @@ class CloudComputeService(ComputeService):
     def __init__(self, simulation, name: str) -> None:
         """
         Constructor
+
         :param simulation: simulation object
         :type simulation
         :param name: Compute service name
@@ -39,10 +40,10 @@ class CloudComputeService(ComputeService):
         :type property_list: dict
         :param message_payload_list: a message payload list ({} means “use all defaults”)
         :type message_payload_list: dict
-        :return: a VirtualMachine object
-        :rtype: VirtualMachine
+        :return a VirtualMachine object
+        :rtype VirtualMachine
         """
-        return self.simulation._create_vm(self.name, num_cores, ram_memory, property_list, message_payload_list)
+        return self.simulation._create_vm(self, num_cores, ram_memory, property_list, message_payload_list)
 
     def destroy_vm(self, vm: VirtualMachine) -> None:
         """
@@ -51,20 +52,20 @@ class CloudComputeService(ComputeService):
         :param vm: A virtual machine
         :type vm: VirtualMachine
         """
-        return self.simulation._destroy_vm(self.name, vm.get_name())
+        return self.simulation._destroy_vm(vm)
 
     def __str__(self) -> str:
         """
-        :return: String representation of a cloud compute service
-        :rtype: str
+        :return String representation of a cloud compute service
+        :rtype str
         """
         s = f"Compute Service {self.name}"
         return s
 
     def __repr__(self) -> str:
         """
-        :return: String representation of a CloudComputeService object
-        :rtype: str
+        :return String representation of a CloudComputeService object
+        :rtype str
         """
         s = f"ComputeService(name={self.name})"
         return s

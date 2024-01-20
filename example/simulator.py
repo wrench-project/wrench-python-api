@@ -108,10 +108,11 @@ if __name__ == "__main__":
         print("Creating another job...")
         other_job = simulation.create_standard_job([task2], {})
 
-        print("Creating and starting a VM on the cloud compute service..")
+        print("Creating a VM on the cloud compute service...")
         my_vm = ccs.create_vm(1, 100,
                                 {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
                                 {})
+        print("Starting the VM...")
         vm_cs = my_vm.start()
 
         print("Submitting the standard job to the compute service running on the VM...")

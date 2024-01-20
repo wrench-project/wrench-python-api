@@ -76,9 +76,9 @@ if __name__ == "__main__":
         wfcommons_json_workflow = json.load(f)
         f.close()
         workflow2 = simulation.create_workflow_from_json(wfcommons_json_workflow, "2", False,
-                                                                False,
-                                                                False, 3.0, 3.0, False,
-                                                                False, False)
+                                                         False,
+                                                         False, 3.0, 3.0, False,
+                                                         False, False)
         print(f"{workflow2}")
         print(f"The imported workflow from JSON has {len(workflow2.get_tasks())} tasks")
         print(f"One of its tasks is: {workflow2.get_tasks()[next(iter(workflow2.get_tasks()))]}")

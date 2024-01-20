@@ -33,7 +33,7 @@ class StorageService(SimulationItem):
         Creates a copy of a file (ex nihilo) at this storage service
 
         :param file: the file
-        :return:
+        :return
         """
         return self.simulation._create_file_copy_at_storage_service(file, self)
 
@@ -42,23 +42,23 @@ class StorageService(SimulationItem):
         Checks whether a copy of a file is stored on the storage service
 
         :param file: the file
-        :return: true or false
-        :rtype: bool
+        :return true or false
+        :rtype bool
         """
         return self.simulation._lookup_file_at_storage_service(file, self)
 
     def __str__(self) -> str:
         """
-        :return: String representation of the storage service
-        :rtype: str
+        :return String representation of the storage service
+        :rtype str
         """
         s = f"Storage Service {self.name}"
         return s
 
     def __repr__(self) -> str:
         """
-        :return: String representation of the StorageService object
-        :rtype: str
+        :return String representation of the StorageService object
+        :rtype str
         """
         s = f"StorageService(name={self.name})"
         return s

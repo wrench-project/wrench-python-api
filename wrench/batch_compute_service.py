@@ -19,6 +19,7 @@ class BatchComputeService(ComputeService):
     def __init__(self, simulation, name: str) -> None:
         """
         Constructor
+
         :param simulation: The simulation
         :type simulation
         :param name: Compute service name
@@ -26,27 +27,29 @@ class BatchComputeService(ComputeService):
         """
         super().__init__(simulation, name)
 
-    def submit_standard_job(self, standard_job: StandardJob, service_specific_args: dict) -> None:
+    def submit_standard_job(self, standard_job: StandardJob, service_specific_args: dict[str, str]) -> None:
         """
         Submit a standard job to a batch compute service
 
         :param standard_job: the standard job
         :type standard_job: StandardJob
+        :param service_specific_args: the service-specific arguments
+        :type service_specific_args: dict[str, str]
         """
-        return self.simulation._submit_standard_job(standard_job.get_name(), self.name, json.dumps(service_specific_args))
+        return self.simulation._submit_standard_job(standard_job, self, json.dumps(service_specific_args))
 
     def __str__(self) -> str:
         """
-        :return: String representation of a bare metal compute service
-        :rtype: str
+        :return String representation of a bare metal compute service
+        :rtype str
         """
         s = f"Compute Service {self.name}"
         return s
 
     def __repr__(self) -> str:
         """
-        :return: String representation of a BareMetalComputeService object
-        :rtype: str
+        :return String representation of a BareMetalComputeService object
+        :rtype str
         """
         s = f"ComputeService(name={self.name})"
         return s

@@ -16,6 +16,7 @@ class WRENCHException(Exception):
     def __init__(self, message: str) -> None:
         """
         Constructor
+
         :param message: Exception message
         :type message: str
         """
