@@ -210,8 +210,6 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.post,
                                           f"{self.daemon_url}/{self.simid}/createWorkflow", json_data={})
         response = r.json()
-        # This is really just a cosmetic place-holder class so that the user
-        # code looks a bit more natural
         return Workflow(self, response["workflow_name"])
 
     def add_file(self, name: str, size: int) -> File:
