@@ -53,8 +53,8 @@ class Workflow(SimulationItem):
         :param memory: memory requirement in bytes
         :type memory: float
 
-        :return A task object
-        :rtype Task
+        :return: A task object
+        :rtype: Task
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -64,8 +64,8 @@ class Workflow(SimulationItem):
         """
         Get the tasks in the workflow
 
-        :return A dictionary of Task objects where task names are keys
-        :rtype dict[str, Task]
+        :return: A dictionary of Task objects where task names are keys
+        :rtype: dict[str, Task]
         """
         return self.tasks
 
@@ -73,8 +73,8 @@ class Workflow(SimulationItem):
         """
         Get all input files of the workflow
 
-        :return A dictionary of Task objects where task names are keys
-        :rtype List[File]
+        :return: A dictionary of Task objects where task names are keys
+        :rtype: List[File]
         """
         return self.simulation._workflow_get_input_files()
 
@@ -107,8 +107,8 @@ class Workflow(SimulationItem):
         :param show_warnings: whether to show warnings when importing the JSON (displayed on the wrench-daemon console)
         :type show_warnings: bool
 
-        :return A Workflow
-        :rtype str
+        :return: A Workflow
+        :rtype: str
         """
         return self.simulation._create_workflow_from_json(json_object, reference_flop_rate, ignore_machine_specs,
                                                           redundant_dependencies, ignore_cycle_creating_dependencies,
@@ -119,8 +119,8 @@ class Workflow(SimulationItem):
         """
         String representation of a workflow when using print
         
-        :return String representation of the workflow
-        :rtype str
+        :return: String representation of the workflow
+        :rtype: str
         """
         s = f'Workflow ' + self.name
         return s
@@ -129,8 +129,8 @@ class Workflow(SimulationItem):
         """
         String representation of a Workflow object
         
-        :return String representation of a Workflow object
-        :rtype str
+        :return: String representation of a Workflow object
+        :rtype: str
         """
         s = f"Workflow(name={self.name})"
         return s

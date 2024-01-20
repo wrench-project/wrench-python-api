@@ -40,6 +40,7 @@ class Simulation:
     :type daemon_host: str
     :param daemon_port: port number on which the WRENCH daemon is listening
     :type daemon_port: int
+
     """
 
     def __init__(self,
@@ -48,6 +49,7 @@ class Simulation:
                  ) -> None:
         """
         Constructor
+
         """
         self.daemon_host = daemon_host
         self.daemon_port = daemon_port
@@ -135,8 +137,8 @@ class Simulation:
         """
         Wait for the next simulation event to occur
 
-        :return A JSON object
-        :rtype Dict[str, Union[str, StandardJob, ComputeService]]
+        :return: A JSON object
+        :rtype: Dict[str, Union[str, StandardJob, ComputeService]]
         """
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/waitForNextSimulationEvent",
                                           json_data={})
@@ -147,8 +149,8 @@ class Simulation:
         """
         Get all simulation events since last time we checked
 
-        :return A list of events
-        :rtype List[Dict[str, Union[str, StandardJob, ComputeService]]]
+        :return: A list of events
+        :rtype: List[Dict[str, Union[str, StandardJob, ComputeService]]]
         """
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/simulationEvents",
                                           json_data={})
@@ -165,8 +167,8 @@ class Simulation:
         :param file_locations: list of file locations
         :type file_locations: List[FileLocation]
 
-        :return A StandardJob object
-        :rtype StandardJob
+        :return: A StandardJob object
+        :rtype: StandardJob
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -198,8 +200,8 @@ class Simulation:
         """
         Create a workflow
 
-        :return A workflow object
-        :rtype Workflow
+        :return: A workflow object
+        :rtype: Workflow
         """
 
         r = self.__send_request_to_daemon(requests.post,
@@ -218,8 +220,8 @@ class Simulation:
         :param size: file size in bytes
         :type size: int
 
-        :return A file object
-        :rtype File
+        :return: A file object
+        :rtype: File
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -237,8 +239,8 @@ class Simulation:
         """
         Get the list of all files
 
-        :return A dictionary of File objects where ta names are keys
-        :rtype dict[str, File]
+        :return: A dictionary of File objects where ta names are keys
+        :rtype: dict[str, File]
         """
         return self.files
 
@@ -272,8 +274,8 @@ class Simulation:
     def get_simulated_time(self) -> float:
         """
         Get the current simulation date
-        :return the simulation date
-        :rtype float
+        :return: the simulation date
+        :rtype: float
         """
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/getTime", {})
 
@@ -297,8 +299,8 @@ class Simulation:
         :type property_list: dict
         :param message_payload_list: a message payload list ({} means "use all defaults")
         :type message_payload_list: dict
-        :return the service name
-        :rtype BareMetalComputeService
+        :return: the service name
+        :rtype: BareMetalComputeService
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -333,8 +335,8 @@ class Simulation:
         :type property_list: dict
         :param message_payload_list: a message payload list ({} means “use all defaults”)
         :type message_payload_list: dict
-        :return the service name
-        :rtype BatchComputeService
+        :return: the service name
+        :rtype: BatchComputeService
 
         :raise WRENCHException: if there is any error in the response
         """
@@ -369,8 +371,8 @@ class Simulation:
         :type property_list: dict
         :param message_payload_list: a message payload list ({} means “use all defaults”)
         :type message_payload_list: dict
-        :return the service name
-        :rtype CloudComputeService
+        :return: the service name
+        :rtype: CloudComputeService
 
         :raise WRENCHException: if there is any error in the response
         """
@@ -396,8 +398,8 @@ class Simulation:
         :type hostname: str
         :param mount_points: list of mount points (i.e., disks) that the storage service should use
         :type mount_points: List[str]
-        :return the service name
-        :rtype StorageService
+        :return: the service name
+        :rtype: StorageService
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -419,8 +421,8 @@ class Simulation:
         :param hostname: name of the (simulated) host on which the file registry service should run
         :type hostname: str
 
-        :return the service name
-        :rtype FileRegistryService
+        :return: the service name
+        :rtype: FileRegistryService
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -440,8 +442,8 @@ class Simulation:
         """
         Get the list of hostnames in the simulated platform
 
-        :return list of hostnames
-        :rtype List[str]
+        :return: list of hostnames
+        :rtype: List[str]
         """
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/hostnames", json_data={})
         response = r.json()
@@ -474,8 +476,8 @@ class Simulation:
         :param show_warnings: whether to show warnings when importing the JSON (displayed on the wrench-daemon console)
         :type show_warnings: bool
 
-        :return A workflow
-        :rtype Workflow
+        :return: A workflow
+        :rtype: Workflow
         """
 
         data = {"json_string": json.dumps(json_object),
@@ -552,8 +554,8 @@ class Simulation:
         :param storage_service: the storage service
         :type storage_service: StorageService
 
-        :return True or false
-        :rtype bool
+        :return: True or false
+        :rtype: bool
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -615,8 +617,8 @@ class Simulation:
         :param task: The task
         :type task: Task
 
-        :return The list of input files
-        :rtype List[File]
+        :return: The list of input files
+        :rtype: List[File]
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -639,8 +641,8 @@ class Simulation:
         :param task: the task
         :type task: Task
 
-        :return The list of output files
-        :rtype List[File]
+        :return: The list of output files
+        :rtype: List[File]
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -662,8 +664,8 @@ class Simulation:
         :param file: the file
         :type file: File
 
-        :return The size of the file in bytes
-        :rtype int
+        :return: The size of the file in bytes
+        :rtype: int
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -681,8 +683,8 @@ class Simulation:
         :param task: the task
         :type task: Task
 
-        :return a number of flops
-        :rtype float
+        :return: a number of flops
+        :rtype: float
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -703,8 +705,8 @@ class Simulation:
         :param task: the task
         :type task: Task
 
-        :return a number of cores
-        :rtype int
+        :return: a number of cores
+        :rtype: int
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -726,8 +728,8 @@ class Simulation:
         :param task: the task
         :type task: Task
 
-        :return a number of cores
-        :rtype int
+        :return: a number of cores
+        :rtype: int
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -749,8 +751,8 @@ class Simulation:
         :param task: the task
         :type task: Task
 
-        :return a memory footprint in bytes
-        :rtype float
+        :return: a memory footprint in bytes
+        :rtype: float
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -771,8 +773,8 @@ class Simulation:
         :param task: the task
         :type task: Task
 
-        :return a date in seconds
-        :rtype float
+        :return: a date in seconds
+        :rtype: float
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -792,8 +794,8 @@ class Simulation:
         :param task: the task
         :type task: Task
 
-        :return a date in seconds
-        :rtype float
+        :return: a date in seconds
+        :rtype: float
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -825,8 +827,8 @@ class Simulation:
         :type property_list: dict
         :param message_payload_list: a message payload list for the CloudComputeService that will run on the VM ({} means “use all defaults”))
         :type message_payload_list: dict
-        :return A virtual machine object
-        :rtype VirtualMachine
+        :return: A virtual machine object
+        :rtype: VirtualMachine
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -848,8 +850,8 @@ class Simulation:
         Starts a VM the bare metal compute service associated to a vm
         :param vm: the VM
         :type vm: VirtualMachine
-        :return A bare metal compute service
-        :rtype BareMetalComputeService
+        :return: A bare metal compute service
+        :rtype: BareMetalComputeService
         """
         data = {"service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
 
@@ -902,8 +904,8 @@ class Simulation:
         Returns true if the VM is running
         :param vm: the VM
         :type vm: VirtualMachine
-        :return True or False
-        :rtype bool
+        :return: True or False
+        :rtype: bool
         """
         data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
@@ -919,8 +921,8 @@ class Simulation:
         Returns true if the VM is down
         :param vm: the VM
         :type vm: VirtualMachine
-        :return True or False
-        :rtype bool
+        :return: True or False
+        :rtype: bool
         """
         data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
@@ -951,8 +953,8 @@ class Simulation:
         Returns true if the VM is suspended
         :param vm: the VM
         :type vm: VirtualMachine
-        :return True or False
-        :rtype bool
+        :return: True or False
+        :rtype: bool
         """
         data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
@@ -983,8 +985,8 @@ class Simulation:
         Returns true if the compute service supports compound jobs
         :param cs: the compute service
         :type cs: ComputeService
-        :return True or False
-        :rtype bool
+        :return: True or False
+        :rtype: bool
         """
         data = {"compute_service_name": cs.get_name()}
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
@@ -997,8 +999,8 @@ class Simulation:
         Returns true if the compute service supports pilot jobs
         :param cs: the compute service
         :type cs: ComputeService
-        :return True or False
-        :rtype bool
+        :return: True or False
+        :rtype: bool
         """
         data = {"compute_service_name": cs.get_name()}
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
@@ -1011,8 +1013,8 @@ class Simulation:
         Returns true if the compute service supports standard jobs
         :param cs: the compute service
         :type cs: ComputeService
-        :return True or False
-        :rtype bool
+        :return: True or False
+        :rtype: bool
         """
         data = {"compute_service_name": cs.get_name()}
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
@@ -1037,8 +1039,8 @@ class Simulation:
         :param memory: memory requirement in bytes
         :type memory: float
 
-        :return A task object
-        :rtype Task
+        :return: A task object
+        :rtype: Task
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -1062,8 +1064,8 @@ class Simulation:
         Get a list of all input files of the workflow
         :param workflow: the workflow
         :type workflow: Workflow
-        :return The list of input files
-        :rtype List[File]
+        :return: The list of input files
+        :rtype: List[File]
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -1088,7 +1090,7 @@ class Simulation:
         :type json_event: Dict[str, str]
 
         :return
-        :rtype Dict[str, Union[str, StandardJob, ComputeService]]
+        :rtype: Dict[str, Union[str, StandardJob, ComputeService]]
 
         :raises WRENCHException: if there is any error in the response
         """

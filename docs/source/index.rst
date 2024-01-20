@@ -40,6 +40,7 @@ support@wrench-project.org.
     api_virtual_machine.rst
     api_storage_service.rst
 
+
 .. |build-badge| image:: https://github.com/wrench-project/wrench-api/workflows/Build/badge.svg
     :target: https://github.com/wrench-project/wrench-api/actions
 .. |license-badge| image:: https://img.shields.io/badge/License-LGPL%20v3-blue.svg

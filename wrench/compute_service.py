@@ -31,8 +31,8 @@ class ComputeService(SimulationItem):
         """
         Determines whether the compute service supports compound jobs.
 
-        :return True if compound jobs are supported, false otherwise
-        :rtype bool
+        :return: True if compound jobs are supported, false otherwise
+        :rtype: bool
         """
         return self.simulation._supports_compound_jobs(self)
 
@@ -40,8 +40,8 @@ class ComputeService(SimulationItem):
         """
         Determines whether the compute service supports pilot jobs.
 
-        :return True if pilot jobs are supported, false otherwise
-        :rtype bool
+        :return: True if pilot jobs are supported, false otherwise
+        :rtype: bool
         """
         return self.simulation._supports_pilot_jobs(self)
 
@@ -49,24 +49,24 @@ class ComputeService(SimulationItem):
         """
         Determines whether the compute service supports standard jobs.
 
-        :return True if standard jobs are supported, false otherwise
-        :rtype bool
+        :return: True if standard jobs are supported, false otherwise
+        :rtype: bool
         """
         return self.simulation._supports_standard_jobs(self)
 
     def __str__(self) -> str:
         """
-        :return String representation of a compute service
+        :return: String representation of a compute service
 
-        :rtype str
+        :rtype: str
         """
         s = f"Compute Service {self.name}"
         return s
 
     def __repr__(self) -> str:
         """
-        :return String representation of a ComputeService object
-        :rtype str
+        :return: String representation of a ComputeService object
+        :rtype: str
         """
         s = f"ComputeService(name={self.name})"
         return s

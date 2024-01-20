@@ -37,23 +37,23 @@ class StandardJob(SimulationItem):
         """
         Get the number of tasks in a standard job
 
-        :return a list of task objects
-        :rtype List[Task]
+        :return: a list of task objects
+        :rtype: List[Task]
         """
         return self.tasks
 
     def __str__(self) -> str:
         """
-        :return String representation of a standard job
-        :rtype str
+        :return: String representation of a standard job
+        :rtype: str
         """
         s = f"Standard Job {self.name} with {len(self.tasks)} tasks"
         return s
 
     def __repr__(self) -> str:
         """
-        :return String representation of a StandardJob object
-        :rtype str
+        :return: String representation of a StandardJob object
+        :rtype: str
         """
         s = f"StandardJob(name={self.name})"
         return s

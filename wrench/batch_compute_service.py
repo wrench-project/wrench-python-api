@@ -42,16 +42,16 @@ class BatchComputeService(ComputeService):
 
     def __str__(self) -> str:
         """
-        :return String representation of a bare metal compute service
-        :rtype str
+        :return: String representation of a bare metal compute service
+        :rtype: str
         """
         s = f"Compute Service {self.name}"
         return s
 
     def __repr__(self) -> str:
         """
-        :return String representation of a BareMetalComputeService object
-        :rtype str
+        :return: String representation of a BareMetalComputeService object
+        :rtype: str
         """
         s = f"ComputeService(name={self.name})"
         return s
