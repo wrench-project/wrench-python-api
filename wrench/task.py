@@ -11,9 +11,9 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-
 from wrench.simulation_item import SimulationItem
 from wrench.file import File
+
 if TYPE_CHECKING:
     from wrench.workflow import Workflow
 

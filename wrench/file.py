@@ -13,6 +13,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from wrench.simulation_item import SimulationItem
+
 if TYPE_CHECKING:
     from wrench.simulation import Simulation
 

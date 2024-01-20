@@ -28,7 +28,8 @@ class CloudComputeService(ComputeService):
         """
         super().__init__(simulation, name)
 
-    def create_vm(self, num_cores: int, ram_memory: float, property_list: dict[str, str], message_payload_list: dict[str, float]) -> VirtualMachine:
+    def create_vm(self, num_cores: int, ram_memory: float, property_list: dict[str, str],
+                  message_payload_list: dict[str, float]) -> VirtualMachine:
         """
         Create a new virtual machine instance on a cloud compute service
 

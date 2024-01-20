@@ -16,6 +16,7 @@ class BareMetalComputeService(ComputeService):
     """
     WRENCH Bare Metal Compute Service class
     """
+
     def __init__(self, simulation, name: str) -> None:
         """
         Constructor
@@ -51,4 +52,3 @@ class BareMetalComputeService(ComputeService):
         """
         s = f"ComputeService(name={self.name})"
         return s
-

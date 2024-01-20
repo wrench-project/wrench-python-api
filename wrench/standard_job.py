@@ -41,7 +41,7 @@ class StandardJob(SimulationItem):
         :rtype List[Task]
         """
         return self.tasks
-    
+
     def __str__(self) -> str:
         """
         :return String representation of a standard job

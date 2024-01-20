@@ -115,4 +115,3 @@ class VirtualMachine(SimulationItem):
         """
         s = f"VirtualMachine(name={self.name},cloud_compute_service={self.get_cloud_compute_service().get_name()})"
         return s
-

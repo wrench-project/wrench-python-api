@@ -79,8 +79,9 @@ class Workflow(SimulationItem):
         return self.simulation._workflow_get_input_files()
 
     def create_workflow_from_json(self, json_object: json, reference_flop_rate: str, ignore_machine_specs: bool,
-                                  redundant_dependencies: bool, ignore_cycle_creating_dependencies: bool, min_cores_per_task: float,
-                                  max_cores_per_task: float, enforce_num_cores: bool, ignore_avg_cpu: bool, show_warnings: bool) -> str:
+                                  redundant_dependencies: bool, ignore_cycle_creating_dependencies: bool,
+                                  min_cores_per_task: float, max_cores_per_task: float, enforce_num_cores: bool,
+                                  ignore_avg_cpu: bool, show_warnings: bool) -> str:
         """
         Create a workflow from a WfCommons JSON
 
@@ -100,7 +101,8 @@ class Workflow(SimulationItem):
         :type max_cores_per_task: float
         :param enforce_num_cores: whether to enforce the number of cores for a task even if specified in the JSON
         :type enforce_num_cores: bool
-        :param ignore_avg_cpu: whether to ignore the average CPU time information in the JSON to compute sequential task execution times
+        :param ignore_avg_cpu: whether to ignore the average CPU time information in the JSON to compute
+               sequential task execution times
         :type ignore_avg_cpu: bool
         :param show_warnings: whether to show warnings when importing the JSON (displayed on the wrench-daemon console)
         :type show_warnings: bool

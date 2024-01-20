@@ -12,10 +12,12 @@ from wrench.compute_service import ComputeService
 from wrench.standard_job import StandardJob
 import json
 
+
 class BatchComputeService(ComputeService):
     """
     WRENCH Batch Compute Service class
     """
+
     def __init__(self, simulation, name: str) -> None:
         """
         Constructor
@@ -53,4 +55,3 @@ class BatchComputeService(ComputeService):
         """
         s = f"ComputeService(name={self.name})"
         return s
-
