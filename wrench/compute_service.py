@@ -29,7 +29,7 @@ class ComputeService(SimulationItem):
 
     def supports_compound_jobs(self) -> bool:
         """
-        Determines whether the compute service supports compound jobs.
+        Determine whether the compute service supports compound jobs
 
         :return: True if compound jobs are supported, false otherwise
         :rtype: bool
@@ -38,7 +38,7 @@ class ComputeService(SimulationItem):
 
     def supports_pilot_jobs(self) -> bool:
         """
-        Determines whether the compute service supports pilot jobs.
+        Determine whether the compute service supports pilot jobs
 
         :return: True if pilot jobs are supported, false otherwise
         :rtype: bool
@@ -47,7 +47,7 @@ class ComputeService(SimulationItem):
 
     def supports_standard_jobs(self) -> bool:
         """
-        Determines whether the compute service supports standard jobs.
+        Determine whether the compute service supports standard jobs
 
         :return: True if standard jobs are supported, false otherwise
         :rtype: bool

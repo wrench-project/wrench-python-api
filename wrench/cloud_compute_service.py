@@ -31,7 +31,7 @@ class CloudComputeService(ComputeService):
     def create_vm(self, num_cores: int, ram_memory: float, property_list: dict[str, str],
                   message_payload_list: dict[str, float]) -> VirtualMachine:
         """
-        Create a new virtual machine instance on a cloud compute service
+        Create a new virtual machine instance on the compute service
 
         :param num_cores: number of cores in the virtual machine
         :type num_cores: int
@@ -48,7 +48,7 @@ class CloudComputeService(ComputeService):
 
     def destroy_vm(self, vm: VirtualMachine) -> None:
         """
-        Create a new virtual machine instance on a cloud compute service
+        Destroy a new virtual machine instance on the compute service
 
         :param vm: A virtual machine
         :type vm: VirtualMachine
@@ -57,7 +57,7 @@ class CloudComputeService(ComputeService):
 
     def __str__(self) -> str:
         """
-        :return: String representation of a cloud compute service
+        :return: String representation of a the compute service
         :rtype: str
         """
         s = f"Compute Service {self.name}"

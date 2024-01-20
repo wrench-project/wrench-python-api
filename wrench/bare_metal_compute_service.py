@@ -30,7 +30,7 @@ class BareMetalComputeService(ComputeService):
 
     def submit_standard_job(self, standard_job: StandardJob) -> None:
         """
-        Submit a standard job to a bare-metal compute service
+        Submit a standard job to the compute service
 
         :param standard_job: the standard job
         :type standard_job: StandardJob

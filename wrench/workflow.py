@@ -23,7 +23,7 @@ import json
 
 class Workflow(SimulationItem):
     """
-    WRENCH Workflow class.
+    WRENCH Workflow class
     """
 
     def __init__(self, simulation: Simulation, name: str) -> None:

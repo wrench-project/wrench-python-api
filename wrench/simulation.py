@@ -160,7 +160,7 @@ class Simulation:
 
     def create_standard_job(self, tasks: List[Task], file_locations: dict[File, StorageService]) -> StandardJob:
         """
-        Create a one-task standard job
+        Create a standard job
 
         :param tasks: list of tasks
         :type tasks: List[Task]
@@ -455,6 +455,7 @@ class Simulation:
                                   ignore_avg_cpu: bool, show_warnings: bool) -> Workflow:
         """
         Create a workflow from a JSON file
+
         :param json_object: A JSON object created from a WfCommons JSON file
         :type json_object: json
         :param reference_flop_rate: reference flop rate

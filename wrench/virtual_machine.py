@@ -20,7 +20,7 @@ from wrench.simulation_item import SimulationItem
 
 class VirtualMachine(SimulationItem):
     """
-    WRENCH Virtual Machine class.
+    WRENCH Virtual Machine class
     """
 
     def __init__(self, simulation, cloud_compute_service: CloudComputeService, name: str) -> None:
@@ -31,7 +31,7 @@ class VirtualMachine(SimulationItem):
         :type simulation
         :param cloud_compute_service: the cloud compute service
         :type cloud_compute_service: CloudComputeService
-        :param name: virtual machine name
+        :param name: VM name
         :type name: str
         """
         super().__init__(simulation, name)
@@ -57,52 +57,52 @@ class VirtualMachine(SimulationItem):
 
     def suspend(self) -> None:
         """
-        Suspends a virtual machine.
+        Suspend the VM
         """
         return self.simulation._suspend_vm(self)
 
     def resume(self) -> None:
         """
-        Resumes a virtual machine.
+        Resume the VM
         """
         return self.simulation._resume_vm(self)
 
     def shutdown(self) -> None:
         """
-        Shuts down a virtual machine.
+        Shutdown the VM
         """
         return self.simulation._shutdown_vm(self)
 
     def is_running(self) -> bool:
         """
-        Determines whether a virtual machine is running.
+        Determine whether the VM is running
 
-        :return: True if the virtual machine is running, false otherwise
+        :return: True if the VM is running, false otherwise
         :rtype: bool
         """
         return self.simulation._is_vm_running(self)
 
     def is_suspended(self) -> bool:
         """
-        Determines whether a virtual machine is suspended.
+        Determine whether the VM is suspended
 
-        :return: True if the virtual machine is suspended, false otherwise
+        :return: True if the VM is suspended, false otherwise
         :rtype: bool
         """
         return self.simulation._is_vm_suspended(self)
 
     def is_down(self) -> bool:
         """
-        Determines whether a virtual machine is down.
+        Determine whether the VM is down
 
-        :return: True if the virtual machine is down, false otherwise
+        :return: True if the VM is down, false otherwise
         :rtype: bool
         """
         return self.simulation._is_vm_down(self)
 
     def __str__(self) -> str:
         """
-        :return: String representation of a virtual machine
+        :return: String representation of the VM
         :rtype: str
         """
         s = f"Virtual Machine {self.name} on Cloud Compute Service {self.get_cloud_compute_service().get_name()}"

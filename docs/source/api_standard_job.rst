@@ -5,3 +5,4 @@ wrench.standard_job
    :members:
    :undoc-members:
    :show-inheritance:
+   :inherited-members:

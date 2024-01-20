@@ -30,7 +30,7 @@ class StorageService(SimulationItem):
 
     def create_file_copy(self, file: File) -> None:
         """
-        Creates a copy of a file (ex nihilo) at this storage service
+        Create a copy of a file (ex nihilo) at the storage service
 
         :param file: the file
         """
@@ -38,7 +38,7 @@ class StorageService(SimulationItem):
 
     def lookup_file(self, file: File) -> bool:
         """
-        Checks whether a copy of a file is stored on the storage service
+        Check whether a copy of a file is stored on the storage service
 
         :param file: the file
         :return: true or false

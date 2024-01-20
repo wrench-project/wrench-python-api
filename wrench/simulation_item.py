@@ -28,6 +28,6 @@ class SimulationItem:
 
     def get_name(self) -> str:
         """
-        Get the simulation item name
+        Get the name
         """
         return self.name

@@ -35,7 +35,7 @@ class StandardJob(SimulationItem):
 
     def get_tasks(self) -> List[Task]:
         """
-        Get the number of tasks in a standard job
+        Get the list of tasks in the job
 
         :return: a list of task objects
         :rtype: List[Task]
