@@ -12,7 +12,7 @@
 #
 
 import os.path
-import sphinx_rtd_theme
+#import sphinx_rtd_theme
 import sys
 
 # Fetch the version
