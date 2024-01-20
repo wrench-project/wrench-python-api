@@ -38,8 +38,8 @@ release = str(__version__)
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-#    'recommonmark',
-#    'sphinx_rtd_theme',
+    'recommonmark',
+    'sphinx_rtd_theme',
     'sphinx.ext.autodoc',
 ]
 
@@ -63,7 +63,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "_*.rst", "api_simulatio
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-#html_theme = 'sphinx_rtd_theme'
+html_theme = 'sphinx_rtd_theme'
 html_favicon = 'favicon.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
