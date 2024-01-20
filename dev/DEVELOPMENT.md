@@ -1,5 +1,7 @@
 # Guide for Developers
 
+[last updated: 01/20/2024]
+
 This page provides information for developers of this project who wish to augment the Python API (and typically also the REST API) to WRENCH. 
 
 ## Overall Design
@@ -43,10 +45,22 @@ data structures to keep track of some simulation objects by their names.
 
 ## Steps to add a new REST API call
 
+In the `wrench` repository:
+
+  - Edit `tools/wrench/wrench-daemon/doc/wrench-openapi.json` to add the new path and all its specification. This file uses the [OpenAPI/Swagger standard](https://swagger.io/specification/)
+  - In the above, make sure that the new path has a `operationId` field set to the name the C++ method that will be called when a request to this path is placed
+  - Implement the above method in `tools/wrench/wrench-daemon/src/SimulationController.cpp`
 
 ## Steps to augment a new Python API 
+
+In the `wrench-python-api` repository:
+
+  - Add whatever class/method, with full docstrings, where most of the "work" is done by calling a method of the `Simulation` class
+  - In `wrench/api/simulation.py`, implement the needed method(s)
 
 
 ## A Full Example
 
+The simplest way to learn how to do this is to go through a complete example. Let's look at how part of the "workflow"
+concept is implemented in the API. 
 
