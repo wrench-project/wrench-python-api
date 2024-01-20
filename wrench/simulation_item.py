@@ -9,6 +9,7 @@
 # (at your option) any later version.
 
 
+# noinspection GrazieInspection
 class SimulationItem:
     """
     WRENCH Simulation Item class

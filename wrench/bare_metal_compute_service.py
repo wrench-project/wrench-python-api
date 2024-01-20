@@ -12,6 +12,7 @@ from wrench.compute_service import ComputeService
 from wrench.standard_job import StandardJob
 
 
+# noinspection GrazieInspection
 class BareMetalComputeService(ComputeService):
     """
     WRENCH Bare Metal Compute Service class
@@ -39,7 +40,7 @@ class BareMetalComputeService(ComputeService):
 
     def __str__(self) -> str:
         """
-        :return: String representation of a bare metal compute service
+        :return: String representation of the bare metal compute service
         :rtype: str
         """
         s = f"Compute Service {self.name}"
@@ -47,7 +48,7 @@ class BareMetalComputeService(ComputeService):
 
     def __repr__(self) -> str:
         """
-        :return: String representation of a BareMetalComputeService object
+        :return: String representation of the BareMetalComputeService object
         :rtype: str
         """
         s = f"ComputeService(name={self.name})"

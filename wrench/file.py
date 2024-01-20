@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from wrench.simulation import Simulation
 
 
+# noinspection GrazieInspection
 class File(SimulationItem):
     """
     WRENCH File class
@@ -45,7 +46,7 @@ class File(SimulationItem):
 
     def __str__(self) -> str:
         """
-        String representation of a file when using print
+        String representation of the file when using print
         
         :return: String representation of the file
         :rtype: str
@@ -55,9 +56,9 @@ class File(SimulationItem):
 
     def __repr__(self) -> str:
         """
-        String representation of a File object
+        String representation of the File object
         
-        :return: String representation of a File object
+        :return: String representation of the File object
         :rtype: str
         """
         s = f'File(name={self.name}, size={self.get_size()})'

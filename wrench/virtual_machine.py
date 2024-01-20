@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 from wrench.simulation_item import SimulationItem
 
 
+# noinspection GrazieInspection
 class VirtualMachine(SimulationItem):
     """
     WRENCH Virtual Machine class
@@ -110,7 +111,7 @@ class VirtualMachine(SimulationItem):
 
     def __repr__(self) -> str:
         """
-        :return: String representation of a VirtualMachine object
+        :return: String representation of the VirtualMachine object
         :rtype: str
         """
         s = f"VirtualMachine(name={self.name},cloud_compute_service={self.get_cloud_compute_service().get_name()})"

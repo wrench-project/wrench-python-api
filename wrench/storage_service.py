@@ -12,6 +12,7 @@ from wrench.simulation_item import SimulationItem
 from wrench.file import File
 
 
+# noinspection GrazieInspection
 class StorageService(SimulationItem):
     """
     WRENCH Storage Service class

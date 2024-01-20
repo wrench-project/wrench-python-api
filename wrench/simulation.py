@@ -30,6 +30,7 @@ from wrench.task import Task
 from wrench.file import File
 
 
+# noinspection GrazieInspection
 class Simulation:
     """
     WRENCH Simulation class. This class implements a simulation "client" that connects to
@@ -87,7 +88,8 @@ class Simulation:
 
         :param platform_file_path: path of a file that contains the simulated platform's description in XML
         :type platform_file_path: pathlib.Path
-        :param controller_hostname: the name of the (simulated) host in the platform on which the simulation controller will run
+        :param controller_hostname: the name of the (simulated) host in the platform on which the
+               simulation controller will run
         :type controller_hostname: str
 
         :raises WRENCHException: if there is any error during the simulation instantiation
@@ -109,7 +111,8 @@ class Simulation:
                 r = requests.post(f"{self.daemon_url}/startSimulation", json=self.spec)
             except Exception:
                 raise WRENCHException(
-                    f"Cannot connect to WRENCH daemon ({self.daemon_host}:{self.daemon_port}). Perhaps it needs to be started?")
+                    f"Cannot connect to WRENCH daemon ({self.daemon_host}:{self.daemon_port})."
+                    f" Perhaps it needs to be started?")
 
             response = r.json()
             if not response["wrench_api_request_success"]:
@@ -458,13 +461,13 @@ class Simulation:
 
         :param json_object: A JSON object created from a WfCommons JSON file
         :type json_object: json
-        :param reference_flop_rate: reference flop rate
+        :param reference_flop_rate: reference flop rate (e.g., "100Mf")
         :type reference_flop_rate: str
         :param ignore_machine_specs: whether to ignore machine specifications in the JSON
         :type ignore_machine_specs: bool
         :param redundant_dependencies: whether to take into account redundant task dependencies
         :type redundant_dependencies: bool
-        :param ignore_cycle_creating_dependencies: whether to ignore cycles when creating task dependenciess
+        :param ignore_cycle_creating_dependencies: whether to ignore cycles when creating task dependencies
         :type ignore_cycle_creating_dependencies: bool
         :param min_cores_per_task: the minimum cores for a task if not specified in the JSON
         :type min_cores_per_task: float
@@ -472,7 +475,8 @@ class Simulation:
         :type max_cores_per_task: float
         :param enforce_num_cores: whether to enforce the number of cores for a task even if specified in the JSON
         :type enforce_num_cores: bool
-        :param ignore_avg_cpu: whether to ignore the average CPU time information in the JSON to compute sequential task execution times
+        :param ignore_avg_cpu: whether to ignore the average CPU time information in the JSON to compute
+               sequential task execution times
         :type ignore_avg_cpu: bool
         :param show_warnings: whether to show warnings when importing the JSON (displayed on the wrench-daemon console)
         :type show_warnings: bool
@@ -495,7 +499,7 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/createWorkflowFromJSON",
                                           json_data=data)
         response = r.json()
-        # Create the worklow
+        # Create the workflow
         workflow = Workflow(self, response["workflow_name"])
         # Create the tasks
         for task_name in response["tasks"]:
@@ -824,9 +828,11 @@ class Simulation:
         :type num_cores: int
         :param ram_memory: the VM’s RAM memory_manager_service capacity
         :type ram_memory: float
-        :param property_list: a property list for the CloudComputeService that will run on the VM ({} means “use all defaults”)
+        :param property_list: a property list for the CloudComputeService that will run on the VM
+               ({} means “use all defaults”)
         :type property_list: dict
-        :param message_payload_list: a message payload list for the CloudComputeService that will run on the VM ({} means “use all defaults”))
+        :param message_payload_list: a message payload list for the CloudComputeService that will run on the VM
+               ({} means “use all defaults”)
         :type message_payload_list: dict
         :return: A virtual machine object
         :rtype: VirtualMachine

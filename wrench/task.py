@@ -127,7 +127,7 @@ class Task(SimulationItem):
 
     def __str__(self) -> str:
         """
-        String representation of a task when using print
+        String representation of the task when using print
 
         :return: String representation of the task
         :rtype: str
@@ -150,9 +150,9 @@ class Task(SimulationItem):
 
     def __repr__(self) -> str:
         """
-        String representation of a Task object
+        String representation of the Task object
 
-        :return: String representation of a Task object
+        :return: String representation of the Task object
         :rtype: str
         """
         s = f"Task(name={self.name}, " + \

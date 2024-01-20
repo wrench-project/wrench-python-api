@@ -13,6 +13,7 @@ from wrench.standard_job import StandardJob
 import json
 
 
+# noinspection GrazieInspection
 class BatchComputeService(ComputeService):
     """
     WRENCH Batch Compute Service class
@@ -42,7 +43,7 @@ class BatchComputeService(ComputeService):
 
     def __str__(self) -> str:
         """
-        :return: String representation of a bare metal compute service
+        :return: String representation of the bare metal compute service
         :rtype: str
         """
         s = f"Compute Service {self.name}"
@@ -50,7 +51,7 @@ class BatchComputeService(ComputeService):
 
     def __repr__(self) -> str:
         """
-        :return: String representation of a BareMetalComputeService object
+        :return: String representation of the BareMetalComputeService object
         :rtype: str
         """
         s = f"ComputeService(name={self.name})"

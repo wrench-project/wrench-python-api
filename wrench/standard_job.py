@@ -14,6 +14,7 @@ from wrench.simulation_item import SimulationItem
 from wrench.task import Task
 
 
+# noinspection GrazieInspection
 class StandardJob(SimulationItem):
     """
     WRENCH Standard Job class
@@ -44,7 +45,7 @@ class StandardJob(SimulationItem):
 
     def __str__(self) -> str:
         """
-        :return: String representation of a standard job
+        :return: String representation of the standard job
         :rtype: str
         """
         s = f"Standard Job {self.name} with {len(self.tasks)} tasks"
@@ -52,7 +53,7 @@ class StandardJob(SimulationItem):
 
     def __repr__(self) -> str:
         """
-        :return: String representation of a StandardJob object
+        :return: String representation of the StandardJob object
         :rtype: str
         """
         s = f"StandardJob(name={self.name})"

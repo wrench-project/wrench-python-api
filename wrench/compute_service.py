@@ -11,6 +11,7 @@
 from wrench.simulation_item import SimulationItem
 
 
+# noinspection GrazieInspection
 class ComputeService(SimulationItem):
     """
     WRENCH Compute Service class
@@ -56,7 +57,7 @@ class ComputeService(SimulationItem):
 
     def __str__(self) -> str:
         """
-        :return: String representation of a compute service
+        :return: String representation of the compute service
 
         :rtype: str
         """
@@ -65,7 +66,7 @@ class ComputeService(SimulationItem):
 
     def __repr__(self) -> str:
         """
-        :return: String representation of a ComputeService object
+        :return: String representation of the ComputeService object
         :rtype: str
         """
         s = f"ComputeService(name={self.name})"

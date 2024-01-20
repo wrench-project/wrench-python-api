@@ -12,6 +12,7 @@ from wrench.compute_service import ComputeService
 from wrench.virtual_machine import VirtualMachine
 
 
+# noinspection GrazieInspection
 class CloudComputeService(ComputeService):
     """
     WRENCH Cloud Compute Service class
@@ -57,7 +58,7 @@ class CloudComputeService(ComputeService):
 
     def __str__(self) -> str:
         """
-        :return: String representation of a the compute service
+        :return: String representation of the compute service
         :rtype: str
         """
         s = f"Compute Service {self.name}"
@@ -65,7 +66,7 @@ class CloudComputeService(ComputeService):
 
     def __repr__(self) -> str:
         """
-        :return: String representation of a CloudComputeService object
+        :return: String representation of the CloudComputeService object
         :rtype: str
         """
         s = f"ComputeService(name={self.name})"

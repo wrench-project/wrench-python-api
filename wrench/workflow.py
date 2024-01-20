@@ -21,6 +21,7 @@ from typing import List
 import json
 
 
+# noinspection GrazieInspection
 class Workflow(SimulationItem):
     """
     WRENCH Workflow class
@@ -93,7 +94,7 @@ class Workflow(SimulationItem):
         :type ignore_machine_specs: bool
         :param redundant_dependencies: whether to take into account redundant task dependencies
         :type redundant_dependencies: bool
-        :param ignore_cycle_creating_dependencies: whether to ignore cycles when creating task dependenciess
+        :param ignore_cycle_creating_dependencies: whether to ignore cycles when creating task dependencies
         :type ignore_cycle_creating_dependencies: bool
         :param min_cores_per_task: the minimum cores for a task if not specified in the JSON
         :type min_cores_per_task: float
@@ -117,7 +118,7 @@ class Workflow(SimulationItem):
 
     def __str__(self) -> str:
         """
-        String representation of a workflow when using print
+        String representation of the workflow when using print
         
         :return: String representation of the workflow
         :rtype: str
@@ -127,9 +128,9 @@ class Workflow(SimulationItem):
 
     def __repr__(self) -> str:
         """
-        String representation of a Workflow object
+        String representation of the Workflow object
         
-        :return: String representation of a Workflow object
+        :return: String representation of the Workflow object
         :rtype: str
         """
         s = f"Workflow(name={self.name})"
