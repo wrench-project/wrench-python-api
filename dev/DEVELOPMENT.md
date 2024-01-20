@@ -40,7 +40,7 @@ requests to cause the creation of a workflow. You will note in
 have about the same prefix: `/simulation/{simid}/...`. Each running simulation
 has an ID, and all paths begin by specifying this ID. In that file, there is a path specified as:
 
-```
+```json
 "/simulation/{simid}/createWorkflow": {
       "post": {
         "tags": [ 
@@ -90,20 +90,20 @@ A few things to note:
 Looking into  `wrench/tools/wrench/wrench-daemon/src/SimulationController.cpp`, we find the following
 C++ method:
 
-```
- /**
-     * REST API Handler
-     * @param data JSON input
-     * @return JSON output
-     */
-    json SimulationController::createWorkflow(json data) {
+```cpp
+/**
+  * REST API Handler
+  * @param data JSON input
+  * @return JSON output
+  */
+json SimulationController::createWorkflow(json data) {
 
-        auto wf = wrench::Workflow::createWorkflow();
-        json answer;
-        answer["workflow_name"] = wf->getName();
-        this->workflow_registry.insert(wf->getName(), wf);
-        return answer;
-    }
+    auto wf = wrench::Workflow::createWorkflow();
+    json answer;
+    answer["workflow_name"] = wf->getName();
+    this->workflow_registry.insert(wf->getName(), wf);
+    return answer;
+}
 ```
 
 
