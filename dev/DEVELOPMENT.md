@@ -91,19 +91,20 @@ Looking into  `wrench/tools/wrench/wrench-daemon/src/SimulationController.cpp`, 
 C++ method:
 
 ```cpp
-/**
-  * REST API Handler
-  * @param data JSON input
-  * @return JSON output
-  */
-json SimulationController::createWorkflow(json data) {
-
-    auto wf = wrench::Workflow::createWorkflow();
-    json answer;
-    answer["workflow_name"] = wf->getName();
-    this->workflow_registry.insert(wf->getName(), wf);
-    return answer;
-}
+  /**
+   * REST API Handler
+   * @param data JSON input
+   * @return JSON output
+   */
+1 json SimulationController::createWorkflow(json data) {
+2
+3    auto wf = wrench::Workflow::createWorkflow();
+4    json answer;
+5    answer["workflow_name"] = wf->getName();
+6    this->workflow_registry.insert(wf->getName(), wf);
+7    return answer;
+8  }
 ```
 
+This method, like all others like it, takes in a json and returns a json. In this case, we don't need any input to just create a workflow. 
 
