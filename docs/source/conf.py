@@ -38,8 +38,8 @@ release = str(__version__)
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-#    'recommonmark',
-#    'sphinx_rtd_theme',
+    'recommonmark',
+    'sphinx_rtd_theme',
     'sphinx.ext.autodoc',
 ]
 
