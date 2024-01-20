@@ -6,11 +6,11 @@
 
 # Objective
 
-Provide a Python API for [WRENCH](https://wrench-project.org) v.2.2 (soon to be released). This API is built on top of WRENCH 2.2's [REST API](https://wrench-project.org/wrench/2.2-dev/rest_api.html).
+Provide a Python API for [WRENCH](https://wrench-project.org). This API is built on top of WRENCH's [REST API](https://wrench-project.org/wrench/latest/rest_api.html).
 
 # Dependencies and Installation
 
-  - [WRENCH 2.2](https://github.com/wrench-project/wrench) and its dependencies
+  - [WRENCH](https://github.com/wrench-project/wrench) and its dependencies
     - You must compile/install the `wrench-daemon` target during the build process
 
   - Run `python3 ./setup.py install` to install the WRENCH Python API. 
@@ -23,6 +23,8 @@ a terminal start the `wrench-daemon` as:
 ```
 wrench-daemon
 ```
+
+(use `wrench-daemon --help` to see command-line options)
 
 In another terminal, run the example simulator as:
 
