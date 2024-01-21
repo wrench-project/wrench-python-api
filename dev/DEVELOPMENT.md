@@ -354,9 +354,83 @@ json SimulationController::createTask(json data) {
 }   
 ```
 
-At line 1, the workflow name is extracted from the JSON data passed by the client (which was found in the path). The workflow registry it looked up to see if the workflow exists (line 3). If not, an exception is thrown, which will cause a JSON answer to be sent back with field `wrench_api_request_success` set to False and a `failure_cause` field set to a helpful message.  If the workflow does exist, then a task is added to it at line 6, using the C++ API. Nothing needs to be sent back to the client, hence line 7. 
+At line 1, the workflow name is extracted from the JSON data passed by the client (which was found in the path). The workflow registry it looked up to see if the workflow exists (line 3). If not, an exception is thrown, which will cause a JSON answer to be sent back with field `wrench_api_request_success` set to False and a `failure_cause` field set to a helpful string message.  If the workflow does exist, then a task is added to it at line 6, using the C++ API. Nothing needs to be sent back to the client, hence line 7. 
 
 
 ## Example #2: Interaction with the simulation thread
+
+In the previous example, there was no interaction with the simulation thread because creating a workflow and adding tasks to a workflow have no impact on the simulation's execution. That is, nothing impacts the timeline of the simulated execution managed by the simulation thread. This is not a very easy concept to understand, and it's not very clearly documented in the C++ API. Ask lead developers when in doubt. If in the HTTP server thread you place a call that should shouldn't place, because it would impact the simulated execution's timeline, you'll just get a weird segfault. That means that should have have instead "asked" the simulation thread to do it for you. 
+
+Without going into the full details with the Python and REST API side, let's look at a method in `wrench/tools/wrench/wrench-daemon/src/SimulationController.cpp` that does ask the simulation thread to do something. For instance: 
+
+```cpp
+/** 
+ * REST API Handler
+ * @param data JSON input
+ * @return JSON output
+ */     
+json SimulationController::lookupFileAtStorageService(json data) {
+1    std::string ss_name = data["storage_service_name"];
+2    std::string filename = data["filename"];
+3           
+4    std::shared_ptr<StorageService> ss; 
+5    if (not this->storage_service_registry.lookup(ss_name, ss)) {
+6      throw std::runtime_error("Unknown storage service " + ss_name);
+7    }
+8    
+9    std::shared_ptr<DataFile> file;
+10   try {
+11     file = Simulation::getFileByID(filename);
+12   } catch (std::invalid_argument &e) {
+13     throw std::runtime_error("Unknown file " + filename);
+14   }   
+15        
+16   BlockingQueue<std::tuple<bool, bool, std::string>> file_looked_up;
+17        
+18   // Push the request into the blocking queue
+19   this->things_to_do.push([file, ss, &file_looked_up]() {
+20     try {
+21       bool result = ss->lookupFile(file);
+22       file_looked_up.push(std::tuple(true, result, ""));
+23     } catch (std::invalid_argument &e) {
+24       file_looked_up.push(std::tuple(false, false, e.what()));
+25     }
+26   });
+27  
+28   // Poll from the shared queue
+29   std::tuple<bool, bool, std::string> reply;
+30   file_looked_up.waitAndPop(reply);
+31   bool success = std::get<0>(reply);
+32   if (not success) {
+33     std::string error_msg = std::get<2>(reply);
+34     throw std::runtime_error("Cannot lookup file:" + error_msg);
+35   } else {
+36     json answer;
+37     answer["result"] = std::get<1>(reply);
+38     return answer;
+39   }
+40 }
+```
+
+The above is to answer a request to lookup a (simulated) file at a
+(simulated) storage service (something that the WRENCH C++ API supports).
+The JSON data received includes the name of the file and the name of the
+storage service (lines 1-2). This method first looks up the storage service
+registry to make sure there is a storage service with that name (lines
+4-7). Then is checks whether there is a file by that name as well (lines
+9-14). This is supported by the WRENCH C++ API, and so no helper registry
+data structure is needed. 
+
+Once these checks have been performed, the serious business begins:
+
+  - At line 16, the method creates a thread-safe data structure, a blocking queue, in which threads can put/get (bool, bool, string) tuples.
+  
+  - At line 19, the method puts into a similar data structure, which is known to the HTTP server thread and to the simulation thread. This is the "work queue" data structure mentioned at the top of this document". So that this data structure is fully general, it contains lambdas! (i.e., anonymous functions). That way, to tell the simulation thread to do something, one just gives it the code it should run!  This code is written at lines 20-25. At line 21 is how, using the C++ API, one does a file lookup at a storage service. Based on the result, a (bool, bool, string) tuple is put into the blocking queue created at line 16. In case of a success (i.e., the lookup didn't fail), the tuple is set to `(true, result, "")`, where `result` is true or false (depending on whether the file was found at the storage service or note). If case of a failure (i.e., the lookup failed), the tuple is set to `(false, false, e.what())`, where `e.what()` is an exception's error message. 
+
+  - At lines 29-30, the method waits for the reply (i.e., the tuple) from the simulation thread. It then extracts the first element of the tuple to see whether the lookup succeeded (line 31). Based on success or failure, the appropriate response is sent back to the client (lines 32-39).  And voila!
+
+Of course, to fully understand the above example, you should look at the path specification in `wrench/tools/wrench/wrench-daemon/doc/wrench-openapi.json` file, the `_lookup_file_at_storage_service()` method in `wrench-python-api/wrench/simulation.py` (which places the REST API request), and the `lookup_file()` method in the `wrench-python-api/wrench/storage_service.py` file!  
+
+
 
 
