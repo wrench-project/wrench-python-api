@@ -210,6 +210,10 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.post,
                                           f"{self.daemon_url}/{self.simid}/createWorkflow", json_data={})
         response = r.json()
+        if not response["wrench_api_request_success"]:
+                self.terminated = True
+                raise WRENCHException(response["failure_cause"])
+
         return Workflow(self, response["workflow_name"])
 
     def add_file(self, name: str, size: int) -> File:
