@@ -4,6 +4,8 @@
 
 This page provides information for developers of this project who wish to augment the Python API (and typically also the REST API) to WRENCH. 
 
+Knowledge of the [WRENCH C++ API](https://wrench-project.org/wrench/latest/api_developer.html) of course helps a lot, but can be acquired piecemeal. When in doubt, ask a WRENCH lead developer. 
+
 ## Overall Design
 
 ![image](./overall_architecture.svg) 
