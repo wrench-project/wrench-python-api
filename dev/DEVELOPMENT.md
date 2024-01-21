@@ -20,7 +20,7 @@ The WRENCH daemon, implemented in C++, consists of two threads. The first is the
 In the `wrench` repository:
 
   - Edit `wrench/tools/wrench/wrench-daemon/doc/wrench-openapi.json` to add the new path and all its specification. This file uses the [OpenAPI/Swagger standard](https://swagger.io/specification/)
-  - In the above, make sure that the new path has a `operationId` field set to the name the C++ method that will be called when a request to this path is placed
+  - In the above, make sure that the new path has its `operationId` field set to the name the C++ method that will be called when a request to this path is placed
   - Implement the above method in `wrench/tools/wrench/wrench-daemon/src/SimulationController.cpp`
 
 ## Steps to augment a new Python API 
@@ -30,13 +30,14 @@ In the `wrench-python-api` repository:
   - Add whatever class/method, with full docstrings, where most of the "work" is done by calling a method of the `Simulation` class
   - In `wrench-python-api/wrench/api/simulation.py`, implement the needed method(s)
 
+---
 
 ## Example #1: Supporting the creation/use of a Workflow object (no interaction with simulation thread)
 
-The simplest way to learn how to do this is to go through a complete example. Let's look at how part of the "workflow" concept is implemented in the API. A workflow is a data structure that contains "tasks". The [WRENCH C++ API](https://wrench-project.org/wrench/latest/api_developer.html) provides a Workflow class, with all kinds of features and methods, and some of these are implemented as well in the Python API.  Let's look at the creation of a workflow.
+The simplest way to learn how to do this is to go through a complete example. Let's look at how part of the "workflow" concept is implemented in the API. A workflow is a data structure that contains "tasks". The [WRENCH C++ API](https://wrench-project.org/wrench/latest/api_developer.html) provides a `Workflow` class, with all kinds of features and methods, and some of these are implemented as well in the Python API.  Let's look at the creation of a workflow.
 
 In the C++ API, a workflow is created by calling the static method `createWorkflow()` of the
-Workflow class. In the REST API, we thus need some path that can be
+`Workflow` class. In the REST API, we thus need some path that can be
 requested to cause the creation of a workflow. You will note in
 `wrench/tools/wrench/wrench-daemon/doc/wrench-openapi.json` that all path
 have about the same prefix: `/simulation/{simid}/...`. Each running simulation
@@ -111,8 +112,8 @@ C++ method:
 8  }
 ```
 
-This method, like all others like it, takes in a json and returns a json. In this case, we don't need any input to just create a workflow.  At line 1, the C++ API call for creating a workflow is invoked, creating
-a workflow object. We want to return the workflow's name to the client (since we can't send me a C++ reference/pointer/address!), and this answer is in JSON. This is created at lines 4 and 5. The C++ WRENCH API does not make it possible to retrieve a workflow based on its name (because in C++, we can just use the reference to the object). So instead, in the `wrench-daemon` we create a convenient data structure called `workflow_registry`, which is really a map where the keys are strings and the values are `Workflow` instances. This data structure is updated at line 6. And finally, we return the answer at line 7. This way, next time we get a REST API call about a workflow, whose name is provided by the client, we will be able to retrieve the `Workflow` instance. 
+This method, like all others like it, takes in a json and returns a json. In this case, we don't need any input to just create a (blank) workflow.  At line 1, the C++ API call for creating a workflow is invoked, creating
+a `Workflow` object. We want to return the workflow's name to the client (since we can't send me a C++ reference/pointer/address!), and this answer is in JSON. This is created at lines 4 and 5. The C++ WRENCH API does not make it possible to retrieve a workflow based on its name (because in C++, we can just use the reference to the object). So instead, in the `wrench-daemon` we create a convenient data structure called `workflow_registry`, which is really a map where the keys are strings and the values are `Workflow` instances. This data structure is updated at line 6. And finally, we return the answer at line 7. This way, next time we get a REST API call about a workflow, whose name is provided by the client, we will be able to retrieve the `Workflow` instance. 
 
 
 In the Python API, we have opted to add a `create_workflow()` method to the `Simulation` class. The implementation of this method is as:
@@ -141,9 +142,9 @@ def create_workflow(self) -> Workflow:
 ```
 
 At line 1, the REST API request is sent to the `wrench-daemon` (using a
-utility "private" method called `__send_request_to_daemon()`. Note that method type
-and the path matches that specified in the JSON above (other we'll get an error). Note
-also that the `json_data` field is left blank, since no addition data is needed by the
+utility "private" method called `__send_request_to_daemon()`. Note that method type ("post")
+and the path matches that specified in the JSON above (otherwise we'll get an error). Note
+also that the `json_data` field is left blank, since no additional data is needed by the
 `SimulationController::createWorkflow()` method on the server side.  At line 2, the response
 is received. At lines 3-5 is the error checking. Each response is augmented automatically
 on the server side with `"wrench_api_request_success"` and `"failure_cause"` fields, which
@@ -222,7 +223,7 @@ def _workflow_create_task(self, workflow: Workflow, name: str, flops: float,
 ```
 
 At line 1, the JSON data to be passed along the request is created. The request is then placed
-with a path and that data at line 2 (not that this is a PUT request). The response if obtained at line 3. If no error
+with a path and that data at line 2 (note that this is a PUT request). The response if obtained at line 3. If no error
 is detected, then a new `Task` object instance is created (whose class is defined in `wrench-python-api/wrench/task.py`), inserted into the `Workflow` object's map of tasks (line 5), and returned.  Otherwise, an exception is raised (line 7). 
 
 Let's now look at the specification of the REST API path in `wrench/tools/wrench/wrench-daemon/doc/wrench-openapi.json`:
@@ -292,7 +293,7 @@ This is similar to the JSON above, but:
 
 To avoid clutter and code duplication (although in this case, it's likely that no other requests
 will have the same JSON data specification), the schema for the request body, which is called
-`components/schemas/Task` is specified at the end of the file. It looks like:
+`components/schemas/Task`, is specified at the end of the file. It looks like:
 
 ```json
 "Task": {
@@ -330,7 +331,7 @@ will have the same JSON data specification), the schema for the request body, wh
 }
 ```
 
-You will note that the Python code above does construct JSON data in accordance to the specification above. The path specification indicates that the name of the server method to handle requests to this path is `createTask`. Let's look at this method in `wrench/tools/wrench/wrench-daemon/src/SimulationController.cpp`:
+You will note that the Python code above does construct JSON data in accordance to the path specification. This specification indicates that the name of the server method to handle requests to this path is `createTask`. Let's look at this method in `wrench/tools/wrench/wrench-daemon/src/SimulationController.cpp`:
 
 ```cpp
 /** 
