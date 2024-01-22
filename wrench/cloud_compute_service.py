@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2021 The WRENCH Team.
@@ -71,4 +70,3 @@ class CloudComputeService(ComputeService):
         """
         s = f"ComputeService(name={self.name})"
         return s
-

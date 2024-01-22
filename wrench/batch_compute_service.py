@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2021 The WRENCH Team.
@@ -8,9 +7,10 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
+import json
+
 from wrench.compute_service import ComputeService
 from wrench.standard_job import StandardJob
-import json
 
 
 # noinspection GrazieInspection

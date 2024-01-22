@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2021 The WRENCH Team.
@@ -10,6 +9,7 @@
 
 
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from wrench.simulation_item import SimulationItem

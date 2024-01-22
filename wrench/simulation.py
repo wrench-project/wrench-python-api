@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2021 The WRENCH Team.
@@ -10,24 +9,23 @@
 
 import atexit
 import json
-
-import requests
 import pathlib
-
 from typing import Dict, List, Optional, Union
 
-from wrench.compute_service import ComputeService
+import requests
+
 from wrench.bare_metal_compute_service import BareMetalComputeService
 from wrench.batch_compute_service import BatchComputeService
 from wrench.cloud_compute_service import CloudComputeService
-from wrench.virtual_machine import VirtualMachine
+from wrench.compute_service import ComputeService
 from wrench.exception import WRENCHException
+from wrench.file import File
+from wrench.file_registry_service import FileRegistryService
 from wrench.standard_job import StandardJob
 from wrench.storage_service import StorageService
-from wrench.file_registry_service import FileRegistryService
-from wrench.workflow import Workflow
 from wrench.task import Task
-from wrench.file import File
+from wrench.virtual_machine import VirtualMachine
+from wrench.workflow import Workflow
 
 
 # noinspection GrazieInspection
@@ -41,7 +39,6 @@ class Simulation:
     :type daemon_host: str
     :param daemon_port: port number on which the WRENCH daemon is listening
     :type daemon_port: int
-
     """
 
     def __init__(self,
@@ -50,7 +47,6 @@ class Simulation:
                  ) -> None:
         """
         Constructor
-
         """
         self.daemon_host = daemon_host
         self.daemon_port = daemon_port
@@ -211,8 +207,8 @@ class Simulation:
                                           f"{self.daemon_url}/{self.simid}/createWorkflow", json_data={})
         response = r.json()
         if not response["wrench_api_request_success"]:
-                self.terminated = True
-                raise WRENCHException(response["failure_cause"])
+            self.terminated = True
+            raise WRENCHException(response["failure_cause"])
 
         return Workflow(self, response["workflow_name"])
 

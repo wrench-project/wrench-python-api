@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2021 The WRENCH Team.
@@ -8,8 +7,8 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-from wrench.simulation_item import SimulationItem
 from wrench.file import File
+from wrench.simulation_item import SimulationItem
 
 
 # noinspection GrazieInspection
