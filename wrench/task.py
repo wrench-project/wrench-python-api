@@ -25,7 +25,7 @@ class Task(SimulationItem):
     WRENCH Task class
     """
 
-    def __init__(self, simulation, workflow: Workflow, name: str) -> None:
+    def __init__(self, simulation: Simulation, workflow: Workflow, name: str) -> None:
         """
         Constructor
         :param simulation: simulation object
