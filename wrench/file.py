@@ -33,7 +33,7 @@ class File(SimulationItem):
         :param name: File name
         :type name: str
         """
-        super().__init__(simulation, name: str)
+        super().__init__(simulation, name)
 
     def get_size(self) -> int:
         """
