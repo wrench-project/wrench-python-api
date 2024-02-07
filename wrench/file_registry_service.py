@@ -8,6 +8,8 @@
 # (at your option) any later version.
 
 from wrench.simulation_item import SimulationItem
+from wrench.file import File
+from wrench.storage_service import StorageService
 
 
 class FileRegistryService(SimulationItem):
@@ -24,6 +26,17 @@ class FileRegistryService(SimulationItem):
         :type name: str
         """
         super().__init__(simulation, name)
+
+    def add_entry(self, storage_service: StorageService, file: File):
+        """
+        Add an entry (storage service / file) to the file registry service
+        :param storage_service
+        :type storage_service: StorageService
+        :param file: the file
+        :type file: File
+        :return:
+        """
+        self.simulation._add_entry_to_a_file_registry_service(self, file, storage_service)
 
     def __str__(self) -> str:
         """

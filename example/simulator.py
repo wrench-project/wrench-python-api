@@ -47,14 +47,15 @@ if __name__ == "__main__":
                                                       {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
                                                       {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
 
+        # Creating a file registry service
+        print("Creating a file registry service on ControllerHost...")
+        frs = simulation.create_file_registry_service("ControllerHost")
+        print(f"Created file registry service has name {frs.get_name()}")
+
         # Creating a storage service
         print("Creating a simple storage service on StorageHost...")
         ss = simulation.create_simple_storage_service("StorageHost", ["/"])
         print(f"Created storage service has name {ss.get_name()}")
-
-        # print("Creating a file registry service on ControllerHost...")
-        # frs = simulation.create_file_registry_service("ControllerHost")
-        # print(f"Created file registry service has name {frs.get_name()}")
 
         print("Adding a 1kB file to the simulation...")
         file1 = simulation.add_file("file1", 1024)
@@ -65,6 +66,9 @@ if __name__ == "__main__":
 
         print(f"Creating a copy of {file1} on the storage service")
         ss.create_file_copy(file1)
+
+        # Adding an entry to the file registry service
+        frs.add_entry(ss, file1)
 
         print("Sleeping for 10 seconds...")
         simulation.sleep(10)

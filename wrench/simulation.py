@@ -506,7 +506,7 @@ class Simulation:
 
     ####################################################################################
     ####################################################################################
-    # Below are "private" methods that are not part of the user API, but called by
+    # Below are "private/protected" methods that are not part of the user API, but called by
     # the wrapper classes that form the user API
     ####################################################################################
     ####################################################################################
@@ -1084,6 +1084,26 @@ class Simulation:
                 file_list.append(self.files[filename])
             return file_list
         raise WRENCHException(response["failure_cause"])
+
+    def _add_entry_to_a_file_registry_service(self, file_registry_service: FileRegistryService,
+                                              file: File, storage_service: StorageService):
+        """
+        Blah
+        :param file_registry_service:
+        :param file:
+        :param storage_service:
+        :return:
+        """
+        data = {"file_name": file.get_name(),
+                "storage_service_name": storage_service.get_name()}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/fileRegistryServices/"
+                                                         f"{file_registry_service.get_name()}/addEntry/",
+                                          json_data=data)
+
+        response = r.json()
+        if not response["wrench_api_request_success"]:
+            raise WRENCHException(response["failure_cause"])
+        return
 
     ###############################
     # Private methods
