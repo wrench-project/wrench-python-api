@@ -73,9 +73,12 @@ class Simulation:
         try:
             r = requests_method(route, json=json_data)
             return r
-        except Exception:
-            raise WRENCHException("Connection to wrench-daemon severed. Inspect wrench-daemon's log output to "
-                                  "diagnose problem (likely an uncaught maestro exception)")
+        except Exception as e:
+            raise WRENCHException("Connection to wrench-daemon severed: " + str(e) + "\n"
+                                  "This could be an error on the "
+                                  "wrench-daemon side (likely an uncaught maestro exception). Enable "
+                                  "logging with the --simulation-logging and --daemon-logging "
+                                  "command-line arguments")
 
     def start(self, platform_file_path: pathlib.Path,
               controller_hostname: str) -> None:
@@ -1097,7 +1100,7 @@ class Simulation:
         data = {"file_name": file.get_name(),
                 "storage_service_name": storage_service.get_name()}
         r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/fileRegistryServices/"
-                                                         f"{file_registry_service.get_name()}/addEntry/",
+                                                         f"{file_registry_service.get_name()}/addEntry",
                                           json_data=data)
 
         response = r.json()
