@@ -52,9 +52,9 @@ if __name__ == "__main__":
         ss = simulation.create_simple_storage_service("StorageHost", ["/"])
         print(f"Created storage service has name {ss.get_name()}")
 
-        # print("Creating a file registry service on ControllerHost...")
-        # frs = simulation.create_file_registry_service("ControllerHost")
-        # print(f"Created file registry service has name {frs.get_name()}")
+        print("Creating a file registry service on ControllerHost...")
+        frs = simulation.create_file_registry_service("ControllerHost")
+        print(f"Created file registry service has name {frs.get_name()}")
 
         print("Adding a 1kB file to the simulation...")
         file1 = simulation.add_file("file1", 1024)
@@ -65,6 +65,10 @@ if __name__ == "__main__":
 
         print(f"Creating a copy of {file1} on the storage service")
         ss.create_file_copy(file1)
+
+        # Add an entry to the file registry service
+        print(f"Adding an entry for {file1} on the file registry service {frs.get_name()}")
+        frs.add_entry(ss, file1)
 
         print("Sleeping for 10 seconds...")
         simulation.sleep(10)
