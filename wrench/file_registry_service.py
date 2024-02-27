@@ -11,12 +11,13 @@ from wrench.simulation_item import SimulationItem
 from wrench.file import File
 from wrench.storage_service import StorageService
 
+from typing import List
+
 
 class FileRegistryService(SimulationItem):
     """
     WRENCH File Registry Service class
     """
-
     def __init__(self, simulation, name: str) -> None:
         """
         Constructor
@@ -37,6 +38,16 @@ class FileRegistryService(SimulationItem):
         :return:
         """
         self.simulation._add_entry_to_a_file_registry_service(self, file, storage_service)
+
+    def lookup_entry(self, file: File) -> List[StorageService]:
+        """
+        Lookup an entry (file) to the file registry service
+        :param file: the file
+        :type file: File
+        :return List of StorageServices associated with file
+        :rtype: str[]
+        """
+        self.simulation._lookup_entry_to_a_file_registry_service(self, file)
 
     def __str__(self) -> str:
         """

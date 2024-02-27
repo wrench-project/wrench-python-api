@@ -1108,6 +1108,29 @@ class Simulation:
             raise WRENCHException(response["failure_cause"])
         return
 
+    def _lookup_entry_to_a_file_registry_service(self, file_registry_service: FileRegistryService, file: File) -> List[StorageService]:
+        """
+        Blah
+        :param file_registry_service:
+        :param file:
+        :return List of storage services associated with file:
+        :rtype: StorageService[]
+        """
+        data = {"file_name": file.get_name()}
+
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/fileRegistryServices/"
+                                                         f"{file_registry_service.get_name()}/lookupEntry",
+                                          json_data=data)
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            ss_list = []
+            for storageservicename in response["storage_services"]:
+                ss_list.append(self.files[storageservicename])
+            return ss_list
+        raise WRENCHException(response["failure_cause"])
+
+
     ###############################
     # Private methods
     ###############################

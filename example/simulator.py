@@ -70,6 +70,10 @@ if __name__ == "__main__":
         # Adding an entry to the file registry service
         frs.add_entry(ss, file1)
 
+        # Adding an entry to the file registry service
+        ss_list = frs.lookup_entry(file1)
+        print(f"Entries for file: {ss_list}")
+
         print("Sleeping for 10 seconds...")
         simulation.sleep(10)
         print(f"Time now is {simulation.get_simulated_time()}")
