@@ -32,7 +32,6 @@ In another terminal, run the example simulator as:
 python3 ./example/simulator.py
 ```
 
-
 For complete documentation, see the [API Documentation page](https://wrench-python-api.readthedocs.io/en/latest/).
 
 
