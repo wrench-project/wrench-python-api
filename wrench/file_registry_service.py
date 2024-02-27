@@ -37,6 +37,17 @@ class FileRegistryService(SimulationItem):
         """
         return self.simulation._add_entry_to_file_registry_service(self, file, storage_service)
 
+    def remove_entry(self, storage_service: StorageService, file: File):
+        """
+        Removes an entry (file/storage service) from the file registry service
+        :param file: the file
+        :type file: File
+        :param storage_service: the storage service
+        :type storage_service: StorageService
+        :return:
+        """
+        return self.simulation._remove_entry_to_file_registry_service(self, file, storage_service)
+
     def __str__(self) -> str:
         """
         :return: String representation of the storage service

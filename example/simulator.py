@@ -70,6 +70,12 @@ if __name__ == "__main__":
         print(f"Adding an entry for {file1} on the file registry service {frs.get_name()}")
         frs.add_entry(ss, file1)
 
+        # TODO: Look up entry
+
+        # Add an entry to the file registry service
+        print(f"Removing an entry for {file1} on the file registry service {frs.get_name()}")
+        frs.remove_entry(ss, file1)
+
         print("Sleeping for 10 seconds...")
         simulation.sleep(10)
         print(f"Time now is {simulation.get_simulated_time()}")

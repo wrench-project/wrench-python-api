@@ -1107,6 +1107,27 @@ class Simulation:
             raise WRENCHException(response["failure_cause"])
         return
 
+    def _remove_entry_to_file_registry_service(self, file_registry_service: FileRegistryService, file: File, storage_service: StorageService):
+        """
+        Remove an entry (file/storage service) from a file registry service
+        :param file_registry_service: the file registry service
+        :type file_registry_service: FileRegistryService
+        :param file: the file
+        :type file: File
+        :param storage_service: the storage service
+        :type storage_service: StorageService
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"file_name": file.get_name(),
+                "storage_service_name": storage_service.get_name(),}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/fileRegistryServices/"
+                                                         f"{file_registry_service.get_name()}/removeEntry", json_data=data)
+
+        response = r.json()
+        if not response["wrench_api_request_success"]:
+            raise WRENCHException(response["failure_cause"])
+        return
 
     ###############################
     # Private methods
