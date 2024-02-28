@@ -1105,6 +1105,13 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/fileRegistryServices/"
                                                          f"{file_registry_service.get_name()}/addEntry", json_data=data)
 
+        url = f"{self.daemon_url}/{self.simid}/fileRegistryServices/{file_registry_service.get_name()}/addEntry"
+        print(f"Sending JSON Information for lookup entry\nURL: {url}\nJSON Body:")
+
+        # Pretty print JSON body
+        print(json.dumps(data, indent=4))
+        #print()
+
         response = r.json()
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
@@ -1123,6 +1130,13 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/fileRegistryServices/"
                                                          f"{file_registry_service.get_name()}/lookupEntry",
                                           json_data=data)
+
+        url = f"{self.daemon_url}/{self.simid}/fileRegistryServices/{file_registry_service.get_name()}/lookupEntry"
+        print(f"Sending JSON Information for lookup entry\nURL: {url}\nJSON Body:")
+
+        # Pretty print JSON body
+        print(json.dumps(data, indent=4))
+        #print()
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -1148,6 +1162,13 @@ class Simulation:
                 "storage_service_name": storage_service.get_name(),}
         r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/fileRegistryServices/"
                                                          f"{file_registry_service.get_name()}/removeEntry", json_data=data)
+
+        url = f"{self.daemon_url}/{self.simid}/fileRegistryServices/{file_registry_service.get_name()}/removeEntry"
+        print(f"Sending JSON Information for lookup entry\nURL: {url}\nJSON Body:")
+
+        # Pretty print JSON body
+        print(json.dumps(data, indent=4))
+        #print()
 
         response = r.json()
         if not response["wrench_api_request_success"]:
