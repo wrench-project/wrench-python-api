@@ -1087,6 +1087,7 @@ class Simulation:
                 file_list.append(self.files[filename])
             return file_list
         raise WRENCHException(response["failure_cause"])
+
     def _add_entry_to_file_registry_service(self, file_registry_service: FileRegistryService, file: File, storage_service: StorageService):
         """
         Add an entry (file/storage service) to a file registry service
@@ -1109,7 +1110,7 @@ class Simulation:
             raise WRENCHException(response["failure_cause"])
         return
 
-    def _lookup_entry_to_a_file_registry_service(self, file_registry_service: FileRegistryService, file: File) -> List[StorageService]:
+    def _lookup_entry_in_file_registry_service(self, file_registry_service: FileRegistryService, file: File) -> List[StorageService]:
         """
         Blah
         :param file_registry_service:
@@ -1126,12 +1127,12 @@ class Simulation:
         response = r.json()
         if response["wrench_api_request_success"]:
             ss_list = []
-            for storageservicename in response["storage_services"]:
-                ss_list.append(self.files[storageservicename])
+            for storage_service_name in response["storage_services"]:
+                ss_list.append(self.storage_services[storage_service_name])
             return ss_list
         raise WRENCHException(response["failure_cause"])
 
-    def _remove_entry_to_file_registry_service(self, file_registry_service: FileRegistryService, file: File, storage_service: StorageService):
+    def _remove_entry_from_file_registry_service(self, file_registry_service: FileRegistryService, file: File, storage_service: StorageService):
         """
         Remove an entry (file/storage service) from a file registry service
         :param file_registry_service: the file registry service

@@ -38,7 +38,7 @@ class FileRegistryService(SimulationItem):
         :type file: File
         :return:
         """
-        self.simulation._add_entry_to_a_file_registry_service(self, file, storage_service)
+        self.simulation._add_entry_to_file_registry_service(self, file, storage_service)
 
     def lookup_entry(self, file: File) -> List[StorageService]:
         """
@@ -48,7 +48,7 @@ class FileRegistryService(SimulationItem):
         :return List of StorageServices associated with file
         :rtype: str[]
         """
-        self.simulation._lookup_entry_to_a_file_registry_service(self, file)
+        return self.simulation._lookup_entry_in_file_registry_service(self, file)
 
     def remove_entry(self, storage_service: StorageService, file: File):
         """
@@ -59,7 +59,7 @@ class FileRegistryService(SimulationItem):
         :type storage_service: StorageService
         :return:
         """
-        return self.simulation._remove_entry_to_file_registry_service(self, file, storage_service)
+        self.simulation._remove_entry_from_file_registry_service(self, file, storage_service)
 
     def __str__(self) -> str:
         """
