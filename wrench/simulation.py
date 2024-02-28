@@ -1105,7 +1105,11 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/fileRegistryServices/"
                                                          f"{file_registry_service.get_name()}/addEntry", json_data=data)
 
+        print("\n******\nAdd entry sent request: ", data)
+
         response = r.json()
+        print("\n******\nAdd entry received response: ", response)
+
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
         return
@@ -1124,7 +1128,11 @@ class Simulation:
                                                          f"{file_registry_service.get_name()}/lookupEntry",
                                           json_data=data)
 
+        print("\n******\nLook up entry sent request: ", data)
+
         response = r.json()
+        print("\n******\nLook up entry received response: ", response)
+
         if response["wrench_api_request_success"]:
             ss_list = []
             for storage_service_name in response["storage_services"]:
@@ -1149,7 +1157,11 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/fileRegistryServices/"
                                                          f"{file_registry_service.get_name()}/removeEntry", json_data=data)
 
+        print("\n******\nRemove entry sent request: ", data)
+
         response = r.json()
+        print("\n******\nRemove entry received response: ", response)
+
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
         return
