@@ -29,24 +29,6 @@ if __name__ == "__main__":
         hosts = simulation.get_all_hostnames()
         print(f"Hosts in the platform are: {hosts}")
 
-        # Creating a couple of compute services
-        print(f"Creating compute services")
-        print("Creating a bare-metal compute service on ComputeHost...")
-        bmcs = simulation.create_bare_metal_compute_service(
-            "BatchHeadHost",
-            {"BatchHost1": (6, 10.0),
-             "BatchHost2": (6, 12.0)},
-            "/scratch",
-            {"BareMetalComputeServiceProperty::THREAD_STARTUP_OVERHEAD": "12s"},
-            {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
-
-        print(f"Creating a cloud compute service")
-        ccs = simulation.create_cloud_compute_service("CloudHeadHost",
-                                                      ["CloudHost1", "CloudHost2"],
-                                                      "/scratch",
-                                                      {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
-                                                      {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
-
         # Creating a file registry service
         print("Creating a file registry service on ControllerHost...")
         frs = simulation.create_file_registry_service("ControllerHost")
@@ -86,62 +68,6 @@ if __name__ == "__main__":
         # Looking the entry again (which should fail)
         ss_list = frs.lookup_entry(file1)
         print(f"Entries for file: {ss_list}")
-
-        print("Sleeping for 10 seconds...")
-        simulation.sleep(10)
-        print(f"Time now is {simulation.get_simulated_time()}")
-
-        print("Creating a workflow")
-        workflow = simulation.create_workflow()
-
-        print("Creating a task")
-        task1 = workflow.add_task("task1", 100.0, 1, 1, 0)
-        print(f"Just created a task with flops={task1.get_flops()}" +
-              f", min_num_cores={task1.get_min_num_cores()}" +
-              f", max_num_cores={task1.get_max_num_cores()}" +
-              f", memory={task1.get_memory()}")
-
-        task1.add_input_file(file1)
-        print(f"Attached file {file1} as input file to task {task1.get_name()}")
-        print(f"The list of input files for task {task1.get_name()} is: {task1.get_input_files()}")
-        task1.add_output_file(file2)
-        print(f"Attached file {file2} as output file to task {task1.get_name()}")
-        print(f"The list of output files for task {task1.get_name()} is: {task1.get_output_files()}")
-
-        print("Creating a standard job with the task, so that input/output files will be on the storage service")
-        job = simulation.create_standard_job([task1], {file1: ss, file2: ss})
-
-        print("Submitting the standard job to the base metal compute service...")
-        bmcs.submit_standard_job(job)
-
-        print("Sleeping for 1000 seconds...")
-        simulation.sleep(1000)
-
-        print(f"Time now is {simulation.get_simulated_time()}")
-        print("Getting simulation events that have occurred while I slept...")
-        events = simulation.get_simulation_events()
-        for event in events:
-            print(f"  - Event: {event}")
-
-        print("Creating another task")
-        task2 = workflow.add_task("task2", 100.0, 1, 1, 0)
-
-        print("Creating another job...")
-        other_job = simulation.create_standard_job([task2], {})
-
-        print("Creating a VM on the cloud compute service...")
-        my_vm = ccs.create_vm(1, 100,
-                                {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
-                                {})
-        print("Starting the VM...")
-        vm_cs = my_vm.start()
-
-        print("Submitting the standard job to the compute service running on the VM...")
-        vm_cs.submit_standard_job(other_job)
-
-        print("Synchronously waiting for the next simulation event...")
-        event = simulation.wait_for_next_event()
-        print(f"  - Event: {event}")
 
         print(f"Time is {simulation.get_simulated_time()}")
 
