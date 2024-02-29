@@ -1106,7 +1106,7 @@ class Simulation:
                                                          f"{file_registry_service.get_name()}/addEntry", json_data=data)
 
         url = f"{self.daemon_url}/{self.simid}/fileRegistryServices/{file_registry_service.get_name()}/addEntry"
-        print(f"Sending JSON Information for lookup entry\nURL: {url}\nJSON Body:")
+        print(f"Sending JSON Information for add entry\nURL: {url}\nJSON Body:")
 
         # Pretty print JSON body
         print(json.dumps(data, indent=4))
@@ -1168,7 +1168,7 @@ class Simulation:
                                                          f"{file_registry_service.get_name()}/removeEntry", json_data=data)
 
         url = f"{self.daemon_url}/{self.simid}/fileRegistryServices/{file_registry_service.get_name()}/removeEntry"
-        print(f"Sending JSON Information for lookup entry\nURL: {url}\nJSON Body:")
+        print(f"Sending JSON Information for remove entry\nURL: {url}\nJSON Body:")
 
         # Pretty print JSON body
         print(json.dumps(data, indent=4))
