@@ -63,7 +63,7 @@ class FileRegistryService(SimulationItem):
 
     def __str__(self) -> str:
         """
-        :return: String representation of the storage service
+        :return: String representation of the FileRegistryService service
         :rtype: str
         """
         s = f"File Registry Service {self.name}"

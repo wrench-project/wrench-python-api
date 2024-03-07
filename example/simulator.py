@@ -145,7 +145,22 @@ if __name__ == "__main__":
 
         print(f"Time is {simulation.get_simulated_time()}")
 
+        # Compound job
+        # cjob = simulation.create_compound_job()
+        # my_sleep_action_1 = cjob.add_sleep_action(name="", sleep_time=10)
+        # print(my_sleep_action_1.get_sleep_time())
+        # my_sleep_action_2 = cjob.add_sleep_action(name="my_sleep_2", sleep_time=20)
+        # cjob.add_action_dependency(my_sleep_action_1, my_sleep_action_2)
+        # list_of_actions = cjob.get_actions()
+        # mcss.submit_compound_job(cjob)
+        # if (my_sleep_action_1.get_state() == Action.RUNNING):
+        #     print("Action is still running!")
+        # if (my_sleep_action_1.get_state_as_string() == "RUNNING"):
+        #    print("Action is still running!")
+
+
         print("Terminating simulation daemon")
+
         simulation.terminate()
 
     except wrench.WRENCHException as e:
