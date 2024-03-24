@@ -1,0 +1,167 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2021 The WRENCH Team.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+import json
+import pathlib
+import wrench
+from typing import List, Dict
+
+from wrench.simulation import Simulation          # For type checking
+from wrench.task import Task                      # For type checking
+from wrench.compute_service import ComputeService # For type checking
+
+def pick_task_to_schedule(tasks: List[Task]):
+    # pick the task with the largest flop amount
+    max_flop = 0
+    target_task = None
+    for task in tasks:
+        if task.get_flops() > max_flop:
+            max_flop = task.get_flops()
+            target_task = task
+    return target_task
+
+def pick_target_cs(compute_resources: Dict[ComputeService, Dict[str, float]]):
+    # pick the one with the largest core speed
+    max_core_speed = 0
+    target_cs = None
+    for cs in compute_resources:
+        # If there are no idle cores, don't consider this resource
+        if compute_resources[cs]["num_idle_cores"] == 0:
+            continue
+        if compute_resources[cs]["core_speed"] > max_core_speed:
+            max_core_speed = compute_resources[cs]["core_speed"]
+            target_cs = cs
+    return target_cs
+
+def schedule_tasks(simulation: Simulation, tasks_to_schedule: List[Task], compute_resources:Dict[ComputeService, Dict[str, float]], storage_service):
+    # print(f"We have {len(tasks_to_schedule)} tasks to schedule...")
+
+    while True:
+        if len(tasks_to_schedule) == 0:
+            break
+        # Make scheduling decisions
+        task_to_schedule = pick_task_to_schedule(tasks_to_schedule)
+        target_cs = pick_target_cs(compute_resources)
+
+        if target_cs is None:
+            break
+
+        tasks_to_schedule.remove(task_to_schedule)
+
+        print(f"Scheduling task {task_to_schedule.get_name()} on compute service {target_cs.get_name()}...")
+        input_files = task_to_schedule.get_input_files()
+        output_files = task_to_schedule.get_output_files()
+        locations = {}
+        for f in input_files:
+            locations[f] = storage_service
+        for f in output_files:
+            locations[f] = storage_service
+        job = simulation.create_standard_job([task_to_schedule], locations)
+        target_cs.submit_standard_job(job)
+        compute_resources[target_cs]["num_idle_cores"] -= 1
+
+
+    return
+
+
+def main():
+    try:
+        # Instantiating the simulation based on a platform description file
+        current_dir = pathlib.Path(__file__).parent.resolve()
+        platform_file_path = pathlib.Path(current_dir / "one_host_and_several_clusters.xml")
+
+        # Creating a new WRENCH simulation
+        print(f"Instantiating a simulation...")
+        simulation = wrench.Simulation()
+
+        # Starting the simulation, with this simulated process running on the host UserHost
+        # (it is sort of week that the hostname needs to be specified first before
+        #  we get a change to call, for instance, get_all_hostnames(), which would
+        #  allow to pick a host at random).
+        user_host = "UserHost"
+        print(f"Starting the simulation using the XML platform file...")
+        simulation.start(platform_file_path, user_host)
+
+        # Get the list of all hostnames in the platform
+        print(f"Getting the list of all hostnames...")
+        list_of_hostnames = simulation.get_all_hostnames()
+
+        if not "UserHost" in list_of_hostnames:
+            raise Exception("This simulator assumes that the XML platform files has a host with hostname UserHost that"
+                            " has a disk mounted at '/'")
+        list_of_hostnames.remove("UserHost")
+
+
+        # Start a storage service on the user host
+        print(f"Starting a storage service...")
+        ss = simulation.create_simple_storage_service(user_host, ["/"])
+
+        # Creating a bare-metal compute service on ALL other hosts
+        print(f"Creating {len(list_of_hostnames)} compute services...")
+        running_bmcss = []
+        for host in list_of_hostnames:
+            bmcs = simulation.create_bare_metal_compute_service(host, {host: (-1,-1)}, "", {}, {})
+            running_bmcss.append(bmcs)
+
+        # Create a data structure that keeps track of the compute resources, which
+        # will be used for scheduling
+        print(f"Creating a convenient data structure for scheduling...")
+        compute_resources = {}
+        for bmcs in running_bmcss:
+            # print(f"Getting core counts...")
+            per_host_num_cores = bmcs.get_core_counts()
+            num_cores = per_host_num_cores[list(per_host_num_cores.keys())[0]]
+            # print(f"Getting core flop rates...")
+            per_host_core_speed = bmcs.get_core_flop_rates()
+            core_speed = per_host_core_speed[list(per_host_core_speed.keys())[0]]
+            compute_resources[bmcs] = {"num_idle_cores": num_cores, "core_speed": core_speed}
+        # print(compute_resources)
+
+        # Import the workflow from JSON
+        print(f"Importing the workflow from JSON...")
+        f = open("./sample_wfcommons_workflow.json")
+        json_doc = json.load(f)
+        workflow = simulation.create_workflow_from_json(json_doc,
+                                                        "100Mf", True, False, False, 1, 1, False, True, True)
+
+        # Create all needed files on the storage service
+        print(f"Create all file copies on the storage service...")
+        files = workflow.get_input_files()
+        for f in files:
+            ss.create_file_copy(f)
+
+        # We are now ready to schedule with workflow
+        print(f"Starting my main loop!")
+        while not workflow.is_done():
+            # Perform some scheduling, perhaps
+            # print(f"Invoking the scheduler...")
+            schedule_tasks(simulation, workflow.get_ready_tasks(), compute_resources, ss)
+
+            # Wait for next event(s)
+            # print(f"Wait for the next event...")
+            event = simulation.wait_for_next_event()
+            if event["event_type"] != "job_completion":
+                print(f"  - Event: {event}") # Should make sure it's a job completion
+                raise WRENCHException("Received an unexpected event")
+            else:
+                completed_job = event["job"]
+                completed_task_name = completed_job.get_tasks()[0].get_name()
+                print(f"Task {completed_task_name} has completed!")
+                compute_resources[event["compute_service"]]["num_idle_cores"] += 1
+
+
+        print(f"Workflow execution completed at time {simulation.get_simulated_time()}!")
+
+    except wrench.WRENCHException as e:
+        print(f"Error: {e}")
+        exit(1)
+
+if __name__ == "__main__":
+    main()

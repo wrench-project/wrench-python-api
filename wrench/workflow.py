@@ -72,12 +72,12 @@ class Workflow(SimulationItem):
 
     def get_input_files(self) -> List[File]:
         """
-        Get all input files of the workflow
+        Get the list of input files of the workflow
 
         :return: A dictionary of Task objects where task names are keys
         :rtype: List[File]
         """
-        return self.simulation._workflow_get_input_files()
+        return self.simulation._workflow_get_input_files(self)
 
     def create_workflow_from_json(self, json_object: json, reference_flop_rate: str, ignore_machine_specs: bool,
                                   redundant_dependencies: bool, ignore_cycle_creating_dependencies: bool,
@@ -115,6 +115,24 @@ class Workflow(SimulationItem):
                                                           redundant_dependencies, ignore_cycle_creating_dependencies,
                                                           min_cores_per_task, max_cores_per_task, enforce_num_cores,
                                                           ignore_avg_cpu, show_warnings)
+
+    def get_ready_tasks(self) -> List[Task]:
+        """
+        Get the list of ready tasks in the workflow
+
+        :return: A list of Task objects
+        :rtype: List[Task]
+        """
+        return self.simulation._workflow_get_ready_tasks(self)
+
+    def is_done(self) -> bool:
+        """
+        Determine whether the workflow is done
+
+        :return: True if the workflow is done, false otherwise
+        :rtype: bool
+        """
+        return self.simulation._workflow_is_done(self)
 
     def __str__(self) -> str:
         """

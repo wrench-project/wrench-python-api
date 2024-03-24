@@ -294,6 +294,7 @@ class Simulation:
         :param hostname: name of the (simulated) host on which the compute service should run
         :type hostname: str
         :param resources: compute resources as a dict of hostnames where values are tuples of #cores and ram in bytes
+                          (negative values mean: use everything available)
         :param scratch_space: the compute service's scratch space’s mount point ("" means none)
         :type scratch_space: str
         :param property_list: a property list ({} means "use all defaults")
@@ -497,12 +498,20 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/createWorkflowFromJSON",
                                           json_data=data)
         response = r.json()
+
         # Create the workflow
         workflow = Workflow(self, response["workflow_name"])
+
         # Create the tasks
         for task_name in response["tasks"]:
             workflow.tasks[task_name] = Task(self, workflow, task_name)
+
+        # Create the files
+        for file_name in response["files"]:
+            self.files[file_name] = File(self, file_name)
+
         return workflow
+
 
     ####################################################################################
     ####################################################################################
@@ -1027,6 +1036,40 @@ class Simulation:
         response = r.json()
         return response["result"]
 
+    def _get_core_flop_rates(self, cs: ComputeService) -> bool:
+        """
+        Get the map of core speeds, keyed by host name
+        :param cs: the compute service
+        :type cs: ComputeService
+        :return: A dictionary of core speeds
+        :rtype: Dict[str, float]
+        """
+        data = {"compute_service_name": cs.get_name()}
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
+                                                        f"coreFlopRates", json_data=data)
+        response = r.json()
+        to_return = {}
+        for i in range(0, len(response["hostnames"])):
+            to_return[response["hostnames"][i]] = response["flop_rates"][i]
+        return to_return
+
+    def _get_core_counts(self, cs: ComputeService) -> bool:
+        """
+        Get the map of core counts, keyed by host name
+        :param cs: the compute service
+        :type cs: ComputeService
+        :return: A dictionary of core counts
+        :rtype: Dict[str, int]
+        """
+        data = {"compute_service_name": cs.get_name()}
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
+                                                        f"coreCounts", json_data=data)
+        response = r.json()
+        to_return = {}
+        for i in range(0, len(response["hostnames"])):
+            to_return[response["hostnames"][i]] = response["core_counts"][i]
+        return to_return
+
     def _workflow_create_task(self, workflow: Workflow, name: str, flops: float, min_num_cores: int, max_num_cores: int,
                               memory: float) -> Task:
         """
@@ -1066,7 +1109,7 @@ class Simulation:
 
     def _workflow_get_input_files(self, workflow: Workflow) -> List[File]:
         """
-        Get a list of all input files of the workflow
+        Get the list of all input files of the workflow
         :param workflow: the workflow
         :type workflow: Workflow
         :return: The list of input files
@@ -1074,8 +1117,8 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
-                                                         f"{workflow.get_name()}/getInputFiles", json_data={})
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
+                                                         f"{workflow.get_name()}/inputFiles", json_data={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -1083,6 +1126,45 @@ class Simulation:
             for filename in response["files"]:
                 file_list.append(self.files[filename])
             return file_list
+        raise WRENCHException(response["failure_cause"])
+
+    def _workflow_get_ready_tasks(self, workflow: Workflow) -> List[Task]:
+        """
+        Get the list of ready tasks in the workflow
+        :param workflow: the workflow
+        :type workflow: Workflow
+        :return: A list of Task objects
+        :rtype: List[Task]
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
+                                                         f"{workflow.get_name()}/readyTasks", json_data={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            task_list = []
+            for task_name in response["tasks"]:
+                task_list.append(workflow.tasks[task_name])
+            return task_list
+        raise WRENCHException(response["failure_cause"])
+
+    def _workflow_is_done(self, workflow: Workflow) -> bool:
+        """
+        Determine whether a workflow is done
+        :param workflow: the workflow
+        :type workflow: Workflow
+        :return: True if done, false otherwise
+        :rtype: bool
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
+                                                         f"{workflow.get_name()}/isDone", json_data={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["result"]
         raise WRENCHException(response["failure_cause"])
 
     ###############################
