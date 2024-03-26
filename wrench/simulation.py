@@ -22,6 +22,8 @@ from wrench.exception import WRENCHException
 from wrench.file import File
 from wrench.file_registry_service import FileRegistryService
 from wrench.standard_job import StandardJob
+from wrench.compound_job import CompoundJob
+from wrench.sleep_action import SleepAction
 from wrench.storage_service import StorageService
 from wrench.task import Task
 from wrench.virtual_machine import VirtualMachine
@@ -60,7 +62,9 @@ class Simulation:
 
         # Simulation Item Dictionaries
         # self.tasks = {}
-        self.jobs = {}
+        self.actions = {}
+        self.standard_jobs = {}
+        self.compound_jobs = {}
         self.files = {}
         self.compute_services = {}
         self.storage_services = {}
@@ -194,8 +198,55 @@ class Simulation:
 
         response = r.json()
         if response["wrench_api_request_success"]:
-            self.jobs[response["job_name"]] = StandardJob(self, response["job_name"], tasks)
-            return self.jobs[response["job_name"]]
+            self.standard_jobs[response["job_name"]] = StandardJob(self, response["job_name"], tasks)
+            return self.standard_jobs[response["job_name"]]
+        raise WRENCHException(response["failure_cause"])
+
+    def create_compound_job(self, name: str) -> CompoundJob:
+        """
+        Create a Compound job
+
+        :param name: Name of job
+        :type str
+
+        :return: A CompoundJob object
+        :rtype: CompoundJob
+
+        :raises WRENCHException: if there is any error in the response
+        """
+
+        data = {"name": name}
+        r = self.__send_request_to_daemon(requests.get,
+                                          f"{self.daemon_url}/{self.simid}/createCompoundJob",
+                                          json_data=data)
+
+        if response["wrench_api_request_success"]:
+            self.compound_jobs[response["job_name"]] = CompoundJob(self, response["job_name"], actions)
+            return self.compound_jobs[response["job_name"]]
+        raise WRENCHException(response["failure_cause"])
+
+    def add_sleep_action(self, compound_job: CompoundJob, name: str, sleep_time: float) -> Action:
+        """
+        Add a sleep action
+
+        :param
+        :type
+
+        :return: the action name
+        :rtype: Action
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"name": name, "sleep_time": sleep_time,}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/compoundJobs/"
+                                                         f"{compound_job.get_name()}/addSleepAction", json_data=data)
+
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            sleepAction = SleepAction(self, compound_job.get_name(), response["sleep_action_name"], sleep_time)
+            compound_job.actions.append(sleepAction)
+            return sleepAction
         raise WRENCHException(response["failure_cause"])
 
     def create_workflow(self) -> Workflow:
@@ -527,7 +578,7 @@ class Simulation:
         """
         data = {"compute_service_name": cs.get_name(), "service_specific_args": service_specific_args}
         r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
-                                                         f"jobs/{job.get_name()}/submit", json_data=data)
+                                                         f"standardJobs/{job.get_name()}/submit", json_data=data)
         response = r.json()
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
@@ -1176,7 +1227,7 @@ class Simulation:
             event_dict["submit_date"] = json_event["submit_date"]
             event_dict["end_date"] = json_event["end_date"]
             event_dict["event_date"] = json_event["event_date"]
-            event_dict["job"] = self.jobs[json_event["job_name"]]
+            event_dict["standard_job"] = self.standard_jobs[json_event["job_name"]]
             return event_dict
         elif json_event["event_type"] == "job_failure":
             event_dict["event_type"] = json_event["event_type"]
@@ -1184,7 +1235,7 @@ class Simulation:
             event_dict["submit_date"] = json_event["submit_date"]
             event_dict["end_date"] = json_event["end_date"]
             event_dict["event_date"] = json_event["event_date"]
-            event_dict["job"] = self.jobs[json_event["job_name"]]
+            event_dict["standard_job"] = self.standard_jobs[json_event["job_name"]]
             event_dict["failure_cause"] = json_event["failure_cause"]
             return event_dict
 
