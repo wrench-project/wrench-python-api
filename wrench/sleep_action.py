@@ -7,12 +7,14 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 from wrench.action import Action
+from wrench.compound_job import CompoundJob
+
 
 class SleepAction(Action):
     """
-    WRENCH Action class
+    WRENCH Sleep Action class
     """
-    def __init__(self, simulation, jobname: str, name: str, sleep_time: float) -> None:
+    def __init__(self, simulation, compound_job: CompoundJob, name: str, sleep_time: float) -> None:
         """
         Constructor
 
@@ -20,13 +22,13 @@ class SleepAction(Action):
         :type simulation
         :param name: job name
         :type name: str
-        :param name: action name
+        :param name: name of sleep action
         :type name: str
-        :param sleep_time: sleep time
+        :param sleep_time: time to sleep
         :type sleep_time: float
         """
         self.sleep_time = sleep_time
-        super().__init__(simulation, jobname, name)
+        super().__init__(simulation, name, compound_job)
 
     def get_sleep_time(self) -> float:
         """

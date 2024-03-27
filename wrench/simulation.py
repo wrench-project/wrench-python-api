@@ -23,7 +23,13 @@ from wrench.file import File
 from wrench.file_registry_service import FileRegistryService
 from wrench.standard_job import StandardJob
 from wrench.compound_job import CompoundJob
+from wrench.action import Action
 from wrench.sleep_action import SleepAction
+from wrench.compute_action import ComputeAction
+from wrench.file_copy_action import FileCopyAction
+from wrench.file_delete_action import FileDeleteAction
+from wrench.file_write_action import FileWriteAction
+from wrench.file_read_action import FileReadAction
 from wrench.storage_service import StorageService
 from wrench.task import Task
 from wrench.virtual_machine import VirtualMachine
@@ -204,7 +210,7 @@ class Simulation:
         Create a Compound job
 
         :param name: Name of job
-        :type str
+        :type name: str
 
         :return: A CompoundJob object
         :rtype: CompoundJob
@@ -217,34 +223,267 @@ class Simulation:
                                           f"{self.daemon_url}/{self.simid}/createCompoundJob",
                                           json_data=data)
 
+        response = r.json()
+
         if response["wrench_api_request_success"]:
-            self.compound_jobs[response["job_name"]] = CompoundJob(self, response["job_name"], actions)
+            self.compound_jobs[response["job_name"]] = CompoundJob(self, response["job_name"])
             return self.compound_jobs[response["job_name"]]
         raise WRENCHException(response["failure_cause"])
 
-    def add_sleep_action(self, compound_job: CompoundJob, name: str, sleep_time: float) -> Action:
+    def add_compute_action(self, compound_job: CompoundJob, name: str, flops: float, ram: float,
+                           max_num_cores: int, min_num_cores: int, parallel_model: tuple) -> Action:
         """
-        Add a sleep action
+        Add a compute action
 
-        :param
-        :type
+        :param compound_job: compound job object this action is a part of
+        :type compound_job: CompoundJob
+        :param name: name of compute action
+        :type name: str
+        :param flops: number of flops this action has
+        :type flops: float
+        :param ram: amount of ram this action has
+        :type ram: float
+        :param max_num_cores: maximum number of cores this action can have
+        :type max_num_cores: long
+        :param min_num_cores: minimum number of cores this action can have
+        :type min_num_cores: long
+        :param parallel_model: type of parallel model and settings for it
+        :type parallel_model: tuple
 
         :return: the action name
         :rtype: Action
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {"name": name, "sleep_time": sleep_time,}
+        data = {"name": name, "flops": flops, "ram": ram,
+                "min_num_cores": min_num_cores,  "max_num_cores": max_num_cores, "parallel_model": parallel_model}
+
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/compoundJobs/"
+                                                         f"{compound_job.get_name()}/addComputeAction", json_data=data)
+
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            compute_action = ComputeAction(self, compound_job, response["name"], flops, ram,
+                                           min_num_cores, max_num_cores, parallel_model)
+            compound_job.actions.append(compute_action)
+            return compute_action
+        raise WRENCHException(response["failure_cause"])
+
+    def add_file_copy_action(self, compound_job: CompoundJob, name: str, file: File,
+                             src_storage_service: StorageService, dest_storage_service: StorageService) -> Action:
+        """
+        Add a file copy action
+
+        :param self: simulation object
+        :type self: simulation
+        :param compound_job: compound job object
+        :type compound_job: CompoundJob
+        :param name: name of file copy action
+        :type name: str
+        :param file: name of file being copied
+        :type file: File
+        :param src_storage_service: source storage service being copied from
+        :type src_storage_service: StorageService
+        :param dest_storage_service: destination storage service being copied to
+        :type dest_storage_service: StorageService
+
+        :return: the action name
+        :rtype: Action
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"name": name, "file_name": file.get_name(), "src_storage_service_name": src_storage_service.get_name(),
+                "dest_storage_service_name": dest_storage_service.get_name()}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/compoundJobs/"
+                                                         f"{compound_job.get_name()}/addFileCopyAction", json_data=data)
+
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            if response["uses_scratch"] == "1":
+                uses_scratch = True
+            else:
+                uses_scratch = False
+
+            file_copy_action = FileCopyAction(self, compound_job, response["name"], file, src_storage_service,
+                                              dest_storage_service, uses_scratch)
+            compound_job.actions.append(file_copy_action)
+            return file_copy_action
+        raise WRENCHException(response["failure_cause"])
+
+    def add_file_delete_action(self, compound_job: CompoundJob, name: str, file: File,
+                               storage_service: StorageService) -> Action:
+        """
+        Add a file delete action
+
+        :param self: simulation object
+        :type self: simulation
+        :param compound_job: compound job object
+        :type compound_job: CompoundJob
+        :param name: name of file delete action
+        :type name: str
+        :param file: name of file being deleted
+        :type file: File
+        :param storage_service: storage service file is deleted from
+        :type storage_service: StorageService
+
+        :return: the action name
+        :rtype: Action
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"name": name, "file_name": file.get_name(), "storage_service_name": storage_service.get_name()}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/compoundJobs/"
+                                                         f"{compound_job.get_name()}/addFileDeleteAction",
+                                                         json_data=data)
+
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            if response["uses_scratch"] == "1":
+                uses_scratch = True
+            else:
+                uses_scratch = False
+
+            file_delete_action = FileDeleteAction(self, compound_job, response["name"], file, storage_service,
+                                                  uses_scratch)
+            compound_job.actions.append(file_delete_action)
+            return file_delete_action
+        raise WRENCHException(response["failure_cause"])
+
+    def add_file_write_action(self, compound_job: CompoundJob, name: str, file: File,
+                              storage_service: StorageService) -> Action:
+        """
+        Add a file write action
+
+        :param self: simulation object
+        :type self: simulation
+        :param compound_job: compound job object
+        :type compound_job: CompoundJob
+        :param name: name of file write action
+        :type name: str
+        :param file: name of file to write
+        :type file: File
+        :param storage_service: storage service to write the file to
+        :type storage_service: StorageService
+
+        :return: the action name
+        :rtype: Action
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"name": name, "file_name": file.get_name(), "storage_service_name": storage_service.get_name()}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/compoundJobs/"
+                                                         f"{compound_job.get_name()}/addFileWriteAction",
+                                                         json_data=data)
+
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            if response["uses_scratch"] == "1":
+                uses_scratch = True
+            else:
+                uses_scratch = False
+
+            file_write_action = FileWriteAction(self, compound_job, response["name"], file, storage_service,
+                                                uses_scratch)
+            compound_job.actions.append(file_write_action)
+            return file_write_action
+        raise WRENCHException(response["failure_cause"])
+
+    def add_file_read_action(self, compound_job: CompoundJob, name: str, file: File, storage_service: StorageService,
+                             num_bytes_to_read: float) -> Action:
+        """
+        Add a file write action
+
+        :param self: simulation object
+        :type self: simulation
+        :param compound_job: compound job object
+        :type compound_job: CompoundJob
+        :param name: name of file write action
+        :type name: str
+        :param file: name of file to write
+        :type file: File
+        :param storage_service: storage service to write the file to
+        :type storage_service: StorageService
+
+        :return: the action name
+        :rtype: Action
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"name": name, "file_name": file.get_name(), "storage_service_name": storage_service.get_name(),
+                "num_bytes_to_read": num_bytes_to_read}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/compoundJobs/"
+                                                         f"{compound_job.get_name()}/addFileReadAction",
+                                                         json_data=data)
+
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            if response["uses_scratch"] == "1":
+                uses_scratch = True
+            else:
+                uses_scratch = False
+
+            file_read_action = FileReadAction(self, compound_job, response["name"], file, storage_service,
+                                                response["num_bytes_to_read"], uses_scratch)
+            compound_job.actions.append(file_read_action)
+            return file_read_action
+        raise WRENCHException(response["failure_cause"])
+
+    def add_sleep_action(self, compound_job: CompoundJob, name: str, sleep_time: float) -> Action:
+        """
+        Add a sleep action
+
+        :param compound_job: compound job object this action is a part of
+        :type compound_job: CompoundJob
+        :param name: name of sleep action
+        :type name: str
+        :param sleep_time: time to sleep
+        :type sleep_time: float
+
+        :return: the action name
+        :rtype: Action
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"name": name, "sleep_time": sleep_time}
         r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/compoundJobs/"
                                                          f"{compound_job.get_name()}/addSleepAction", json_data=data)
 
         response = r.json()
 
         if response["wrench_api_request_success"]:
-            sleepAction = SleepAction(self, compound_job.get_name(), response["sleep_action_name"], sleep_time)
-            compound_job.actions.append(sleepAction)
-            return sleepAction
+            sleep_action = SleepAction(self, compound_job, response["sleep_action_name"], sleep_time)
+            compound_job.actions.append(sleep_action)
+            return sleep_action
         raise WRENCHException(response["failure_cause"])
+
+    def add_parent_job(self, compound_job: CompoundJob, parent_compound_job: CompoundJob) -> None:
+        """
+        Add a parent compound job to this compound job
+
+        :param compound_job: compound job object
+        :type compound_job: CompoundJob
+        :param parent_compound_job: parent compound job
+        :type compound_job: CompoundJob
+
+        :return:
+
+        :raises WRENCHException: if there is any error in the response
+        """
+
+        data = {"parent_compound_job": parent_compound_job.get_name()}
+        r = self.__send_request_to_daemon(requests.get,
+                                          f"{self.daemon_url}/{self.simid}/{compound_job.get_name()}/addParentJob",
+                                          json_data=data)
+
+        response = r.json()
+
+        if not response["wrench_api_request_success"]:
+            raise WRENCHException(response["failure_cause"])
 
     def create_workflow(self) -> Workflow:
         """

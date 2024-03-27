@@ -110,8 +110,8 @@ if __name__ == "__main__":
 
         print("Creating a VM on the cloud compute service...")
         my_vm = ccs.create_vm(1, 100,
-                                {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
-                                {})
+                              {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},{})
+
         print("Starting the VM...")
         vm_cs = my_vm.start()
 
