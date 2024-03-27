@@ -22,7 +22,6 @@ class FileReadAction(Action):
 
         """
         Constructor
-
         :param simulation: simulation object
         :type simulation
         :param compound_job: compound job object
@@ -47,7 +46,6 @@ class FileReadAction(Action):
     def get_file(self) -> File:
         """
         Get file being read
-
         :return: file
         :rtype: File
         """
@@ -56,7 +54,6 @@ class FileReadAction(Action):
     def get_file_location(self) -> StorageService:
         """
         Get storage service file is located in
-
         :return: storage service object
         :rtype: StorageService
         """
@@ -65,7 +62,6 @@ class FileReadAction(Action):
     def get_num_bytes_to_read(self) -> float:
         """
         Get number of bytes to read from file
-
         :return: amount of bytes being read
         :rtype: float
         """
@@ -74,18 +70,16 @@ class FileReadAction(Action):
     def get_used_file_location(self) -> StorageService:
         """
         Get source storage service
-
         :return: source storage service object
         :rtype: StorageService
         """
-        if (self.get_state() == self.ActionState.COMPLETED)
+        if (self.get_state() == self.ActionState.COMPLETED):
             return self.storage_service
         #throw exception?
 
     def uses_scratch(self) -> bool:
         """
         Returns whether the action uses scratch
-
         :return: boolean on whether action uses scratch
         :rtype: boolean
         """

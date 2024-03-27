@@ -396,23 +396,21 @@ class Simulation:
         raise WRENCHException(response["failure_cause"])
 
     def add_file_read_action(self, compound_job: CompoundJob, name: str, file: File, storage_service: StorageService,
-                             num_bytes_to_read: float) -> Action:
+                             num_bytes_to_read: float) -> FileReadAction:
         """
-        Add a file write action
-
-        :param self: simulation object
-        :type self: simulation
-        :param compound_job: compound job object
-        :type compound_job: CompoundJob
-        :param name: name of file write action
+        Add a file read action
+        :param compound_job: the action's compound job
+        :type compound_job: str
+        :param name: name of the action
         :type name: str
-        :param file: name of file to write
+        :param file: the file to read
         :type file: File
-        :param storage_service: storage service to write the file to
+        :param storage_service: the storage service the file is stored in
         :type storage_service: StorageService
-
+        :param num_bytes_to_read: the number of bytes to read from the file
+        :type num_bytes_to_read: float
         :return: the action name
-        :rtype: Action
+        :rtype: FileReadAction
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -430,7 +428,7 @@ class Simulation:
             else:
                 uses_scratch = False
 
-            file_read_action = FileReadAction(self, compound_job, response["name"], file, storage_service,
+            file_read_action = FileReadAction(self, compound_job, response["action_name"], file, storage_service,
                                                 response["num_bytes_to_read"], uses_scratch)
             compound_job.actions.append(file_read_action)
             return file_read_action
