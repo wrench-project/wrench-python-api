@@ -33,7 +33,7 @@ def pick_task_to_schedule(tasks: List[Task]):
     return target_task
 
 
-def pick_target_cs(compute_resources: Dict[ComputeService, Dict[str, float]]):
+def pick_target_cs(compute_resources: Dict[ComputeService, Dict[str, float]], desired_num_cores: int) -> Task:
     """
     A method to select a compute service on which to schedule a task. Right now,
     just selects the compute service with the largest flop rate
@@ -43,7 +43,7 @@ def pick_target_cs(compute_resources: Dict[ComputeService, Dict[str, float]]):
     target_cs = None
     for cs in compute_resources:
         # If there are no idle cores, don't consider this resource
-        if compute_resources[cs]["num_idle_cores"] == 0:
+        if compute_resources[cs]["num_idle_cores"] < desired_num_cores:
             continue
         if compute_resources[cs]["core_speed"] > max_core_speed:
             max_core_speed = compute_resources[cs]["core_speed"]
@@ -54,7 +54,7 @@ def pick_target_cs(compute_resources: Dict[ComputeService, Dict[str, float]]):
 def schedule_tasks(simulation: Simulation, tasks_to_schedule: List[Task],
                    compute_resources: Dict[ComputeService, Dict[str, float]], storage_service):
     """
-    A method that schedules tasks, if possible
+    A method that schedules tasks, using list scheduling, if possible
     """
 
     while True:
@@ -64,8 +64,9 @@ def schedule_tasks(simulation: Simulation, tasks_to_schedule: List[Task],
 
         # Pick one of the tasks for scheduling
         task_to_schedule = pick_task_to_schedule(tasks_to_schedule)
-        # Pick one of the compute services on which to schedule the task
-        target_cs = pick_target_cs(compute_resources)
+        # Pick one of the compute services on which to schedule the task,
+        # using the minimum number of cores for the task
+        target_cs = pick_target_cs(compute_resources, task_to_schedule.get_min_num_cores())
 
         # If we didn't find a compute service, we're done
         if target_cs is None:
