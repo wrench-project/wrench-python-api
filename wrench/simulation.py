@@ -820,6 +820,24 @@ class Simulation:
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
 
+    def _submit_compound_job(self, job: CompoundJob, cs: ComputeService, service_specific_args="{}") -> None:
+        """
+        Submit a compound job to a compute service
+
+        :param job: the job
+        :type job: CompoundJob
+        :param cs: the compute service
+        :type cs: ComputeService
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"compute_service_name": cs.get_name(), "service_specific_args": service_specific_args}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
+                                                         f"compoundJobs/{job.get_name()}/submit", json_data=data)
+        response = r.json()
+        if not response["wrench_api_request_success"]:
+            raise WRENCHException(response["failure_cause"])
+
     def _create_file_copy_at_storage_service(self, file: File, storage_service: StorageService):
         """
         Create a copy (ex nihilo) of a file at a storage service
