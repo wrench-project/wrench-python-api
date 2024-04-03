@@ -278,7 +278,7 @@ class Simulation:
         :return: the simulation date
         :rtype: float
         """
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/getTime", {})
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/getTime", json_data={})
 
         response = r.json()
         return response["time"]
@@ -722,12 +722,11 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {}
         r = self.__send_request_to_daemon(requests.get,
                                           f"{self.daemon_url}/{self.simid}/"
                                           f"{task.get_workflow().get_name()}/tasks/"
                                           f"{task.get_name()}/taskGetMinNumCores",
-                                          json_data=data)
+                                          json_data={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -745,12 +744,11 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {}
         r = self.__send_request_to_daemon(requests.get,
                                           f"{self.daemon_url}/{self.simid}/"
                                           f"{task.get_workflow().get_name()}/tasks/"
                                           f"{task.get_name()}/taskGetMaxNumCores",
-                                          json_data=data)
+                                          json_data={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -768,11 +766,10 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {}
         r = self.__send_request_to_daemon(requests.get,
                                           f"{self.daemon_url}/{self.simid}/"
                                           f"{task.get_workflow().get_name()}/tasks/"
-                                          f"{task.get_name()}/taskGetMemory", json_data=data)
+                                          f"{task.get_name()}/taskGetMemory", json_data={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -921,6 +918,7 @@ class Simulation:
         :return: True or False
         :rtype: bool
         """
+        # TODO: PUT IT ALL IN THE URL
         data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
                                                         f"isVMRunning", json_data=data)
@@ -938,6 +936,7 @@ class Simulation:
         :return: True or False
         :rtype: bool
         """
+        # TODO: PUT IT ALL IN THE URL
         data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
                                                         f"isVMDown", json_data=data)
@@ -953,6 +952,7 @@ class Simulation:
         :param vm: the VM
         :type vm: VirtualMachine
         """
+        # TODO: PUT IT ALL IN THE URL
         data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
         r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
                                                          f"suspendVM", json_data=data)
@@ -970,6 +970,7 @@ class Simulation:
         :return: True or False
         :rtype: bool
         """
+        # TODO: PUT IT ALL IN THE URL
         data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
                                                         f"isVMSuspended", json_data=data)
@@ -985,6 +986,7 @@ class Simulation:
         :param vm: the VM
         :type vm: VirtualMachine
         """
+        # TODO: PUT IT ALL IN THE URL
         data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
         r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
                                                          f"resumeVM", json_data=data)
@@ -1002,6 +1004,7 @@ class Simulation:
         :return: True or False
         :rtype: bool
         """
+        # TODO: PUT IT ALL IN THE URL
         data = {"compute_service_name": cs.get_name()}
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
                                                         f"supportsCompoundJobs", json_data=data)
@@ -1016,6 +1019,7 @@ class Simulation:
         :return: True or False
         :rtype: bool
         """
+        # TODO: PUT IT ALL IN THE URL
         data = {"compute_service_name": cs.get_name()}
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
                                                         f"supportsPilotJobs", json_data=data)
@@ -1030,6 +1034,7 @@ class Simulation:
         :return: True or False
         :rtype: bool
         """
+        # TODO: PUT IT ALL IN THE URL
         data = {"compute_service_name": cs.get_name()}
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
                                                         f"supportsStandardJobs", json_data=data)
@@ -1044,6 +1049,7 @@ class Simulation:
         :return: A dictionary of core speeds
         :rtype: Dict[str, float]
         """
+        # TODO: PUT IT ALL IN THE URL
         data = {"compute_service_name": cs.get_name()}
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
                                                         f"coreFlopRates", json_data=data)
@@ -1061,6 +1067,7 @@ class Simulation:
         :return: A dictionary of core counts
         :rtype: Dict[str, int]
         """
+        # TODO: PUT IT ALL IN THE URL
         data = {"compute_service_name": cs.get_name()}
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
                                                         f"coreCounts", json_data=data)
