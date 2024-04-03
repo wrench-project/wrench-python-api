@@ -551,7 +551,7 @@ class Simulation:
         """
         data = {"filename": file.get_name()}
         r = self.__send_request_to_daemon(requests.post,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/storage_services/"
                                           f"{storage_service.get_name()}/createFileCopy", json_data=data)
         response = r.json()
         if not response["wrench_api_request_success"]:
@@ -573,7 +573,7 @@ class Simulation:
         """
         data = {"filename": file.get_name()}
         r = self.__send_request_to_daemon(requests.post,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/storage_services/"
                                           f"{storage_service.get_name()}/lookupFile", json_data=data)
         response = r.json()
         if not response["wrench_api_request_success"]:
@@ -919,7 +919,7 @@ class Simulation:
         :rtype: bool
         """
         # data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/{vm.get_cloud_compute_service().get_name()}/vms/{vm.get_name()}/"
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/cloud_compute_services/{vm.get_cloud_compute_service().get_name()}/vms/{vm.get_name()}/"
                                                         f"isVMRunning", json_data={})
         response = r.json()
 
