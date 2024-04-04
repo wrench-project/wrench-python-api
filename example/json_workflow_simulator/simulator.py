@@ -64,6 +64,9 @@ def schedule_tasks(simulation: Simulation, tasks_to_schedule: List[Task],
 
         # Pick one of the tasks for scheduling
         task_to_schedule = pick_task_to_schedule(tasks_to_schedule)
+        if task_to_schedule is None:
+            break
+
         # Pick one of the compute services on which to schedule the task,
         # using the minimum number of cores for the task
         target_cs = pick_target_cs(compute_resources, task_to_schedule.get_min_num_cores())
