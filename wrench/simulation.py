@@ -477,7 +477,7 @@ class Simulation:
         """
 
         data = {"parent_compound_job": parent_compound_job.get_name()}
-        r = self.__send_request_to_daemon(requests.get,
+        r = self.__send_request_to_daemon(requests.post,
                                           f"{self.daemon_url}/{self.simid}/{compound_job.get_name()}/addParentJob",
                                           json_data=data)
 
