@@ -11,6 +11,7 @@ from wrench.compound_job import CompoundJob
 from wrench.file import File
 from wrench.storage_service import StorageService
 
+
 class FileReadAction(Action):
     """
     WRENCH Action class
@@ -18,8 +19,6 @@ class FileReadAction(Action):
 
     def __init__(self, simulation, compound_job: CompoundJob, name: str, file: File, storage_service: StorageService,
                  num_bytes_to_read: float, uses_scratch: bool) -> None:
-
-
         """
         Constructor
         :param simulation: simulation object
@@ -46,7 +45,10 @@ class FileReadAction(Action):
     def get_file(self) -> File:
         """
         Get file being read
+        Updated upstream
         :return: file
+
+        :return: file object
         :rtype: File
         """
         return self.file
@@ -67,15 +69,18 @@ class FileReadAction(Action):
         """
         return self.num_bytes_to_read
 
-    def get_used_file_location(self) -> StorageService:
-        """
-        Get source storage service
-        :return: source storage service object
-        :rtype: StorageService
-        """
-        if (self.get_state() == self.ActionState.COMPLETED):
-            return self.storage_service
-        #throw exception?
+    # def get_used_file_location(self) -> StorageService:
+    #     """
+    #     Get source storage service
+    #     :return: source storage service object
+    #     :rtype: StorageService
+    #     """
+    #     if (self.get_state() == self.ActionState.COMPLETED):
+    #         return self.storage_service
+    #     #throw exception?
+    #
+    #     return #CALL TO SERVER
+
 
     def uses_scratch(self) -> bool:
         """

@@ -22,6 +22,9 @@ class Action(SimulationItem):
         KILLED = 4
         FAILED = 5
 
+    getState-> return int
+
+
     def __init__(self, simulation, name: str, compound_job: CompoundJob) -> None:
         """
         Constructor
