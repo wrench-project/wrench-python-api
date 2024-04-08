@@ -222,7 +222,7 @@ class Simulation:
         """
 
         data = {"name": name}
-        r = self.__send_request_to_daemon(requests.get,
+        r = self.__send_request_to_daemon(requests.post,
                                           f"{self.daemon_url}/{self.simid}/createCompoundJob",
                                           json_data=data)
 
