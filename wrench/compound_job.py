@@ -6,13 +6,18 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-from wrench.simulation_item import SimulationItem
 
+from __future__ import annotations
+
+from wrench.simulation_item import SimulationItem
 from wrench.file import File
 from wrench.storage_service import StorageService
 
 from typing import List
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from wrench.compound_job import CompoundJob
 
 class CompoundJob(SimulationItem):
     """
@@ -124,7 +129,7 @@ class CompoundJob(SimulationItem):
         """
         return self.simulation._add_sleep_action(self, name, sleep_time)
 
-    def add_parent_job(self, parent_compound_job) -> None:
+    def add_parent_job(self, parent_compound_job: CompoundJob):
         """
         Add a parent compound job to this compound job
         :param parent_compound_job: name of parent compound job

@@ -10,20 +10,21 @@ from wrench.simulation_item import SimulationItem
 from wrench.compound_job import CompoundJob
 from enum import Enum
 
+
 class Action(SimulationItem):
     """
     WRENCH Action class
     """
-    class ActionState(Enum):
-        NOT_READY = 0
-        READY = 1
-        STARTED = 2
-        COMPLETED = 3
-        KILLED = 4
-        FAILED = 5
 
-    getState-> return int
-
+    # class ActionState(Enum):
+    #     NOT_READY = 0
+    #     READY = 1
+    #     STARTED = 2
+    #     COMPLETED = 3
+    #     KILLED = 4
+    #     FAILED = 5
+    #
+    # getState-> return int
 
     def __init__(self, simulation, name: str, compound_job: CompoundJob) -> None:
         """

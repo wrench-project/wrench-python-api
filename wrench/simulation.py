@@ -1031,7 +1031,7 @@ class Simulation:
         raise WRENCHException(response["failure_cause"])
 
     def _add_file_read_action(self, compound_job: CompoundJob, name: str, file: File, storage_service: StorageService,
-                             num_bytes_to_read: float) -> FileReadAction:
+                             num_bytes_to_read: float) -> Action:
         """
         Add a file read action
         :param compound_job: the action's compound job
@@ -1045,7 +1045,7 @@ class Simulation:
         :param num_bytes_to_read: the number of bytes to read from the file
         :type num_bytes_to_read: float
         :return: the action name
-        :rtype: FileReadAction
+        :rtype: Action
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -1063,7 +1063,7 @@ class Simulation:
             else:
                 uses_scratch = False
 
-            file_read_action = FileReadAction(self, compound_job, response["action_name"], file, storage_service,
+            file_read_action = FileReadAction(self, compound_job, response["name"], file, storage_service,
                                                 response["num_bytes_to_read"], uses_scratch)
             compound_job.actions.append(file_read_action)
             return file_read_action
@@ -1115,11 +1115,13 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.post,
                                           f"{self.daemon_url}/{self.simid}/{compound_job.get_name()}/addParentJob",
                                           json_data=data)
-
+        print(r)
         response = r.json()
 
-        if not response["wrench_api_request_success"]:
-            raise WRENCHException(response["failure_cause"])
+
+        if response["wrench_api_request_success"]:
+            return
+        raise WRENCHException(response["failure_cause"])
 
     def _create_vm(self,
                    service: CloudComputeService,

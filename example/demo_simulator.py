@@ -73,13 +73,13 @@ if __name__ == "__main__":
         print(f"File Write Action uses_scratch = {fwa.uses_scratch}")
 
         # Add a file read action to compound job
-        # fra = cj.add_file_read_action("FileReadAction1", file1, ss1)
-        # print(f"Adding {fra.get_name()} to {cj.get_name()}")
-        #
-        # print(f"File Read Action get_file = {fra.get_file()}")
-        # print(f"File Read Action get_file_location = {fra.get_file_location()}")
-        # print(f"File Read Action get_num_bytes_to_read = {fra.get_file_location()}")
-        # print(f"File Read Action uses_scratch = {fra.uses_scratch}")
+        fra = cj.add_file_read_action("FileReadAction1", file1, ss1)
+        print(f"Adding {fra.get_name()} to {cj.get_name()}")
+
+        print(f"File Read Action get_file = {fra.get_file()}")
+        print(f"File Read Action get_file_location = {fra.get_file_location()}")
+        print(f"File Read Action get_num_bytes_to_read = {fra.get_file_location()}")
+        print(f"File Read Action uses_scratch = {fra.uses_scratch}")
 
         # Add a file copy action to compound job
         fca = cj.add_file_copy_action("FileCopyAction1", file1, ss1, ss2)
@@ -104,17 +104,17 @@ if __name__ == "__main__":
 
         print(f"Sleep Action getSleepTime = {sa.get_sleep_time()}")
 
-        # Add a parent compound job to another compound job
-        cj2_0 = simulation.create_compound_job("CompoundJob2_0")
+        # # Add a parent compound job to another compound job
+        cj2_0 = simulation.create_compound_job("")
         print(f"Created compound job with name {cj2_0.get_name()}")
         cj2_0.add_sleep_action("SleepAction2", 2.0)
 
-        cj2_1 = simulation.create_compound_job("CompoundJob2_1")
+        cj2_1 = simulation.create_compound_job("")
         print(f"Created compound job with name {cj2_1.get_name()}")
         cj2_1.add_sleep_action("SleepAction3", 2.0)
 
-        # print("Adding parent compound job")
-        # cj2_1.add_parent_job(cj2_0)
+        print("Adding parent compound job")
+        cj2_1.add_parent_job(cj2_0)
 
         print(f"Time before submitting compound jobs 2/3 is {simulation.get_simulated_time()}")
 
@@ -126,7 +126,7 @@ if __name__ == "__main__":
         # Get the actions of compound job
         print(f"Compound Job's get_actions = {cj.get_actions()}")
 
-        print("Submitting the standard job to the base metal compute service...")
+        print("Submitting the compound job to the base metal compute service...")
         bmcs.submit_compound_job(cj)
 
         print(f"Time is {simulation.get_simulated_time()}")
