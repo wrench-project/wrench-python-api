@@ -199,7 +199,7 @@ class Simulation:
 
         data = {"tasks": task_names, "file_locations": file_locations_specs}
         r = self.__send_request_to_daemon(requests.put,
-                                          f"{self.daemon_url}/{self.simid}/{workflow.get_name()}/createStandardJob",
+                                          f"{self.daemon_url}/{self.simid}/workflows/{workflow.get_name()}/createStandardJob",
                                           json_data=data)
 
         response = r.json()
@@ -316,7 +316,7 @@ class Simulation:
         :return: the simulation date
         :rtype: float
         """
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/getTime", {})
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/getTime", json_data={})
 
         response = r.json()
         return response["time"]
@@ -332,6 +332,7 @@ class Simulation:
         :param hostname: name of the (simulated) host on which the compute service should run
         :type hostname: str
         :param resources: compute resources as a dict of hostnames where values are tuples of #cores and ram in bytes
+                          (negative values mean: use everything available)
         :param scratch_space: the compute service's scratch space’s mount point ("" means none)
         :type scratch_space: str
         :param property_list: a property list ({} means "use all defaults")
@@ -535,12 +536,20 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/createWorkflowFromJSON",
                                           json_data=data)
         response = r.json()
+
         # Create the workflow
         workflow = Workflow(self, response["workflow_name"])
+
         # Create the tasks
         for task_name in response["tasks"]:
             workflow.tasks[task_name] = Task(self, workflow, task_name)
+
+        # Create the files
+        for file_name in response["files"]:
+            self.files[file_name] = File(self, file_name)
+
         return workflow
+
 
     ####################################################################################
     ####################################################################################
@@ -598,7 +607,7 @@ class Simulation:
         """
         data = {"filename": file.get_name()}
         r = self.__send_request_to_daemon(requests.post,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/storage_services/"
                                           f"{storage_service.get_name()}/createFileCopy", json_data=data)
         response = r.json()
         if not response["wrench_api_request_success"]:
@@ -620,7 +629,7 @@ class Simulation:
         """
         data = {"filename": file.get_name()}
         r = self.__send_request_to_daemon(requests.post,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/storage_services/"
                                           f"{storage_service.get_name()}/lookupFile", json_data=data)
         response = r.json()
         if not response["wrench_api_request_success"]:
@@ -640,7 +649,7 @@ class Simulation:
         """
         data = {"file": file.get_name()}
         r = self.__send_request_to_daemon(requests.put,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/"
                                           f"{task.get_name()}/addInputFile", json_data=data)
 
@@ -661,7 +670,7 @@ class Simulation:
         """
         data = {"file": file.get_name()}
         r = self.__send_request_to_daemon(requests.put,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/"
                                           f"{task.get_name()}/addOutputFile", json_data=data)
 
@@ -681,7 +690,7 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/workflows/"
                                                         f"{task.get_workflow().get_name()}/tasks/"
                                                         f"{task.get_name()}/inputFiles", json_data={})
 
@@ -705,7 +714,7 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/workflows/"
                                                         f"{task.get_workflow().get_name()}/tasks/"
                                                         f"{task.get_name()}/outputFiles", json_data={})
 
@@ -748,7 +757,7 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/"
                                           f"{task.get_name()}/taskGetFlops",
                                           json_data={})
@@ -769,12 +778,11 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {}
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/"
                                           f"{task.get_name()}/taskGetMinNumCores",
-                                          json_data=data)
+                                          json_data={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -792,12 +800,11 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {}
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/"
                                           f"{task.get_name()}/taskGetMaxNumCores",
-                                          json_data=data)
+                                          json_data={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -815,11 +822,10 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {}
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/"
-                                          f"{task.get_name()}/taskGetMemory", json_data=data)
+                                          f"{task.get_name()}/taskGetMemory", json_data={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -838,7 +844,7 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/{task.get_name()}/"
                                           f"taskGetStartDate", json_data={})
 
@@ -859,7 +865,7 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/{task.get_name()}/"
                                           f"taskGetEndDate", json_data={})
 
@@ -1148,11 +1154,11 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
 
-        data = {"service_name": service.get_name(), "num_cores": num_cores, "ram_memory": ram_memory,
+        data = {"num_cores": num_cores, "ram_memory": ram_memory,
                 "property_list": json.dumps(property_list),
                 "message_payload_list": json.dumps(message_payload_list)}
 
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/cloud_compute_services/{service.get_name()}/"
                                                          f"createVM", json_data=data)
         response = r.json()
 
@@ -1168,10 +1174,10 @@ class Simulation:
         :return: A bare metal compute service
         :rtype: BareMetalComputeService
         """
-        data = {"service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
+        # data = {"service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
 
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
-                                                         f"startVM", json_data=data)
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/cloud_compute_services/{vm.get_cloud_compute_service().get_name()}/vms/{vm.get_name()}/"
+                                                         f"startVM", json_data={})
         response = r.json()
 
         if response["wrench_api_request_success"]:
@@ -1187,10 +1193,10 @@ class Simulation:
         :type vm: VirtualMachine
         """
 
-        data = {"service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
+        # data = {"service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
 
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
-                                                         f"shutdownVM", json_data=data)
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/cloud_compute_services/{vm.get_cloud_compute_service().get_name()}/vms/{vm.get_name()}/"
+                                                         f"shutdownVM", json_data={})
         response = r.json()
 
         if response["wrench_api_request_success"]:
@@ -1204,10 +1210,10 @@ class Simulation:
         :type vm: VirtualMachine
         """
 
-        data = {"service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
+        # data = {"service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
 
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
-                                                         f"destroyVM", json_data=data)
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/cloud_compute_services/{vm.get_cloud_compute_service().get_name()}/vms/{vm.get_name()}/"
+                                                         f"destroyVM", json_data={})
         response = r.json()
 
         if response["wrench_api_request_success"]:
@@ -1222,9 +1228,9 @@ class Simulation:
         :return: True or False
         :rtype: bool
         """
-        data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
-                                                        f"isVMRunning", json_data=data)
+        # data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/cloud_compute_services/{vm.get_cloud_compute_service().get_name()}/vms/{vm.get_name()}/"
+                                                        f"isVMRunning", json_data={})
         response = r.json()
 
         if response["wrench_api_request_success"]:
@@ -1239,9 +1245,9 @@ class Simulation:
         :return: True or False
         :rtype: bool
         """
-        data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
-                                                        f"isVMDown", json_data=data)
+        # data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/cloud_compute_services/{vm.get_cloud_compute_service().get_name()}/vms/{vm.get_name()}/"
+                                                        f"isVMDown", json_data={})
         response = r.json()
 
         if response["wrench_api_request_success"]:
@@ -1254,9 +1260,9 @@ class Simulation:
         :param vm: the VM
         :type vm: VirtualMachine
         """
-        data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
-                                                         f"suspendVM", json_data=data)
+        # data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/cloud_compute_services/{vm.get_cloud_compute_service().get_name()}/vms/{vm.get_name()}/"
+                                                         f"suspendVM", json_data={})
         response = r.json()
 
         if response["wrench_api_request_success"]:
@@ -1271,9 +1277,9 @@ class Simulation:
         :return: True or False
         :rtype: bool
         """
-        data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
-                                                        f"isVMSuspended", json_data=data)
+        # data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/cloud_compute_services/{vm.get_cloud_compute_service().get_name()}/vms/{vm.get_name()}/"
+                                                        f"isVMSuspended", json_data={})
         response = r.json()
 
         if response["wrench_api_request_success"]:
@@ -1286,9 +1292,9 @@ class Simulation:
         :param vm: the VM
         :type vm: VirtualMachine
         """
-        data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
-                                                         f"resumeVM", json_data=data)
+        # data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/cloud_compute_services/{vm.get_cloud_compute_service().get_name()}/vms/{vm.get_name()}/"
+                                                         f"resumeVM", json_data={})
         response = r.json()
 
         if response["wrench_api_request_success"]:
@@ -1303,9 +1309,8 @@ class Simulation:
         :return: True or False
         :rtype: bool
         """
-        data = {"compute_service_name": cs.get_name()}
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
-                                                        f"supportsCompoundJobs", json_data=data)
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/compute_services/{cs.get_name()}/"
+                                                        f"supportsCompoundJobs", json_data={})
         response = r.json()
         return response["result"]
 
@@ -1317,9 +1322,8 @@ class Simulation:
         :return: True or False
         :rtype: bool
         """
-        data = {"compute_service_name": cs.get_name()}
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
-                                                        f"supportsPilotJobs", json_data=data)
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/compute_services/{cs.get_name()}/"
+                                                        f"supportsPilotJobs", json_data={})
         response = r.json()
         return response["result"]
 
@@ -1331,11 +1335,44 @@ class Simulation:
         :return: True or False
         :rtype: bool
         """
-        data = {"compute_service_name": cs.get_name()}
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
-                                                        f"supportsStandardJobs", json_data=data)
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/compute_services/{cs.get_name()}/"
+                                                        f"supportsStandardJobs", json_data={})
         response = r.json()
         return response["result"]
+
+    def _get_core_flop_rates(self, cs: ComputeService) -> bool:
+        """
+        Get the map of core speeds, keyed by host name
+        :param cs: the compute service
+        :type cs: ComputeService
+        :return: A dictionary of core speeds
+        :rtype: Dict[str, float]
+        """
+
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/compute_services/{cs.get_name()}/"
+                                                        f"coreFlopRates", json_data={})
+        response = r.json()
+        to_return = {}
+        for i in range(0, len(response["hostnames"])):
+            to_return[response["hostnames"][i]] = response["flop_rates"][i]
+        return to_return
+
+    def _get_core_counts(self, cs: ComputeService) -> bool:
+        """
+        Get the map of core counts, keyed by host name
+        :param cs: the compute service
+        :type cs: ComputeService
+        :return: A dictionary of core counts
+        :rtype: Dict[str, int]
+        """
+
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/compute_services/{cs.get_name()}/"
+                                                        f"coreCounts", json_data={})
+        response = r.json()
+        to_return = {}
+        for i in range(0, len(response["hostnames"])):
+            to_return[response["hostnames"][i]] = response["core_counts"][i]
+        return to_return
 
     def _workflow_create_task(self, workflow: Workflow, name: str, flops: float, min_num_cores: int, max_num_cores: int,
                               memory: float) -> Task:
@@ -1359,14 +1396,13 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {"workflow_name": workflow.get_name(),
-                "name": name,
+        data = {"name": name,
                 "flops": flops,
                 "min_num_cores": min_num_cores,
                 "max_num_cores": max_num_cores,
                 "memory": memory}
-        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/"
-                                                        f"{workflow.name}/createTask", json_data=data)
+        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/workflows/"
+                                                        f"{workflow.get_name()}/createTask", json_data=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -1376,7 +1412,7 @@ class Simulation:
 
     def _workflow_get_input_files(self, workflow: Workflow) -> List[File]:
         """
-        Get a list of all input files of the workflow
+        Get the list of all input files of the workflow
         :param workflow: the workflow
         :type workflow: Workflow
         :return: The list of input files
@@ -1384,8 +1420,8 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
-                                                         f"{workflow.get_name()}/getInputFiles", json_data={})
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/workflows/"
+                                                         f"{workflow.get_name()}/inputFiles", json_data={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -1460,6 +1496,45 @@ class Simulation:
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
         return
+
+    def _workflow_get_ready_tasks(self, workflow: Workflow) -> List[Task]:
+        """
+        Get the list of ready tasks in the workflow
+        :param workflow: the workflow
+        :type workflow: Workflow
+        :return: A list of Task objects
+        :rtype: List[Task]
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/workflows/"
+                                                         f"{workflow.get_name()}/readyTasks", json_data={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            task_list = []
+            for task_name in response["tasks"]:
+                task_list.append(workflow.tasks[task_name])
+            return task_list
+        raise WRENCHException(response["failure_cause"])
+
+    def _workflow_is_done(self, workflow: Workflow) -> bool:
+        """
+        Determine whether a workflow is done
+        :param workflow: the workflow
+        :type workflow: Workflow
+        :return: True if done, false otherwise
+        :rtype: bool
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/workflows/"
+                                                         f"{workflow.get_name()}/isDone", json_data={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["result"]
+        raise WRENCHException(response["failure_cause"])
 
     ###############################
     # Private methods

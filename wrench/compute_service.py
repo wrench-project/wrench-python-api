@@ -8,6 +8,7 @@
 # (at your option) any later version.
 
 from wrench.simulation_item import SimulationItem
+from typing import Dict
 
 
 # noinspection GrazieInspection
@@ -53,6 +54,24 @@ class ComputeService(SimulationItem):
         :rtype: bool
         """
         return self.simulation._supports_standard_jobs(self)
+
+    def get_core_flop_rates(self) -> Dict[str, float]:
+        """
+        Get the map of core speeds, keyed by host name
+
+        :return: A dictionary of core speeds
+        :rtype: Dict[str, float]
+        """
+        return self.simulation._get_core_flop_rates(self)
+
+    def get_core_counts(self) -> Dict[str, int]:
+        """
+        Get the map of core counts, keyed by host name
+
+        :return: A dictionary of core counts
+        :rtype: Dict[str, int]
+        """
+        return self.simulation._get_core_counts(self)
 
     def __str__(self) -> str:
         """

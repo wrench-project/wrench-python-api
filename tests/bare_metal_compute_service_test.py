@@ -34,12 +34,22 @@ if __name__ == "__main__":
             {"BareMetalComputeServiceProperty::THREAD_STARTUP_OVERHEAD": "12s"},
             {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
 
+
         print(f"Created compute service has name {cs.get_name()}")
 
         print(f"Compute service supported jobs")
         print(f"Supports Compound Jobs: {cs.supports_compound_jobs()}\n"
               f"Supports Pilot Jobs: {cs.supports_pilot_jobs()}\n"
               f"Supports Standard Jobs: {cs.supports_standard_jobs()}")
+
+        print(f"Compute service core counts:")
+        core_counts = cs.get_core_counts()
+        for entry in cs.get_core_counts():
+            print(f"  - {entry}:{core_counts[entry]}")
+        print(f"Compute service flop rates:")
+        flop_rates = cs.get_core_flop_rates()
+        for entry in flop_rates:
+            print(f"  - {entry}:{flop_rates[entry]}")
 
         print("Creating a simple storage service on StorageHost...")
         ss = simulation.create_simple_storage_service("StorageHost", ["/"])
