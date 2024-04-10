@@ -86,7 +86,7 @@ class Simulation:
         except Exception as e:
             raise WRENCHException("Connection to wrench-daemon severed: " + str(e) + "\n"
                                   "This could be an error on the "
-                                  "wrench-daemon side (likely an uncaught maestro exception). Enable "
+                                  "wrench-daemon side (likely an uncaught maestro exception, e.g., a deadlock). Enable "
                                   "logging with the --simulation-logging and --daemon-logging "
                                   "command-line arguments")
 
@@ -155,6 +155,7 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/waitForNextSimulationEvent",
                                           json_data={})
         response = r.json()["event"]
+        print(response)
         return self.__json_event_to_dict(response)
 
     def get_simulation_events(self) -> List[Dict[str, Union[str, StandardJob, ComputeService]]]:
@@ -1552,7 +1553,7 @@ class Simulation:
         """
 
         event_dict = {}
-        if json_event["event_type"] == "job_completion":
+        if json_event["event_type"] == "standard_job_completion":
             event_dict["event_type"] = json_event["event_type"]
             event_dict["compute_service"] = self.compute_services[json_event["compute_service_name"]]
             event_dict["submit_date"] = json_event["submit_date"]
@@ -1560,13 +1561,30 @@ class Simulation:
             event_dict["event_date"] = json_event["event_date"]
             event_dict["standard_job"] = self.standard_jobs[json_event["job_name"]]
             return event_dict
-        elif json_event["event_type"] == "job_failure":
+        elif json_event["event_type"] == "standard_job_failure":
             event_dict["event_type"] = json_event["event_type"]
             event_dict["compute_service"] = self.compute_services[json_event["compute_service_name"]]
             event_dict["submit_date"] = json_event["submit_date"]
             event_dict["end_date"] = json_event["end_date"]
             event_dict["event_date"] = json_event["event_date"]
             event_dict["standard_job"] = self.standard_jobs[json_event["job_name"]]
+            event_dict["failure_cause"] = json_event["failure_cause"]
+            return event_dict
+        elif json_event["event_type"] == "compound_job_completion":
+            event_dict["event_type"] = json_event["event_type"]
+            event_dict["compute_service"] = self.compute_services[json_event["compute_service_name"]]
+            event_dict["submit_date"] = json_event["submit_date"]
+            event_dict["end_date"] = json_event["end_date"]
+            event_dict["event_date"] = json_event["event_date"]
+            event_dict["compound_job"] = self.compound_jobs[json_event["job_name"]]
+            return event_dict
+        elif json_event["event_type"] == "compound_job_failure":
+            event_dict["event_type"] = json_event["event_type"]
+            event_dict["compute_service"] = self.compute_services[json_event["compute_service_name"]]
+            event_dict["submit_date"] = json_event["submit_date"]
+            event_dict["end_date"] = json_event["end_date"]
+            event_dict["event_date"] = json_event["event_date"]
+            event_dict["compound_job"] = self.compound_jobs[json_event["job_name"]]
             event_dict["failure_cause"] = json_event["failure_cause"]
             return event_dict
 
