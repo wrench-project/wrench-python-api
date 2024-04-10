@@ -129,7 +129,21 @@ if __name__ == "__main__":
         print("Submitting the compound job to the base metal compute service...")
         bmcs.submit_compound_job(cj)
 
+        print("Synchronously waiting for the next simulation event...")
+        event = simulation.wait_for_next_event()
+        print(f"  - Event: {event}")
         print(f"Time is {simulation.get_simulated_time()}")
+
+        print("Synchronously waiting for the next simulation event...")
+        event = simulation.wait_for_next_event()
+        print(f"  - Event: {event}")
+        print(f"Time is {simulation.get_simulated_time()}")
+
+        print("Synchronously waiting for the next simulation event...")
+        event = simulation.wait_for_next_event()
+        print(f"  - Event: {event}")
+        print(f"Time is {simulation.get_simulated_time()}")
+
 
         print("Terminating simulation daemon")
         simulation.terminate()
