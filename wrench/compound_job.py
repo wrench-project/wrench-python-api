@@ -18,6 +18,13 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from wrench.compound_job import CompoundJob
+    from wrench.action import Action
+    from wrench.compute_action import ComputeAction
+    from wrench.file_copy_action import FileCopyAction
+    from wrench.file_delete_action import FileDeleteAction
+    from wrench.file_write_action import FileWriteAction
+    from wrench.file_read_action import FileReadAction
+    from wrench.sleep_action import SleepAction
 
 class CompoundJob(SimulationItem):
     """
@@ -35,7 +42,7 @@ class CompoundJob(SimulationItem):
         self.actions = []
         super().__init__(simulation, name)
 
-    def get_actions(self) -> List:
+    def get_actions(self) -> List[Action]:
         """
         Get the list of tasks in the job
 
@@ -45,7 +52,7 @@ class CompoundJob(SimulationItem):
         return self.actions
 
     def add_compute_action(self, name: str, flops: float, ram: float,
-                         max_num_cores: int, min_num_cores: int, parallel_model: tuple):
+                         max_num_cores: int, min_num_cores: int, parallel_model: tuple) -> ComputeAction:
         """
         Add a sleep action to the compound job
         :param name: name of compute action
@@ -65,7 +72,7 @@ class CompoundJob(SimulationItem):
         return self.simulation._add_compute_action(self, name, flops, ram, max_num_cores, min_num_cores, parallel_model)
 
     def add_file_copy_action(self, name: str, file: File, src_storage_service: StorageService,
-                          dest_storage_service: StorageService):
+                          dest_storage_service: StorageService)  -> FileCopyAction:
         """
         Add a file copy action to the compound job
         :param name: name of file copy action
@@ -79,7 +86,7 @@ class CompoundJob(SimulationItem):
         """
         return self.simulation._add_file_copy_action(self, name, file, src_storage_service, dest_storage_service)
 
-    def add_file_delete_action(self, name: str, file: File, storage_service: StorageService):
+    def add_file_delete_action(self, name: str, file: File, storage_service: StorageService) -> FileDeleteAction:
         """
         Add a file delete action to the compound job
         :param name: name of file delete action
@@ -91,7 +98,7 @@ class CompoundJob(SimulationItem):
         """
         return self.simulation._add_file_delete_action(self, name, file, storage_service)
 
-    def add_file_write_action(self, name: str, file: File, storage_service: StorageService):
+    def add_file_write_action(self, name: str, file: File, storage_service: StorageService)  -> FileWriteAction:
         """
         Add a file write action to the compound job
         :param name: name of file write action
@@ -104,7 +111,7 @@ class CompoundJob(SimulationItem):
         return self.simulation._add_file_write_action(self, name, file, storage_service)
 
     def add_file_read_action(self, name: str, file: File, storage_service: StorageService,
-                             num_bytes_to_read=-1.0):
+                             num_bytes_to_read=-1.0) -> FileReadAction:
         """
         Add a file write action to the compound job
         :param name: name of file write action
@@ -118,7 +125,7 @@ class CompoundJob(SimulationItem):
         """
         return self.simulation._add_file_read_action(self, name, file, storage_service, num_bytes_to_read)
 
-    def add_sleep_action(self, name: str, sleep_time: float):
+    def add_sleep_action(self, name: str, sleep_time: float) -> SleepAction:
         """
         Add a sleep action to the compound job
         :param name: name of the sleep action
