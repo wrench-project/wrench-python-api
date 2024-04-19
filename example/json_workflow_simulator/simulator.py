@@ -157,7 +157,15 @@ def main():
         f = open("./sample_wfcommons_workflow.json")
         json_doc = json.load(f)
         workflow = simulation.create_workflow_from_json(json_doc,
-                                                        "100Mf", True, False, False, 1, 1, False, True, True)
+                                                        reference_flop_rate="100Mf",
+                                                        ignore_machine_specs=True,
+                                                        redundant_dependencies=False,
+                                                        ignore_cycle_creating_dependencies=False,
+                                                        min_cores_per_task=1,
+                                                        max_cores_per_task=1,
+                                                        enforce_num_cores=True,
+                                                        ignore_avg_cpu=True,
+                                                        show_warnings=True)
 
         # Create all needed files on the storage service
         print(f"Create all file copies on the storage service...")

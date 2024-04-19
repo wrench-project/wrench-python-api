@@ -29,7 +29,7 @@ class Task(SimulationItem):
         """
         Constructor
         :param simulation: simulation object
-        :type simulation
+        :type simulation: Simulation
         :param workflow: The workflow this task belongs to
         :type workflow: Workflow
         :param name: Task name
