@@ -22,6 +22,14 @@ from wrench.exception import WRENCHException
 from wrench.file import File
 from wrench.file_registry_service import FileRegistryService
 from wrench.standard_job import StandardJob
+from wrench.compound_job import CompoundJob
+from wrench.action import Action
+from wrench.sleep_action import SleepAction
+from wrench.compute_action import ComputeAction
+from wrench.file_copy_action import FileCopyAction
+from wrench.file_delete_action import FileDeleteAction
+from wrench.file_write_action import FileWriteAction
+from wrench.file_read_action import FileReadAction
 from wrench.storage_service import StorageService
 from wrench.task import Task
 from wrench.virtual_machine import VirtualMachine
@@ -60,7 +68,9 @@ class Simulation:
 
         # Simulation Item Dictionaries
         # self.tasks = {}
-        self.jobs = {}
+        self.actions = {}
+        self.standard_jobs = {}
+        self.compound_jobs = {}
         self.files = {}
         self.compute_services = {}
         self.storage_services = {}
@@ -76,7 +86,7 @@ class Simulation:
         except Exception as e:
             raise WRENCHException("Connection to wrench-daemon severed: " + str(e) + "\n"
                                   "This could be an error on the "
-                                  "wrench-daemon side (likely an uncaught maestro exception). Enable "
+                                  "wrench-daemon side (likely an uncaught maestro exception, e.g., a deadlock). Enable "
                                   "logging with the --simulation-logging and --daemon-logging "
                                   "command-line arguments")
 
@@ -145,6 +155,7 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/waitForNextSimulationEvent",
                                           json_data={})
         response = r.json()["event"]
+        print(response)
         return self.__json_event_to_dict(response)
 
     def get_simulation_events(self) -> List[Dict[str, Union[str, StandardJob, ComputeService]]]:
@@ -189,13 +200,38 @@ class Simulation:
 
         data = {"tasks": task_names, "file_locations": file_locations_specs}
         r = self.__send_request_to_daemon(requests.put,
-                                          f"{self.daemon_url}/{self.simid}/{workflow.get_name()}/createStandardJob",
+                                          f"{self.daemon_url}/{self.simid}/workflows/{workflow.get_name()}/createStandardJob",
                                           json_data=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
-            self.jobs[response["job_name"]] = StandardJob(self, response["job_name"], tasks)
-            return self.jobs[response["job_name"]]
+            self.standard_jobs[response["job_name"]] = StandardJob(self, response["job_name"], tasks)
+            return self.standard_jobs[response["job_name"]]
+        raise WRENCHException(response["failure_cause"])
+
+    def create_compound_job(self, name: str) -> CompoundJob:
+        """
+        Create a Compound job
+
+        :param name: Name of job
+        :type name: str
+
+        :return: A CompoundJob object
+        :rtype: CompoundJob
+
+        :raises WRENCHException: if there is any error in the response
+        """
+
+        data = {"name": name}
+        r = self.__send_request_to_daemon(requests.post,
+                                          f"{self.daemon_url}/{self.simid}/createCompoundJob",
+                                          json_data=data)
+
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            self.compound_jobs[response["job_name"]] = CompoundJob(self, response["job_name"])
+            return self.compound_jobs[response["job_name"]]
         raise WRENCHException(response["failure_cause"])
 
     def create_workflow(self) -> Workflow:
@@ -281,7 +317,7 @@ class Simulation:
         :return: the simulation date
         :rtype: float
         """
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/getTime", {})
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/getTime", json_data={})
 
         response = r.json()
         return response["time"]
@@ -297,6 +333,7 @@ class Simulation:
         :param hostname: name of the (simulated) host on which the compute service should run
         :type hostname: str
         :param resources: compute resources as a dict of hostnames where values are tuples of #cores and ram in bytes
+                          (negative values mean: use everything available)
         :param scratch_space: the compute service's scratch space’s mount point ("" means none)
         :type scratch_space: str
         :param property_list: a property list ({} means "use all defaults")
@@ -500,12 +537,20 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/createWorkflowFromJSON",
                                           json_data=data)
         response = r.json()
+
         # Create the workflow
         workflow = Workflow(self, response["workflow_name"])
+
         # Create the tasks
         for task_name in response["tasks"]:
             workflow.tasks[task_name] = Task(self, workflow, task_name)
+
+        # Create the files
+        for file_name in response["files"]:
+            self.files[file_name] = File(self, file_name)
+
         return workflow
+
 
     ####################################################################################
     ####################################################################################
@@ -527,7 +572,25 @@ class Simulation:
         """
         data = {"compute_service_name": cs.get_name(), "service_specific_args": service_specific_args}
         r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
-                                                         f"jobs/{job.get_name()}/submit", json_data=data)
+                                                         f"standardJobs/{job.get_name()}/submit", json_data=data)
+        response = r.json()
+        if not response["wrench_api_request_success"]:
+            raise WRENCHException(response["failure_cause"])
+
+    def _submit_compound_job(self, job: CompoundJob, cs: ComputeService, service_specific_args="{}") -> None:
+        """
+        Submit a compound job to a compute service
+
+        :param job: the job
+        :type job: CompoundJob
+        :param cs: the compute service
+        :type cs: ComputeService
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"compute_service_name": cs.get_name(), "service_specific_args": service_specific_args}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
+                                                         f"compoundJobs/{job.get_name()}/submit", json_data=data)
         response = r.json()
         if not response["wrench_api_request_success"]:
             raise WRENCHException(response["failure_cause"])
@@ -545,7 +608,7 @@ class Simulation:
         """
         data = {"filename": file.get_name()}
         r = self.__send_request_to_daemon(requests.post,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/storage_services/"
                                           f"{storage_service.get_name()}/createFileCopy", json_data=data)
         response = r.json()
         if not response["wrench_api_request_success"]:
@@ -567,7 +630,7 @@ class Simulation:
         """
         data = {"filename": file.get_name()}
         r = self.__send_request_to_daemon(requests.post,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/storage_services/"
                                           f"{storage_service.get_name()}/lookupFile", json_data=data)
         response = r.json()
         if not response["wrench_api_request_success"]:
@@ -587,7 +650,7 @@ class Simulation:
         """
         data = {"file": file.get_name()}
         r = self.__send_request_to_daemon(requests.put,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/"
                                           f"{task.get_name()}/addInputFile", json_data=data)
 
@@ -608,7 +671,7 @@ class Simulation:
         """
         data = {"file": file.get_name()}
         r = self.__send_request_to_daemon(requests.put,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/"
                                           f"{task.get_name()}/addOutputFile", json_data=data)
 
@@ -628,7 +691,7 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/workflows/"
                                                         f"{task.get_workflow().get_name()}/tasks/"
                                                         f"{task.get_name()}/inputFiles", json_data={})
 
@@ -652,7 +715,7 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/workflows/"
                                                         f"{task.get_workflow().get_name()}/tasks/"
                                                         f"{task.get_name()}/outputFiles", json_data={})
 
@@ -695,7 +758,7 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/"
                                           f"{task.get_name()}/taskGetFlops",
                                           json_data={})
@@ -716,12 +779,11 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {}
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/"
                                           f"{task.get_name()}/taskGetMinNumCores",
-                                          json_data=data)
+                                          json_data={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -739,12 +801,11 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {}
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/"
                                           f"{task.get_name()}/taskGetMaxNumCores",
-                                          json_data=data)
+                                          json_data={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -762,11 +823,10 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {}
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/"
-                                          f"{task.get_name()}/taskGetMemory", json_data=data)
+                                          f"{task.get_name()}/taskGetMemory", json_data={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -785,7 +845,7 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/{task.get_name()}/"
                                           f"taskGetStartDate", json_data={})
 
@@ -806,13 +866,267 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
         r = self.__send_request_to_daemon(requests.get,
-                                          f"{self.daemon_url}/{self.simid}/"
+                                          f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/{task.get_name()}/"
                                           f"taskGetEndDate", json_data={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
             return response["time"]
+        raise WRENCHException(response["failure_cause"])
+
+    def _add_compute_action(self, compound_job: CompoundJob, name: str, flops: float, ram: float,
+                           max_num_cores: int, min_num_cores: int, parallel_model: tuple) -> Action:
+        """
+        Add a compute action
+
+        :param compound_job: compound job object this action is a part of
+        :type compound_job: CompoundJob
+        :param name: name of compute action
+        :type name: str
+        :param flops: number of flops this action has
+        :type flops: float
+        :param ram: amount of ram this action has
+        :type ram: float
+        :param max_num_cores: maximum number of cores this action can have
+        :type max_num_cores: long
+        :param min_num_cores: minimum number of cores this action can have
+        :type min_num_cores: long
+        :param parallel_model: type of parallel model and settings for it
+        :type parallel_model: tuple
+
+        :return: the action name
+        :rtype: Action
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"name": name, "flops": flops, "ram": ram,
+                "min_num_cores": min_num_cores,  "max_num_cores": max_num_cores, "parallel_model": parallel_model}
+
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/compoundJobs/"
+                                                         f"{compound_job.get_name()}/addComputeAction", json_data=data)
+
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            compute_action = ComputeAction(self, compound_job, response["name"], flops, ram,
+                                           min_num_cores, max_num_cores, parallel_model)
+            compound_job.actions.append(compute_action)
+            return compute_action
+        raise WRENCHException(response["failure_cause"])
+
+    def _add_file_copy_action(self, compound_job: CompoundJob, name: str, file: File,
+                             src_storage_service: StorageService, dest_storage_service: StorageService) -> Action:
+        """
+        Add a file copy action
+
+        :param self: simulation object
+        :type self: simulation
+        :param compound_job: compound job object
+        :type compound_job: CompoundJob
+        :param name: name of file copy action
+        :type name: str
+        :param file: name of file being copied
+        :type file: File
+        :param src_storage_service: source storage service being copied from
+        :type src_storage_service: StorageService
+        :param dest_storage_service: destination storage service being copied to
+        :type dest_storage_service: StorageService
+
+        :return: the action name
+        :rtype: Action
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"name": name, "file_name": file.get_name(), "src_storage_service_name": src_storage_service.get_name(),
+                "dest_storage_service_name": dest_storage_service.get_name()}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/compoundJobs/"
+                                                         f"{compound_job.get_name()}/addFileCopyAction", json_data=data)
+
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            if response["uses_scratch"] == "1":
+                uses_scratch = True
+            else:
+                uses_scratch = False
+
+            file_copy_action = FileCopyAction(self, compound_job, response["name"], file, src_storage_service,
+                                              dest_storage_service, uses_scratch)
+            compound_job.actions.append(file_copy_action)
+            return file_copy_action
+        raise WRENCHException(response["failure_cause"])
+
+    def _add_file_delete_action(self, compound_job: CompoundJob, name: str, file: File,
+                               storage_service: StorageService) -> Action:
+        """
+        Add a file delete action
+
+        :param self: simulation object
+        :type self: simulation
+        :param compound_job: compound job object
+        :type compound_job: CompoundJob
+        :param name: name of file delete action
+        :type name: str
+        :param file: name of file being deleted
+        :type file: File
+        :param storage_service: storage service file is deleted from
+        :type storage_service: StorageService
+
+        :return: the action name
+        :rtype: Action
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"name": name, "file_name": file.get_name(), "storage_service_name": storage_service.get_name()}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/compoundJobs/"
+                                                         f"{compound_job.get_name()}/addFileDeleteAction",
+                                                         json_data=data)
+
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            if response["uses_scratch"] == "1":
+                uses_scratch = True
+            else:
+                uses_scratch = False
+
+            file_delete_action = FileDeleteAction(self, compound_job, response["name"], file, storage_service,
+                                                  uses_scratch)
+            compound_job.actions.append(file_delete_action)
+            return file_delete_action
+        raise WRENCHException(response["failure_cause"])
+
+    def _add_file_write_action(self, compound_job: CompoundJob, name: str, file: File,
+                              storage_service: StorageService) -> Action:
+        """
+        Add a file write action
+
+        :param self: simulation object
+        :type self: simulation
+        :param compound_job: compound job object
+        :type compound_job: CompoundJob
+        :param name: name of file write action
+        :type name: str
+        :param file: name of file to write
+        :type file: File
+        :param storage_service: storage service to write the file to
+        :type storage_service: StorageService
+
+        :return: the action name
+        :rtype: Action
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"name": name, "file_name": file.get_name(), "storage_service_name": storage_service.get_name()}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/compoundJobs/"
+                                                         f"{compound_job.get_name()}/addFileWriteAction",
+                                                         json_data=data)
+
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            if response["uses_scratch"] == "1":
+                uses_scratch = True
+            else:
+                uses_scratch = False
+
+            file_write_action = FileWriteAction(self, compound_job, response["name"], file, storage_service,
+                                                uses_scratch)
+            compound_job.actions.append(file_write_action)
+            return file_write_action
+        raise WRENCHException(response["failure_cause"])
+
+    def _add_file_read_action(self, compound_job: CompoundJob, name: str, file: File, storage_service: StorageService,
+                             num_bytes_to_read: float) -> Action:
+        """
+        Add a file read action
+        :param compound_job: the action's compound job
+        :type compound_job: str
+        :param name: name of the action
+        :type name: str
+        :param file: the file to read
+        :type file: File
+        :param storage_service: the storage service the file is stored in
+        :type storage_service: StorageService
+        :param num_bytes_to_read: the number of bytes to read from the file
+        :type num_bytes_to_read: float
+        :return: the action name
+        :rtype: Action
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"name": name, "file_name": file.get_name(), "storage_service_name": storage_service.get_name(),
+                "num_bytes_to_read": num_bytes_to_read}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/compoundJobs/"
+                                                         f"{compound_job.get_name()}/addFileReadAction",
+                                                         json_data=data)
+
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            if response["uses_scratch"] == "1":
+                uses_scratch = True
+            else:
+                uses_scratch = False
+
+            file_read_action = FileReadAction(self, compound_job, response["name"], file, storage_service,
+                                                response["num_bytes_to_read"], uses_scratch)
+            compound_job.actions.append(file_read_action)
+            return file_read_action
+        raise WRENCHException(response["failure_cause"])
+
+    def _add_sleep_action(self, compound_job: CompoundJob, name: str, sleep_time: float) -> Action:
+        """
+        Add a sleep action
+
+        :param compound_job: compound job object this action is a part of
+        :type compound_job: CompoundJob
+        :param name: name of sleep action
+        :type name: str
+        :param sleep_time: time to sleep
+        :type sleep_time: float
+
+        :return: the action name
+        :rtype: Action
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"name": name, "sleep_time": sleep_time}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/compoundJobs/"
+                                                         f"{compound_job.get_name()}/addSleepAction", json_data=data)
+
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            sleep_action = SleepAction(self, compound_job, response["sleep_action_name"], sleep_time)
+            compound_job.actions.append(sleep_action)
+            return sleep_action
+        raise WRENCHException(response["failure_cause"])
+
+    def _add_parent_job(self, compound_job: CompoundJob, parent_compound_job: CompoundJob) -> None:
+        """
+        Add a parent compound job to this compound job
+
+        :param compound_job: compound job object
+        :type compound_job: CompoundJob
+        :param parent_compound_job: parent compound job
+        :type compound_job: CompoundJob
+
+        :return:
+
+        :raises WRENCHException: if there is any error in the response
+        """
+
+        data = {"parent_compound_job": parent_compound_job.get_name()}
+        r = self.__send_request_to_daemon(requests.post,
+                                          f"{self.daemon_url}/{self.simid}/compoundJobs/{compound_job.get_name()}/addParentJob",
+                                          json_data=data)
+        response = r.json()
+
+
+        if response["wrench_api_request_success"]:
+            return
         raise WRENCHException(response["failure_cause"])
 
     def _create_vm(self,
@@ -841,11 +1155,11 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
 
-        data = {"service_name": service.get_name(), "num_cores": num_cores, "ram_memory": ram_memory,
+        data = {"num_cores": num_cores, "ram_memory": ram_memory,
                 "property_list": json.dumps(property_list),
                 "message_payload_list": json.dumps(message_payload_list)}
 
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/cloud_compute_services/{service.get_name()}/"
                                                          f"createVM", json_data=data)
         response = r.json()
 
@@ -861,10 +1175,10 @@ class Simulation:
         :return: A bare metal compute service
         :rtype: BareMetalComputeService
         """
-        data = {"service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
+        # data = {"service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
 
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
-                                                         f"startVM", json_data=data)
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/cloud_compute_services/{vm.get_cloud_compute_service().get_name()}/vms/{vm.get_name()}/"
+                                                         f"startVM", json_data={})
         response = r.json()
 
         if response["wrench_api_request_success"]:
@@ -880,10 +1194,10 @@ class Simulation:
         :type vm: VirtualMachine
         """
 
-        data = {"service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
+        # data = {"service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
 
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
-                                                         f"shutdownVM", json_data=data)
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/cloud_compute_services/{vm.get_cloud_compute_service().get_name()}/vms/{vm.get_name()}/"
+                                                         f"shutdownVM", json_data={})
         response = r.json()
 
         if response["wrench_api_request_success"]:
@@ -897,10 +1211,10 @@ class Simulation:
         :type vm: VirtualMachine
         """
 
-        data = {"service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
+        # data = {"service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
 
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
-                                                         f"destroyVM", json_data=data)
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/cloud_compute_services/{vm.get_cloud_compute_service().get_name()}/vms/{vm.get_name()}/"
+                                                         f"destroyVM", json_data={})
         response = r.json()
 
         if response["wrench_api_request_success"]:
@@ -915,9 +1229,9 @@ class Simulation:
         :return: True or False
         :rtype: bool
         """
-        data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
-                                                        f"isVMRunning", json_data=data)
+        # data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/cloud_compute_services/{vm.get_cloud_compute_service().get_name()}/vms/{vm.get_name()}/"
+                                                        f"isVMRunning", json_data={})
         response = r.json()
 
         if response["wrench_api_request_success"]:
@@ -932,9 +1246,9 @@ class Simulation:
         :return: True or False
         :rtype: bool
         """
-        data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
-                                                        f"isVMDown", json_data=data)
+        # data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/cloud_compute_services/{vm.get_cloud_compute_service().get_name()}/vms/{vm.get_name()}/"
+                                                        f"isVMDown", json_data={})
         response = r.json()
 
         if response["wrench_api_request_success"]:
@@ -947,9 +1261,9 @@ class Simulation:
         :param vm: the VM
         :type vm: VirtualMachine
         """
-        data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
-                                                         f"suspendVM", json_data=data)
+        # data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/cloud_compute_services/{vm.get_cloud_compute_service().get_name()}/vms/{vm.get_name()}/"
+                                                         f"suspendVM", json_data={})
         response = r.json()
 
         if response["wrench_api_request_success"]:
@@ -964,9 +1278,9 @@ class Simulation:
         :return: True or False
         :rtype: bool
         """
-        data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
-                                                        f"isVMSuspended", json_data=data)
+        # data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/cloud_compute_services/{vm.get_cloud_compute_service().get_name()}/vms/{vm.get_name()}/"
+                                                        f"isVMSuspended", json_data={})
         response = r.json()
 
         if response["wrench_api_request_success"]:
@@ -979,9 +1293,9 @@ class Simulation:
         :param vm: the VM
         :type vm: VirtualMachine
         """
-        data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
-                                                         f"resumeVM", json_data=data)
+        # data = {"compute_service_name": vm.get_cloud_compute_service().get_name(), "vm_name": vm.get_name()}
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/cloud_compute_services/{vm.get_cloud_compute_service().get_name()}/vms/{vm.get_name()}/"
+                                                         f"resumeVM", json_data={})
         response = r.json()
 
         if response["wrench_api_request_success"]:
@@ -996,9 +1310,8 @@ class Simulation:
         :return: True or False
         :rtype: bool
         """
-        data = {"compute_service_name": cs.get_name()}
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
-                                                        f"supportsCompoundJobs", json_data=data)
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/compute_services/{cs.get_name()}/"
+                                                        f"supportsCompoundJobs", json_data={})
         response = r.json()
         return response["result"]
 
@@ -1010,9 +1323,8 @@ class Simulation:
         :return: True or False
         :rtype: bool
         """
-        data = {"compute_service_name": cs.get_name()}
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
-                                                        f"supportsPilotJobs", json_data=data)
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/compute_services/{cs.get_name()}/"
+                                                        f"supportsPilotJobs", json_data={})
         response = r.json()
         return response["result"]
 
@@ -1024,11 +1336,44 @@ class Simulation:
         :return: True or False
         :rtype: bool
         """
-        data = {"compute_service_name": cs.get_name()}
-        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/"
-                                                        f"supportsStandardJobs", json_data=data)
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/compute_services/{cs.get_name()}/"
+                                                        f"supportsStandardJobs", json_data={})
         response = r.json()
         return response["result"]
+
+    def _get_core_flop_rates(self, cs: ComputeService) -> bool:
+        """
+        Get the map of core speeds, keyed by host name
+        :param cs: the compute service
+        :type cs: ComputeService
+        :return: A dictionary of core speeds
+        :rtype: Dict[str, float]
+        """
+
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/compute_services/{cs.get_name()}/"
+                                                        f"coreFlopRates", json_data={})
+        response = r.json()
+        to_return = {}
+        for i in range(0, len(response["hostnames"])):
+            to_return[response["hostnames"][i]] = response["flop_rates"][i]
+        return to_return
+
+    def _get_core_counts(self, cs: ComputeService) -> bool:
+        """
+        Get the map of core counts, keyed by host name
+        :param cs: the compute service
+        :type cs: ComputeService
+        :return: A dictionary of core counts
+        :rtype: Dict[str, int]
+        """
+
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/compute_services/{cs.get_name()}/"
+                                                        f"coreCounts", json_data={})
+        response = r.json()
+        to_return = {}
+        for i in range(0, len(response["hostnames"])):
+            to_return[response["hostnames"][i]] = response["core_counts"][i]
+        return to_return
 
     def _workflow_create_task(self, workflow: Workflow, name: str, flops: float, min_num_cores: int, max_num_cores: int,
                               memory: float) -> Task:
@@ -1052,14 +1397,13 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        data = {"workflow_name": workflow.get_name(),
-                "name": name,
+        data = {"name": name,
                 "flops": flops,
                 "min_num_cores": min_num_cores,
                 "max_num_cores": max_num_cores,
                 "memory": memory}
-        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/"
-                                                        f"{workflow.name}/createTask", json_data=data)
+        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/workflows/"
+                                                        f"{workflow.get_name()}/createTask", json_data=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -1069,7 +1413,7 @@ class Simulation:
 
     def _workflow_get_input_files(self, workflow: Workflow) -> List[File]:
         """
-        Get a list of all input files of the workflow
+        Get the list of all input files of the workflow
         :param workflow: the workflow
         :type workflow: Workflow
         :return: The list of input files
@@ -1077,8 +1421,8 @@ class Simulation:
 
         :raises WRENCHException: if there is any error in the response
         """
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/"
-                                                         f"{workflow.get_name()}/getInputFiles", json_data={})
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/workflows/"
+                                                         f"{workflow.get_name()}/inputFiles", json_data={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -1154,6 +1498,45 @@ class Simulation:
             raise WRENCHException(response["failure_cause"])
         return
 
+    def _workflow_get_ready_tasks(self, workflow: Workflow) -> List[Task]:
+        """
+        Get the list of ready tasks in the workflow
+        :param workflow: the workflow
+        :type workflow: Workflow
+        :return: A list of Task objects
+        :rtype: List[Task]
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/workflows/"
+                                                         f"{workflow.get_name()}/readyTasks", json_data={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            task_list = []
+            for task_name in response["tasks"]:
+                task_list.append(workflow.tasks[task_name])
+            return task_list
+        raise WRENCHException(response["failure_cause"])
+
+    def _workflow_is_done(self, workflow: Workflow) -> bool:
+        """
+        Determine whether a workflow is done
+        :param workflow: the workflow
+        :type workflow: Workflow
+        :return: True if done, false otherwise
+        :rtype: bool
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/workflows/"
+                                                         f"{workflow.get_name()}/isDone", json_data={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["result"]
+        raise WRENCHException(response["failure_cause"])
+
     ###############################
     # Private methods
     ###############################
@@ -1170,21 +1553,38 @@ class Simulation:
         """
 
         event_dict = {}
-        if json_event["event_type"] == "job_completion":
+        if json_event["event_type"] == "standard_job_completion":
             event_dict["event_type"] = json_event["event_type"]
             event_dict["compute_service"] = self.compute_services[json_event["compute_service_name"]]
             event_dict["submit_date"] = json_event["submit_date"]
             event_dict["end_date"] = json_event["end_date"]
             event_dict["event_date"] = json_event["event_date"]
-            event_dict["job"] = self.jobs[json_event["job_name"]]
+            event_dict["standard_job"] = self.standard_jobs[json_event["job_name"]]
             return event_dict
-        elif json_event["event_type"] == "job_failure":
+        elif json_event["event_type"] == "standard_job_failure":
             event_dict["event_type"] = json_event["event_type"]
             event_dict["compute_service"] = self.compute_services[json_event["compute_service_name"]]
             event_dict["submit_date"] = json_event["submit_date"]
             event_dict["end_date"] = json_event["end_date"]
             event_dict["event_date"] = json_event["event_date"]
-            event_dict["job"] = self.jobs[json_event["job_name"]]
+            event_dict["standard_job"] = self.standard_jobs[json_event["job_name"]]
+            event_dict["failure_cause"] = json_event["failure_cause"]
+            return event_dict
+        elif json_event["event_type"] == "compound_job_completion":
+            event_dict["event_type"] = json_event["event_type"]
+            event_dict["compute_service"] = self.compute_services[json_event["compute_service_name"]]
+            event_dict["submit_date"] = json_event["submit_date"]
+            event_dict["end_date"] = json_event["end_date"]
+            event_dict["event_date"] = json_event["event_date"]
+            event_dict["compound_job"] = self.compound_jobs[json_event["job_name"]]
+            return event_dict
+        elif json_event["event_type"] == "compound_job_failure":
+            event_dict["event_type"] = json_event["event_type"]
+            event_dict["compute_service"] = self.compute_services[json_event["compute_service_name"]]
+            event_dict["submit_date"] = json_event["submit_date"]
+            event_dict["end_date"] = json_event["end_date"]
+            event_dict["event_date"] = json_event["event_date"]
+            event_dict["compound_job"] = self.compound_jobs[json_event["job_name"]]
             event_dict["failure_cause"] = json_event["failure_cause"]
             return event_dict
 
