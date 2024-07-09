@@ -1,5 +1,5 @@
 wrench.file_read_action
-===================
+=======================
 
 .. automodule:: wrench.file_read_action
    :members:

@@ -1,5 +1,5 @@
 wrench.action
-===================
+=============
 
 .. automodule:: wrench.action
    :members:

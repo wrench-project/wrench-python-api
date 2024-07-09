@@ -1,5 +1,5 @@
 wrench.compute_action
-===================
+=====================
 
 .. automodule:: wrench.compute_action
    :members:

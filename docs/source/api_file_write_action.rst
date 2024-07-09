@@ -1,5 +1,5 @@
 wrench.file_write_action
-===================
+========================
 
 .. automodule:: wrench.file_write_action
    :members:

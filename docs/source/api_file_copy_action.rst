@@ -1,5 +1,5 @@
 wrench.file_copy_action
-===================
+=======================
 
 .. automodule:: wrench.file_copy_action
    :members:

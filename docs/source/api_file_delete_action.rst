@@ -1,5 +1,5 @@
 wrench.file_delete_action
-===================
+=========================
 
 .. automodule:: wrench.file_delete_action
    :members:
