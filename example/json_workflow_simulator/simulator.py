@@ -173,11 +173,11 @@ def main():
 
             # Wait for next event
             event = simulation.wait_for_next_event()
-            if event["event_type"] != "job_completion":
+            if event["event_type"] != "standard_job_completion":
                 print(f"  - Event: {event}")  # Should make sure it's a job completion
                 raise WRENCHException("Received an unexpected event")
             else:
-                completed_job = event["job"]
+                completed_job = event["standard_job"]
                 completed_task_name = completed_job.get_tasks()[0].get_name()
                 print(f"Task {completed_task_name} has completed!")
                 compute_resources[event["compute_service"]]["num_idle_cores"] += 1
