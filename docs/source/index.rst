@@ -34,6 +34,14 @@ support@wrench-project.org.
     api_workflow.rst
     api_task.rst
     api_standard_job.rst
+    api_compound_job.rst
+    api_action.rst
+    api_sleep_action.rst
+    api_compute_action.rst     
+    api_file_read_action.rst
+    api_file_write_action.rst
+    api_file_copy_action.rst
+    api_file_delete_action.rst 
     api_compute_service.rst
     api_bare_metal_compute_service.rst
     api_cloud_compute_service.rst

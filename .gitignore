@@ -5,3 +5,4 @@ build/
 dist/
 wrench_api.egg-info/
 .vscode/
+*.swp
