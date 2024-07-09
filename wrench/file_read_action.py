@@ -81,7 +81,6 @@ class FileReadAction(Action):
     #
     #     return #CALL TO SERVER
 
-
     def uses_scratch(self) -> bool:
         """
         Returns whether the action uses scratch
@@ -103,5 +102,4 @@ class FileReadAction(Action):
         :return: String representation of the file copy action object
         :rtype: str
         """
-        s = f"FileCopyAction(name={self.name})"
-        return s
+        return f"FileCopyAction(name={self.name})"

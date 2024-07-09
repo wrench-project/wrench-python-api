@@ -19,7 +19,6 @@ class ComputeAction(Action):
 
         """
         Constructor
-
         :param simulation: simulation object
         :type simulation
         :param compound_job: compound job object

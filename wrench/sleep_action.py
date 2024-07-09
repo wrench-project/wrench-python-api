@@ -17,7 +17,6 @@ class SleepAction(Action):
     def __init__(self, simulation, compound_job: CompoundJob, name: str, sleep_time: float) -> None:
         """
         Constructor
-
         :param simulation: simulation object
         :type simulation
         :param name: job name

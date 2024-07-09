@@ -6,8 +6,6 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-from wrench.file import File
-from wrench.storage_service import StorageService
 from wrench.simulation_item import SimulationItem
 from wrench.file import File
 from wrench.storage_service import StorageService

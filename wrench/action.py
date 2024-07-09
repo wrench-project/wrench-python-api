@@ -8,7 +8,7 @@
 # (at your option) any later version.
 from wrench.simulation_item import SimulationItem
 from wrench.compound_job import CompoundJob
-from enum import Enum
+# from enum import Enum
 
 
 class Action(SimulationItem):
@@ -29,10 +29,8 @@ class Action(SimulationItem):
     def __init__(self, simulation, name: str, compound_job: CompoundJob) -> None:
         """
         Constructor
-
         :param simulation: simulation object
         :type simulation
-        :param name: Job name
         :type name: str
         :param compound_job: compound job this action belongs to
         :type compound_job: CompoundJob
@@ -40,23 +38,23 @@ class Action(SimulationItem):
         self.compound_job = compound_job
         super().__init__(simulation, name)
 
-    def get_state(self) -> Enum:
-        """
-        Get the job
-
-        :return: a list of task objects
-        :rtype: List[Task]
-        """
-        return self.compound_job
-
-    def get_state_as_string(self) -> str:
-        """
-        Get the job
-
-        :return: a list of task objects
-        :rtype: List[Task]
-        """
-        return self.compound_job
+    # def get_state(self) -> Enum:
+    #     """
+    #     Get the job
+    #
+    #     :return: a list of task objects
+    #     :rtype: List[Task]
+    #     """
+    #     return None
+    #
+    # def get_state_as_string(self) -> str:
+    #     """
+    #     Get the job
+    #
+    #     :return: a list of task objects
+    #     :rtype: List[Task]
+    #     """
+    #     return None
 
     def get_job(self) -> CompoundJob:
         """
