@@ -1,0 +1,71 @@
+<?xml version='1.0'?>
+<!DOCTYPE platform SYSTEM "http://simgrid.gforge.inria.fr/simgrid/simgrid.dtd">
+<platform version="4.1">
+    <zone id="AS0" routing="Full">
+
+        <host id="ControllerHost" speed="1f" core="1">
+            <disk id="hard_drive" read_bw="100MBps" write_bw="100MBps">
+                <prop id="size" value="5000GiB"/>
+                <prop id="mount" value="/"/>
+            </disk>
+        </host>
+
+        <host id="StorageHost" speed="1f" core="1">
+            <disk id="hard_drive" read_bw="100MBps" write_bw="100MBps">
+                <prop id="size" value="5000GiB"/>
+                <prop id="mount" value="/"/>
+            </disk>
+        </host>
+
+
+        <host id="CloudHeadHost" speed="1f" core="10">
+            <prop id="ram" value="10GB" />
+            <disk id="hard_drive" read_bw="100MBps" write_bw="100MBps">
+                <prop id="size" value="5000GiB"/>
+                <prop id="mount" value="/scratch"/>
+            </disk>
+        </host>
+
+        <host id="CloudHost1" speed="10Gf" core="6">
+            <prop id="ram" value="10GB" />
+       </host>
+        <host id="CloudHost2" speed="10Gf" core="6">
+            <prop id="ram" value="12GB" />
+       </host>
+
+
+        <host id="BatchHeadHost" speed="10Gf" core="6">
+            <prop id="ram" value="10GB" />
+            <disk id="hard_drive" read_bw="100MBps" write_bw="100MBps">
+                <prop id="size" value="5000GiB"/>
+                <prop id="mount" value="/scratch"/>
+            </disk>
+       </host>
+
+        <host id="BatchHost1" speed="10Gf" core="6">
+            <prop id="ram" value="10GB" />
+       </host>
+        <host id="BatchHost2" speed="10Gf" core="6">
+            <prop id="ram" value="12GB" />
+       </host>
+
+        <!-- A network link -->
+        <link id="network_link" bandwidth="50MBps" latency="20us"/>
+
+
+        <!-- The network link connects all hosts -->
+        <route src="ControllerHost" dst="CloudHeadHost"> <link_ctn id="network_link"/> </route>
+        <route src="ControllerHost" dst="StorageHost"> <link_ctn id="network_link"/> </route>
+        <route src="ControllerHost" dst="BatchHeadHost"> <link_ctn id="network_link"/> </route>
+        <route src="CloudHeadHost" dst="StorageHost"> <link_ctn id="network_link"/> </route>
+        <route src="BatchHost1" dst="BatchHeadHost"> <link_ctn id="network_link"/> </route>
+        <route src="BatchHost1" dst="StorageHost"> <link_ctn id="network_link"/> </route>
+        <route src="BatchHost2" dst="BatchHeadHost"> <link_ctn id="network_link"/> </route>
+        <route src="BatchHost2" dst="StorageHost"> <link_ctn id="network_link"/> </route>
+         <route src="CloudHost1" dst="CloudHeadHost"> <link_ctn id="network_link"/> </route>
+         <route src="CloudHost1" dst="StorageHost"> <link_ctn id="network_link"/> </route>
+        <route src="CloudHost2" dst="CloudHeadHost"> <link_ctn id="network_link"/> </route>
+        <route src="CloudHost2" dst="StorageHost"> <link_ctn id="network_link"/> </route>
+
+    </zone>
+</platform>

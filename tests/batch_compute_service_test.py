@@ -79,8 +79,8 @@ if __name__ == "__main__":
         print("Getting simulation events...")
         event = simulation.wait_for_next_event()
         print(f"Received this event: {event}")
-        if event["event_type"] != "job_failure":
-            raise wrench.WRENCHException("Was expecting a job failure event but instead got a: " + event["event_type"])
+        if event["event_type"] != "standard_job_failure":
+            raise wrench.WRENCHException("Was expecting a standard job failure event but instead got a: " + event["event_type"])
 
         print("Trying again, but giving file locations for first and last file (second file will be on scratch!)...")
         job = simulation.create_standard_job([task1, task2], {file1: ss, file3: ss})
@@ -88,8 +88,8 @@ if __name__ == "__main__":
         print("Getting simulation events...")
         event = simulation.wait_for_next_event()
         print(f"Received this event: {event}")
-        if event["event_type"] != "job_completion":
-            raise wrench.WRENCHException("Was expecting a job completion event but instead got a: " + event["event_type"])
+        if event["event_type"] != "standard_job_completion":
+            raise wrench.WRENCHException("Was expecting a standard job completion event but instead got a: " + event["event_type"])
 
         print(f"Task1's start date was: {task1.get_start_date()}")
         print(f"Task1's end date was: {task1.get_end_date()}")

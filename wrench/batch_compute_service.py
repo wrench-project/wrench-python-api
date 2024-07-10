@@ -9,6 +9,7 @@
 
 import json
 
+from wrench.compound_job import CompoundJob
 from wrench.compute_service import ComputeService
 from wrench.standard_job import StandardJob
 
@@ -40,6 +41,17 @@ class BatchComputeService(ComputeService):
         :type service_specific_args: dict[str, str]
         """
         return self.simulation._submit_standard_job(standard_job, self, json.dumps(service_specific_args))
+
+    def submit_compound_job(self, compound_job: CompoundJob, service_specific_args: dict[str, str]) -> None:
+        """
+        Submit a compound job to a batch compute service
+
+        :param compound_job: the compound job
+        :type compound_job: CompoundJob
+        :param service_specific_args: the service-specific arguments
+        :type service_specific_args: dict[str, str]
+        """
+        return self.simulation._submit_compound_job(compound_job, self, json.dumps(service_specific_args))
 
     def __str__(self) -> str:
         """

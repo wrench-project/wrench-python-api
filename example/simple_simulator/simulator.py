@@ -47,14 +47,19 @@ if __name__ == "__main__":
                                                       {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
                                                       {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
 
+        # Creating a file registry service
+        print("Creating a file registry service on ControllerHost...")
+        frs = simulation.create_file_registry_service("ControllerHost")
+        print(f"Created file registry service has name {frs.get_name()}")
+
         # Creating a storage service
         print("Creating a simple storage service on StorageHost...")
         ss = simulation.create_simple_storage_service("StorageHost", ["/"])
         print(f"Created storage service has name {ss.get_name()}")
 
-        # print("Creating a file registry service on ControllerHost...")
-        # frs = simulation.create_file_registry_service("ControllerHost")
-        # print(f"Created file registry service has name {frs.get_name()}")
+        print("Creating a file registry service on ControllerHost...")
+        frs = simulation.create_file_registry_service("ControllerHost")
+        print(f"Created file registry service has name {frs.get_name()}")
 
         print("Adding a 1kB file to the simulation...")
         file1 = simulation.add_file("file1", 1024)
@@ -65,6 +70,22 @@ if __name__ == "__main__":
 
         print(f"Creating a copy of {file1} on the storage service")
         ss.create_file_copy(file1)
+
+        # Add an entry to the file registry service
+        print(f"Adding an entry for {file1} on the file registry service {frs.get_name()}")
+        frs.add_entry(ss, file1)
+
+        # Looking the entry
+        ss_list = frs.lookup_entry(file1)
+        print(f"Entries for file: {ss_list}")
+
+        # Remove an entry to the file registry service
+        print(f"Removing an entry for {file1} on the file registry service {frs.get_name()}")
+        frs.remove_entry(ss, file1)
+
+        # Looking the entry again (which should fail)
+        ss_list = frs.lookup_entry(file1)
+        print(f"Entries for file: {ss_list}")
 
         print("Sleeping for 10 seconds...")
         simulation.sleep(10)
@@ -110,8 +131,8 @@ if __name__ == "__main__":
 
         print("Creating a VM on the cloud compute service...")
         my_vm = ccs.create_vm(1, 100,
-                                {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
-                                {})
+                              {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},{})
+
         print("Starting the VM...")
         vm_cs = my_vm.start()
 
@@ -124,7 +145,22 @@ if __name__ == "__main__":
 
         print(f"Time is {simulation.get_simulated_time()}")
 
+        # Compound job
+        # cjob = simulation.create_compound_job()
+        # my_sleep_action_1 = cjob.add_sleep_action(name="", sleep_time=10)
+        # print(my_sleep_action_1.get_sleep_time())
+        # my_sleep_action_2 = cjob.add_sleep_action(name="my_sleep_2", sleep_time=20)
+        # cjob.add_action_dependency(my_sleep_action_1, my_sleep_action_2)
+        # list_of_actions = cjob.get_actions()
+        # mcss.submit_compound_job(cjob)
+        # if (my_sleep_action_1.get_state() == Action.RUNNING):
+        #     print("Action is still running!")
+        # if (my_sleep_action_1.get_state_as_string() == "RUNNING"):
+        #    print("Action is still running!")
+
+
         print("Terminating simulation daemon")
+
         simulation.terminate()
 
     except wrench.WRENCHException as e:
