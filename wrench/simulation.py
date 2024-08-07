@@ -199,7 +199,7 @@ class Simulation:
             file_locations_specs[fl.get_name()] = file_locations[fl].get_name()
 
         data = {"tasks": task_names, "file_locations": file_locations_specs}
-        r = self.__send_request_to_daemon(requests.put,
+        r = self.__send_request_to_daemon(requests.post,
                                           f"{self.daemon_url}/{self.simid}/workflows/{workflow.get_name()}/createStandardJob",
                                           json_data=data)
 
@@ -266,7 +266,7 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
         data = {"name": name, "size": size}
-        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/addFile", json_data=data)
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/addFile", json_data=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -309,7 +309,7 @@ class Simulation:
         :type seconds: float
         """
         data = {"increment": seconds}
-        self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/advanceTime", json_data=data)
+        self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/advanceTime", json_data=data)
 
     def get_simulated_time(self) -> float:
         """
@@ -648,7 +648,7 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
         data = {"file": file.get_name()}
-        r = self.__send_request_to_daemon(requests.put,
+        r = self.__send_request_to_daemon(requests.post,
                                           f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/"
                                           f"{task.get_name()}/addInputFile", json_data=data)
@@ -669,7 +669,7 @@ class Simulation:
         :raises WRENCHException: if there is any error in the response
         """
         data = {"file": file.get_name()}
-        r = self.__send_request_to_daemon(requests.put,
+        r = self.__send_request_to_daemon(requests.post,
                                           f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/"
                                           f"{task.get_name()}/addOutputFile", json_data=data)
@@ -1414,7 +1414,7 @@ class Simulation:
                 "min_num_cores": min_num_cores,
                 "max_num_cores": max_num_cores,
                 "memory": memory}
-        r = self.__send_request_to_daemon(requests.put, f"{self.daemon_url}/{self.simid}/workflows/"
+        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/workflows/"
                                                         f"{workflow.get_name()}/createTask", json_data=data)
 
         response = r.json()
