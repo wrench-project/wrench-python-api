@@ -1415,7 +1415,7 @@ class Simulation:
                 "max_num_cores": max_num_cores,
                 "memory": memory}
         r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/workflows/"
-                                                        f"{workflow.get_name()}/createTask", json_data=data)
+                                                         f"{workflow.get_name()}/createTask", json_data=data)
 
         response = r.json()
         if response["wrench_api_request_success"]:
