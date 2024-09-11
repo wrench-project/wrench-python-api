@@ -6,6 +6,50 @@ on:
       - main
 
 jobs:
+  run-tests-and-examples:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ 3.11 ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install WRENCH
+        run: |
+          brew update
+          brew install gcc
+          brew install nlohmann-json
+          brew install sbt
+          brew install boost
+          wget --no-check-certificate https://framagit.org/simgrid/simgrid/-/archive/v3.36/simgrid-v3.36.tar.gz
+          tar -xf simgrid-v3.36.tar.gz
+          cd simgrid-v3.36
+          cmake .
+          make -j4
+          sudo make install
+          git clone https://github.com/wrench-project/wrench.git
+          cd wrench
+          cmake .
+          make -j4 wrench-daemon
+          sudo make install
+      - name: Start wrench-daemon
+        run: |
+          wrench-daemon &
+          echo "PID=$!" >> $GITHUB_ENV
+      - name: Run all tests
+        run: |
+          cd tests
+          bash ./run_all_tests.sh
+      - name: Run all examples
+        run: |
+          cd examples
+          bash ./run_all_examples.sh
+      - name: Kill wrench-daemon
+        run: |
+          kill ${{ env.PID }} || true
   build-documentation:
     runs-on: ubuntu-latest
     strategy:
