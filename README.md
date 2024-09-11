@@ -11,26 +11,13 @@ Provide a Python API for [WRENCH](https://wrench-project.org). This API is built
 # Dependencies and Installation
 
   - [WRENCH](https://github.com/wrench-project/wrench) and its dependencies
-    - You must compile/install the `wrench-daemon` target during the build process
+    - You must compile the `wrench-daemon` target (i.e., `make wrench-daemon`) during the build process before doing the usual (`sudo make install`)
 
   - Run `pip install .` to install the WRENCH Python API. 
 
-# Example and API Documentation
+# Examples and API Documentation
 
-An example simulator is provided in `example/simulator.py`, and can be executed as follows. In
-a terminal start the `wrench-daemon` as:
-
-```
-wrench-daemon
-```
-
-(use `wrench-daemon --help` to see command-line options)
-
-In another terminal, run the example simulator as:
-
-```
-python3 ./example/simulator.py
-```
+Example simulators are provided in the `examples` directory. See the `README` file therein for information on what these examples are and how to run them.  
 
 For complete documentation, see the [API Documentation page](https://wrench-python-api.readthedocs.io/en/latest/).
 

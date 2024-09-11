@@ -1,0 +1,27 @@
+WRENCH Python API examples:
+
+  - simple_simulator: a simulator that illustrates basic use of the WRENCH workflow API, building a workflow from scratch;
+  - json_workflow_simulator: similar to the simulator above, but imports a workflow from a JSON file in the [WfFormat format](https://github.com/wfcommons/WfFormat);
+  - compound_job_simulator: a simulator that illustrates base use of the WRENCH action API.
+and can be executed as follows. In
+
+
+Before running any of these examples, in a terminal start the `wrench-daemon` as:
+
+```
+wrench-daemon
+```
+
+(use `wrench-daemon --help` to see command-line options)
+
+In another terminal, run the example simulators as:
+
+```
+python3 ./simple_simulator/simulator.py
+
+python3 ./json_workflow_simulator/simulator.py
+
+python3 ./compound_job_simulator/simulator.py
+```
+
+

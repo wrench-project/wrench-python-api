@@ -154,7 +154,8 @@ def main():
 
         # Import the workflow from JSON
         print(f"Importing the workflow from JSON...")
-        f = open("./sample_wfcommons_workflow.json")
+        workflow_file_path = pathlib.Path(current_dir / "sample_wfcommons_workflow.json")
+        f = open(workflow_file_path)
         json_doc = json.load(f)
         workflow = simulation.create_workflow_from_json(json_doc,
                                                         reference_flop_rate="100Mf",
