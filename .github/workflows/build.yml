@@ -35,7 +35,7 @@ jobs:
           wget --no-check-certificate https://framagit.org/simgrid/simgrid/-/archive/v3.36/simgrid-v3.36.tar.gz
           tar -xf simgrid-v3.36.tar.gz
           cd simgrid-v3.36
-          cmake -Denable_documentation=OFF -Denable_smpi=OFF .
+          cmake -Denable_documentation=OFF .
           make -j4
           sudo make install
           cd ..
