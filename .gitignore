@@ -1,4 +1,6 @@
 .idea
+.cache
+.local
 docs/build
 wrench/__pycache__/
 build/
