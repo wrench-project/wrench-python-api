@@ -20,8 +20,6 @@ if __name__ == "__main__":
         simulation = wrench.Simulation()
         simulation.start(platform_file_path, "ControllerHost")
 
-        raise Exception("TEST")
-
         print(f"New simulation, time is {simulation.get_simulated_time()}")
         hosts = simulation.get_all_hostnames()
         print(f"Hosts in the platform are: {hosts}")
@@ -81,12 +79,12 @@ if __name__ == "__main__":
         print("Looking up an entry to the file registry service, just for kicks")
         answer = frs.lookup_entry(file1)
         if answer != [ss]:
-            raise "Error while looking up entry in file registry service"
+            raise wrench.WRENCHException("Error while looking up entry in file registry service")
         print("Removing an entry to the file registry service, just for kicks")
         frs.remove_entry(ss, file1)
         answer = frs.lookup_entry(file1)
         if answer != []:
-            raise "Error while looking up entry in file registry service"
+            raise wrench.WRENCHException("Error while looking up entry in file registry service")
 
         print("Creating a standard job with both tasks, but that doesn't specify file locations")
         job = simulation.create_standard_job([task1, task2], {})
