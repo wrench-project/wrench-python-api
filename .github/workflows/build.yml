@@ -20,10 +20,10 @@ jobs:
       - name: Install wrench-daemon
         run: |
           pip install jsonref
-          apt-get update
-          apt-get -y install gcc
-          apt-get -y install libasio-dev
-          apt-get -y install libboost-all-dev
+          sudo apt-get update
+          sudo apt-get -y install gcc
+          sudo apt-get -y install libasio-dev
+          sudo apt-get -y install libboost-all-dev
           wget https://github.com/nlohmann/json/archive/refs/tags/v3.10.5.tar.gz
           tar -xf v3.10.5.tar.gz
           cd json-3.10.5
