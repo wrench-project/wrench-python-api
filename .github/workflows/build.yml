@@ -63,6 +63,8 @@ jobs:
           pip install .
       - name: Run all tests
         run: |
+          echo `pwd`
+          cd
           cd tests
           bash ./run_all_tests.sh
           cd ..
