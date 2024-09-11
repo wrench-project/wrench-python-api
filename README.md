@@ -22,6 +22,6 @@ Example simulators are provided in the `examples` directory. See the `README` fi
 For complete documentation, see the [API Documentation page](https://wrench-python-api.readthedocs.io/en/latest/).
 
 
-[build-badge]:         https://github.com/wrench-project/wrench-api/workflows/Build/badge.svg
+[build-badge]:         https://github.com/wrench-project/wrench-python-api/actions/workflows/build.yml/badge.svg
 [build-link]:          https://github.com/wrench-project/wrench-api/actions
 [license-badge]:       https://img.shields.io/badge/License-LGPL%20v3-blue.svg
