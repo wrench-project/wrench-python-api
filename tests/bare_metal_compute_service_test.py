@@ -74,8 +74,6 @@ if __name__ == "__main__":
         task2.add_input_file(file2)
         task2.add_output_file(file3)
 
-        raise "TEST VALIDATION ERROR"
-
         print("Adding an entry to the file registry service, just for kicks")
         frs.add_entry(ss, file1)
         print("Looking up an entry to the file registry service, just for kicks")
