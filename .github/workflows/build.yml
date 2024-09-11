@@ -55,6 +55,9 @@ jobs:
           #wrench-daemon &
           docker run -p 8101:8101 wrenchproject/wrench:unstable wrench-daemon &
           echo "PID=$!" >> $GITHUB_ENV
+      - name: Install the wrench Python API
+        run: |
+          pip install .
       - name: Run all tests
         run: |
           cd tests
