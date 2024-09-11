@@ -52,10 +52,12 @@ jobs:
         run: |
           cd tests
           bash ./run_all_tests.sh
+          cd ..
       - name: Run all examples
         run: |
           cd examples
           bash ./run_all_examples.sh
+          cd ..
       - name: Kill wrench-daemon
         run: |
           kill ${{ env.PID }} || true
