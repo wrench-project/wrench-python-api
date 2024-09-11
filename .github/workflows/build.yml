@@ -64,7 +64,7 @@ jobs:
       - name: Run all tests
         run: |
           echo `pwd`
-          cd
+          echo `ls`
           cd tests
           bash ./run_all_tests.sh
           cd ..
