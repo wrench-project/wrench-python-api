@@ -19,42 +19,42 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install wrench-daemon
         run: |
-          #pip install jsonref
-          #apt-get update
-          #apt-get -y install gcc
-          #apt-get -y install libasio-dev
-          #apt-get -y install libboost-all-dev
-          #wget https://github.com/nlohmann/json/archive/refs/tags/v3.10.5.tar.gz
-          #tar -xf v3.10.5.tar.gz
-          #cd json-3.10.5
-          #cmake .
-          #make -j4
-          #sudo make install
-          #cd ..
-          #wget --no-check-certificate https://framagit.org/simgrid/simgrid/-/archive/v3.36/simgrid-v3.36.tar.gz
-          #tar -xf simgrid-v3.36.tar.gz
-          #cd simgrid-v3.36
-          #cmake .
-          #make -j4
-          #sudo make install
-          #cd ..
-          #git clone https://github.com/wrench-project/wrench.git
-          #cd wrench
-          #cmake .
-          #make -j4 wrench-daemon
-          #sudo make install
-          #cd ..
-          sudo apt-get update
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-          sudo apt-get update
-          sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-          docker pull wrenchproject/wrench:unstable
+          pip install jsonref
+          apt-get update
+          apt-get -y install gcc
+          apt-get -y install libasio-dev
+          apt-get -y install libboost-all-dev
+          wget https://github.com/nlohmann/json/archive/refs/tags/v3.10.5.tar.gz
+          tar -xf v3.10.5.tar.gz
+          cd json-3.10.5
+          cmake .
+          make -j4
+          sudo make install
+          cd ..
+          wget --no-check-certificate https://framagit.org/simgrid/simgrid/-/archive/v3.36/simgrid-v3.36.tar.gz
+          tar -xf simgrid-v3.36.tar.gz
+          cd simgrid-v3.36
+          cmake .
+          make -j4
+          sudo make install
+          cd ..
+          git clone https://github.com/wrench-project/wrench.git
+          cd wrench
+          cmake .
+          make -j4 wrench-daemon
+          sudo make install
+          cd ..
+          # WITH DOCKER BELOW
+          #curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          #sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+          #sudo apt-get update
+          #sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+          #docker pull wrenchproject/wrench:unstable
       - name: Start wrench-daemon
         run: |
-          #wrench-daemon &
+          wrench-daemon &
           docker run -p 8101:8101 wrenchproject/wrench:unstable wrench-daemon &
-          echo "PID=$!" >> $GITHUB_ENV
+          #echo "PID=$!" >> $GITHUB_ENV
       - name: Install the wrench Python API
         run: |
           pip install .
