@@ -8,16 +8,12 @@ Support
 The source code for this WRENCH's Python API package is available on
 `GitHub <http://github.com/wrench-project/wrench-api>`_.
 
-The WRENCH API (version 0.1) is functional but very experimental at this stage. It covers
-only a subset of the WRENCH C++ Workflow API. Upcoming releases will
-likely see many API changes.
+The WRENCH API (version 0.1) is functional but only covers subsets of the
+WRENCH C++ Workflow and Action APIs.
 
+See the examples in the `examples` directory with descriptions and explanations in `examples/README`. 
 
-See the example in `example/simulator.py`. 
-
-WRENCH version 2.2 is required, as
-it includes the `wrench-daemon` which must be started on the local machine before
-executing a WRENCH Python program, like the above example. 
+WRENCH version 2.3 is required, and the `wrench-daemon` target must have been built when installing (i.e., `make wrench-daemon; sudo make install`).
 
 Our preferred channel to report a bug or request a feature is via WRENCH's Python
 API Github `Issues Track <https://github.com/wrench-project/wrench-api/issues>`_.
