@@ -159,7 +159,7 @@ if __name__ == "__main__":
         #    print("Action is still running!")
 
 
-        print("Terminating simulation daemon")
+        print("Terminating simulation")
 
         simulation.terminate()
 

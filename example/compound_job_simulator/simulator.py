@@ -144,7 +144,7 @@ if __name__ == "__main__":
         # print(f"  - Event: {event}")
         # print(f"Time is {simulation.get_simulated_time()}")
 
-        print("Terminating simulation daemon")
+        print("Terminating simulation")
         simulation.terminate()
 
     except wrench.WRENCHException as e:
