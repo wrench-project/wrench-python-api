@@ -13,7 +13,7 @@ Provide a Python API for [WRENCH](https://wrench-project.org). This API is built
   - [WRENCH](https://github.com/wrench-project/wrench) and its dependencies
     - You must compile/install the `wrench-daemon` target during the build process
 
-  - Run `python3 ./setup.py install` to install the WRENCH Python API. 
+  - Run `pip install .` to install the WRENCH Python API. 
 
 # Example and API Documentation
 
