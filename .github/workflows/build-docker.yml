@@ -35,7 +35,7 @@ jobs:
           docker exec --workdir /home/wrench/tests wrench-daemon-container bash ./run_all_tests.sh
       - name: Run all examples
         run: |
-          docker exec --workdir /home/wrench/examples wrench-daemon-container bash ./run_all_tests.sh
+          docker exec --workdir /home/wrench/examples wrench-daemon-container bash ./run_all_examples.sh
       - name: Kill wrench-daemon
         run: |
           docker kill wrench-daemon-container
