@@ -54,7 +54,7 @@ jobs:
           #docker pull wrenchproject/wrench:unstable
       - name: Start wrench-daemon
         run: |
-          echo "LD_LIBRARY_PATH=/usr/local/lib/" >> $GITHUB_ENV
+          export LD_LIBRARY_PATH=/usr/local/lib/
           wrench-daemon &
           #docker run -p 8101:8101 wrenchproject/wrench:unstable wrench-daemon &
           echo "PID=$!" >> $GITHUB_ENV
