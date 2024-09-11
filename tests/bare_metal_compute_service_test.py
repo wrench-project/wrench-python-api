@@ -74,6 +74,18 @@ if __name__ == "__main__":
         task2.add_input_file(file2)
         task2.add_output_file(file3)
 
+        print("Adding an entry to the file registry service, just for kicks")
+        frs.add_entry(ss, file1)
+        print("Looking up an entry to the file registry service, just for kicks")
+        answer = frs.lookup_entry(file1)
+        if answer != [ss]:
+            raise "Error while looking up entry in file registry service"
+        print("Removing an entry to the file registry service, just for kicks")
+        frs.remove_entry(ss, file1)
+        answer = frs.lookup_entry(file1)
+        if answer != []:
+            raise "Error while looking up entry in file registry service"
+
         print("Creating a standard job with both tasks, but that doesn't specify file locations")
         job = simulation.create_standard_job([task1, task2], {})
 
