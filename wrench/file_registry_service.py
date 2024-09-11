@@ -30,9 +30,10 @@ class FileRegistryService(SimulationItem):
     def add_entry(self, storage_service: StorageService, file: File):
         """
         Add an entry (storage service / file) to the file registry service
-        :param storage_service
+
+        :param storage_service: a storage service
         :type storage_service: StorageService
-        :param file: the file
+        :param file: a file
         :type file: File
         :return:
         """
@@ -41,9 +42,10 @@ class FileRegistryService(SimulationItem):
     def lookup_entry(self, file: File) -> List[StorageService]:
         """
         Lookup an entry (file) to the file registry service
-        :param file: the file
+
+        :param file: a file
         :type file: File
-        :return List of StorageServices associated with file
+        :return: List of StorageServices associated with file
         :rtype: str[]
         """
         return self.simulation._lookup_entry_in_file_registry_service(self, file)
@@ -51,9 +53,10 @@ class FileRegistryService(SimulationItem):
     def remove_entry(self, storage_service: StorageService, file: File):
         """
         Removes an entry (file/storage service) from the file registry service
-        :param file: the file
+
+        :param file: a file
         :type file: File
-        :param storage_service: the storage service
+        :param storage_service: a storage service
         :type storage_service: StorageService
         :return:
         """
@@ -74,3 +77,4 @@ class FileRegistryService(SimulationItem):
         """
         s = f"FileRegistryService(name={self.name})"
         return s
+

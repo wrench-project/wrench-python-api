@@ -43,6 +43,7 @@ support@wrench-project.org.
     api_cloud_compute_service.rst
     api_virtual_machine.rst
     api_storage_service.rst
+    api_file_registry_service.rst
 
 
 .. |build-badge| image:: https://github.com/wrench-project/wrench-api/workflows/Build/badge.svg

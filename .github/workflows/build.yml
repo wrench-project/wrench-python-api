@@ -19,6 +19,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install wrench-daemon
         run: |
+          cd /tmp/
           pip install jsonref
           sudo apt-get update
           sudo apt-get -y install gcc
@@ -44,6 +45,7 @@ jobs:
           make -j4 wrench-daemon
           sudo make install
           cd ..
+          cd
           # WITH DOCKER BELOW
           #curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
           #sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
