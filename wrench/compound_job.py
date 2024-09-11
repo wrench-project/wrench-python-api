@@ -56,13 +56,13 @@ class CompoundJob(SimulationItem):
                            max_num_cores: int, min_num_cores: int, parallel_model: tuple) -> ComputeAction:
         """
         Add a sleep action to the compound job
+
         :param name: name of compute action
         :type name: str
         :param flops: flops associated with this action
         :type flops: float
-        :param ram : minimum amount of ram needed
+        :param ram: minimum amount of ram needed
         :type ram: float
-        :param ram : minimum amount of ram needed
         :param min_num_cores: minimum amount of cores this action needs
         :type min_num_cores: int
         :param max_num_cores: maximum amount of cores this action can use
@@ -76,6 +76,7 @@ class CompoundJob(SimulationItem):
                              dest_storage_service: StorageService) -> FileCopyAction:
         """
         Add a file copy action to the compound job
+
         :param name: name of file copy action
         :type name: str
         :param file: name of file being copied
@@ -90,6 +91,7 @@ class CompoundJob(SimulationItem):
     def add_file_delete_action(self, name: str, file: File, storage_service: StorageService) -> FileDeleteAction:
         """
         Add a file delete action to the compound job
+
         :param name: name of file delete action
         :type name: str
         :param file: name of file being deleted
@@ -102,6 +104,7 @@ class CompoundJob(SimulationItem):
     def add_file_write_action(self, name: str, file: File, storage_service: StorageService) -> FileWriteAction:
         """
         Add a file write action to the compound job
+
         :param name: name of file write action
         :type name: str
         :param file: name of file to write
@@ -115,6 +118,7 @@ class CompoundJob(SimulationItem):
                              num_bytes_to_read=-1.0) -> FileReadAction:
         """
         Add a file write action to the compound job
+
         :param name: name of file write action
         :type name: str
         :param file: name of file to write
@@ -129,6 +133,7 @@ class CompoundJob(SimulationItem):
     def add_sleep_action(self, name: str, sleep_time: float) -> SleepAction:
         """
         Add a sleep action to the compound job
+
         :param name: name of the sleep action
         :type name: str
         :param sleep_time: the time to sleep
@@ -140,6 +145,7 @@ class CompoundJob(SimulationItem):
     def add_parent_job(self, parent_compound_job: CompoundJob):
         """
         Add a parent compound job to this compound job
+
         :param parent_compound_job: name of parent compound job
         :type parent_compound_job: CompoundJob
         :return:
@@ -161,3 +167,4 @@ class CompoundJob(SimulationItem):
         """
         s = f"CompoundJob(name={self.name})"
         return s
+
