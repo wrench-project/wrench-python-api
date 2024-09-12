@@ -86,6 +86,8 @@ jobs:
           # END WITHOUT DOCKER
           docker exec --workdir /home/wrench/examples wrench-daemon-container bash ./run_all_examples.sh
       - name: Compute coverage
+        env:
+          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
         run: |
           # WITHOUT DOCKER
           #pip install coverage
