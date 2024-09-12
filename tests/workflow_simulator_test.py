@@ -83,7 +83,7 @@ if __name__ == "__main__":
         print(f"The imported workflow from JSON has {len(workflow2.get_tasks())} tasks")
         print(f"One of its tasks is: {workflow2.get_tasks()[next(iter(workflow2.get_tasks()))]}")
 
-        print("Terminating simulation daemon")
+        print("Terminating simulation")
         simulation.terminate()
 
     except wrench.WRENCHException as e:

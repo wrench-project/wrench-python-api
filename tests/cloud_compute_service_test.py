@@ -140,7 +140,7 @@ if __name__ == "__main__":
         except wrench.WRENCHException as e:
             pass
 
-        print("Terminating simulation daemon")
+        print("Terminating simulation")
         simulation.terminate()
 
     except wrench.WRENCHException as e:

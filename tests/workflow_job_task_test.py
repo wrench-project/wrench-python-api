@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
         print(f"This job contains the following tasks: {job.get_tasks()}")
 
-        print("Terminating simulation daemon")
+        print("Terminating simulation")
         simulation.terminate()
 
     except wrench.WRENCHException as e:
