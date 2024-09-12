@@ -1,0 +1,8 @@
+[run]
+include = */wrench/*
+
+[report]
+omit =
+    wrench/__init__.py
+    tests/*
+    examples/*
