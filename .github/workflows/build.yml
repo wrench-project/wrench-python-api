@@ -104,7 +104,10 @@ jobs:
           cd repo;
           echo "ORIGINAL README:"
           tail README.md
-          sed -i "s|!\\[coverage-badge\\](.*)|![coverage-badge](${badge_url})|" README.md;
+          head -n -1 README.md > README_tmp.md
+          echo "${badge_url}" >> README_tmp.md
+          mv README_tmp.md README.md
+          #sed -i "s|!\\[coverage-badge\\](.*)|![coverage-badge](${badge_url})|" README.md;
           echo "UPDATED README:"
           tail README.md
           if git diff --quiet; then
