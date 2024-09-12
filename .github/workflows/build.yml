@@ -104,10 +104,13 @@ jobs:
           cd repo;
           echo "ORIGINAL README:"
           tail README.md
-          #sed -i "s|!\\[coverage-badge\\](.*)|![coverage-badge](${badge_url})|" README.md;
-          echo "TESTING " >> README.md;
+          sed -i "s|!\\[coverage-badge\\](.*)|![coverage-badge](${badge_url})|" README.md;
           echo "UPDATED README:"
           tail README.md
+          if git diff --quiet; then
+            echo "No changes detected in README.md. Skipping commit and push."
+            exit 0
+          fi
           echo "HERE1"
           git config user.name "github-actions"
           echo "HERE2"
