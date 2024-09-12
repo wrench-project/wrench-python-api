@@ -4,8 +4,6 @@ set -e
 
 first_file_executed=false
 
-ls -la /home/wrench/
-
 for file in tests/*.py; do
     if [ -f "$file" ]; then
     	if [ "$first_file_executed" = false ]; then
