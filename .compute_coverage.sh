@@ -17,3 +17,4 @@ for file in tests/*.py; do
 done
 
 python3 -m coverage report | grep TOTAL | sed "s/.* //"
+echo "(To see full report: python3 -m coverage html)" >&2
