@@ -98,11 +98,19 @@ jobs:
           COVERAGE_PERCENTAGE=$(docker exec --workdir /home/wrench/ wrench-daemon-container bash ./.compute_coverage.sh)
           badge_url="https://img.shields.io/badge/coverage-${COVERAGE_PERCENTAGE}25-brightgreen"
           sed -i "s|!\\[coverage-badge\\](.*)|![coverage-badge](${badge_url})|" README.md
+          echo "UPDATED README:"
+          cat README.md
+          echo "HERE1"
           git config user.name "github-actions"
+          echo "HERE1"
           git config user.email "github-actions@github.com"
+          echo "HERE1"
           git add README.md
+          echo "HERE1"
           git commit -m "Update coverage badge URL in README"
+          echo "HERE1"
           git push
+          echo "HERE1"
       - name: Kill wrench-daemon
         run: |
           # WITHOUT DOCKER
