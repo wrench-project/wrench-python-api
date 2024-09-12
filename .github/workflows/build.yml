@@ -87,7 +87,7 @@ jobs:
           docker exec --workdir /home/wrench/examples wrench-daemon-container bash ./run_all_examples.sh
       - name: Compute coverage
         env:
-          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # WITHOUT DOCKER
           #pip install coverage
@@ -99,8 +99,8 @@ jobs:
           echo "COVERAGE_PERCENTAGE: $COVERAGE_PERCENTAGE"
           badge_url="https://img.shields.io/badge/coverage-${COVERAGE_PERCENTAGE}25-brightgreen"
           echo "BADGE_URL = $badge_url"
-          #git clone --quiet https://${TOKEN_GITHUB}@github.com/wrench-project/wrench-python-api.git > /dev/null;
-          git clone https://${TOKEN_GITHUB}@github.com/wrench-project/wrench-python-api.git
+          #git clone --quiet https://${GITHUB_TOKEN}@github.com/wrench-project/wrench-python-api.git > /dev/null;
+          git clone https://${GITHUB_TOKEN}@github.com/wrench-project/wrench-python-api.git
           cd wrench-python-api;
           echo "ORIGINAL README:"
           tail README.md
