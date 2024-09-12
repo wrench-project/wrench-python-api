@@ -87,8 +87,8 @@ jobs:
           docker exec --workdir /home/wrench/examples wrench-daemon-container bash ./run_all_examples.sh
       - name: Compute coverage
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: 
+          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+        run: |
           # WITHOUT DOCKER
           #pip install coverage
           #bash ./.compute_coverage.sh
@@ -100,7 +100,7 @@ jobs:
           badge_url="https://img.shields.io/badge/coverage-${COVERAGE_PERCENTAGE}25-brightgreen"
           echo "BADGE_URL = $badge_url"
           #git clone --quiet https://${TOKEN_GITHUB}@github.com/wrench-project/wrench-python-api.git > /dev/null;
-          git clone https://${GITHUB_TOKEN}@github.com/wrench-project/wrench-python-api.git
+          git clone https://${TOKEN_GITHUB}@github.com/wrench-project/wrench-python-api.git
           cd wrench-python-api;
           echo "ORIGINAL README:"
           tail README.md
@@ -117,7 +117,7 @@ jobs:
           echo "HERE4"
           git commit -m "Update coverage badge URL in README"
           echo "HERE5"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main
+          git push
           echo "HERE6"
       - name: Kill wrench-daemon
         run: |
