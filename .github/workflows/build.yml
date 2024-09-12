@@ -99,18 +99,20 @@ jobs:
           badge_url="https://img.shields.io/badge/coverage-${COVERAGE_PERCENTAGE}25-brightgreen"
           sed -i "s|!\\[coverage-badge\\](.*)|![coverage-badge](${badge_url})|" README.md
           echo "UPDATED README:"
-          cat README.md
+          tail README.md
           echo "HERE1"
+          git diff 
+          echo "HERE1.1"
           git config user.name "github-actions"
-          echo "HERE1"
+          echo "HERE2"
           git config user.email "github-actions@github.com"
-          echo "HERE1"
+          echo "HERE3"
           git add README.md
-          echo "HERE1"
+          echo "HERE4"
           git commit -m "Update coverage badge URL in README"
-          echo "HERE1"
+          echo "HERE5"
           git push
-          echo "HERE1"
+          echo "HERE6"
       - name: Kill wrench-daemon
         run: |
           # WITHOUT DOCKER
