@@ -117,7 +117,7 @@ jobs:
           echo "HERE4"
           git commit -m "Update coverage badge URL in README"
           echo "HERE5"
-          git push
+          git push https://x-access-token:${{ secrets.TOKEN_GITHUB }}@github.com/${{ github.repository }} HEAD:main
           echo "HERE6"
       - name: Kill wrench-daemon
         run: |
