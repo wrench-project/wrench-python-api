@@ -1,7 +1,7 @@
 .idea
 .cache/
 .local/
-.coverage/
+.coverage
 docs/build
 wrench/__pycache__/
 build/
