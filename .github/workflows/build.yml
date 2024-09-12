@@ -87,9 +87,14 @@ jobs:
           docker exec --workdir /home/wrench/examples wrench-daemon-container bash ./run_all_examples.sh
       - name: Compute coverage
         run: |
-          docker exec --workdir /home/wrench/ wrench-daemon-container sudo pip install coverage
-          COVERAGE_PERCENTAGE=$(docker exec --workdir /home/wrench/ wrench-daemon-container bash ./.compute_coverage.sh)
-          echo "COVERAGE_PERCENTAGE=$COVERAGE_PERCENTAGE"
+          # WITHOUT DOCKER
+          #pip install coverage
+          #bash ./.compute_coverage.sh
+          # END WITHOUT DOCKER
+          docker exec wrench-daemon-container sudo pip install coverage
+          docker exec --workdir /home/wrench/ wrench-daemon-container bash ./.compute_coverage.sh
+          #COVERAGE_PERCENTAGE=$(docker exec --workdir /home/wrench/ wrench-daemon-container bash ./.compute_coverage.sh)
+          #echo "COVERAGE_PERCENTAGE=$COVERAGE_PERCENTAGE"
       - name: Kill wrench-daemon
         run: |
           # WITHOUT DOCKER
