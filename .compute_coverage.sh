@@ -8,10 +8,10 @@ for file in tests/*.py; do
     echo "FILE: $file"
     if [ -f "$file" ]; then
     	if [ "$first_file_executed" = false ]; then
-        	python3 -m coverage run "$file" 1> /dev/null
+        	python3 -m coverage run "$file"
 		first_file_executed=true
 	else
-        	python3 -m coverage run -a "$file" 1> /dev/null
+        	python3 -m coverage run -a "$file"
 	fi
 
     fi
