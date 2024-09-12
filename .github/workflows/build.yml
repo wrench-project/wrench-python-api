@@ -97,12 +97,12 @@ jobs:
           #docker exec --workdir /home/wrench/ wrench-daemon-container bash ./.compute_coverage.sh
           COVERAGE_PERCENTAGE=$(docker exec --workdir /home/wrench/ wrench-daemon-container bash ./.compute_coverage.sh)
           badge_url="https://img.shields.io/badge/coverage-${COVERAGE_PERCENTAGE}25-brightgreen"
-          sed -i "s|!\\[coverage-badge\\](.*)|![coverage-badge](${badge_url})|" README.md
+          git clone --quiet https://${TOKEN_GITHUB}@github.com/wrench-project/wrench-python-api.git > /dev/null;
+          cd wrench-python-api;
+          sed -i "s|!\\[coverage-badge\\](.*)|![coverage-badge](${badge_url})|" README.md;
           echo "UPDATED README:"
           tail README.md
           echo "HERE1"
-          git diff 
-          echo "HERE1.1"
           git config user.name "github-actions"
           echo "HERE2"
           git config user.email "github-actions@github.com"
