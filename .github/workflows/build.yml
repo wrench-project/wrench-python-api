@@ -95,8 +95,9 @@ jobs:
           #docker exec --workdir /home/wrench/ wrench-daemon-container bash ./.compute_coverage.sh
           COVERAGE_PERCENTAGE=$(docker exec --workdir /home/wrench/ wrench-daemon-container bash ./.compute_coverage.sh)
           echo "COVERAGE_PERCENTAGE=$COVERAGE_PERCENTAGE" >> $GITHUB_ENV
-          curl -o coverage-badge.svg "https://img.shields.io/badge/coverage-${{ env.COVERAGE_PERCENTAGE }}-brightgreen"
-          gh secret set COVERAGE_BADGE_URL --body="https://raw.githubusercontent.com/${{ github.repository }}/main/coverage-badge.svg"
+          badge_url="https://img.shields.io/badge/coverage-${COVERAGE_PERCENTAGE}-brightgreen"
+          echo "COVERAGE BADGE URL: $badge_url"
+          echo "COVERAGE_BADGE_URL=$badge_url" >> $GITHUB_ENV
       - name: Kill wrench-daemon
         run: |
           # WITHOUT DOCKER
