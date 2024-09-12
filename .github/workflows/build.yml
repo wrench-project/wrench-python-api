@@ -100,8 +100,8 @@ jobs:
           badge_url="https://img.shields.io/badge/coverage-${COVERAGE_PERCENTAGE}25-brightgreen"
           echo "BADGE_URL = $badge_url"
           #git clone --quiet https://${GITHUB_TOKEN}@github.com/wrench-project/wrench-python-api.git > /dev/null;
-          git clone https://${GITHUB_TOKEN}@github.com/wrench-project/wrench-python-api.git
-          cd wrench-python-api;
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} repo
+          cd repo;
           echo "ORIGINAL README:"
           tail README.md
           #sed -i "s|!\\[coverage-badge\\](.*)|![coverage-badge](${badge_url})|" README.md;
@@ -117,7 +117,7 @@ jobs:
           echo "HERE4"
           git commit -m "Update coverage badge URL in README"
           echo "HERE5"
-          git push
+          git push origin main
           echo "HERE6"
       - name: Kill wrench-daemon
         run: |
