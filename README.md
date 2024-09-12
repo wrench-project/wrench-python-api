@@ -1,5 +1,7 @@
 [![Build][build-badge]][build-link]
 [![License: LGPL v3][license-badge]](LICENSE)
+![coverage-badge]
+
 
 <a href="https://wrench-project.org" target="_blank"><img src="https://wrench-project.org/images/logo-horizontal.png" width="350" alt="WRENCH Project" /></a>
 <br/>_Cyberinfrastructure Simulation Workbench_
