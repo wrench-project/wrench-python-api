@@ -2,9 +2,6 @@
 
 set -e
 
-echo "33%"
-exit 0
-
 first_file_executed=false
 
 for file in tests/*.py; do
