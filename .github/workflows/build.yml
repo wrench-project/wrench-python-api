@@ -96,10 +96,14 @@ jobs:
           docker exec wrench-daemon-container sudo pip install coverage
           #docker exec --workdir /home/wrench/ wrench-daemon-container bash ./.compute_coverage.sh
           COVERAGE_PERCENTAGE=$(docker exec --workdir /home/wrench/ wrench-daemon-container bash ./.compute_coverage.sh)
+          echo "COVERAGE_PERCENTAGE: $COVERAGE_PERCENTAGE"
           badge_url="https://img.shields.io/badge/coverage-${COVERAGE_PERCENTAGE}25-brightgreen"
+          echo "BADGE_URL = $badge_url"
           #git clone --quiet https://${TOKEN_GITHUB}@github.com/wrench-project/wrench-python-api.git > /dev/null;
           git clone https://${TOKEN_GITHUB}@github.com/wrench-project/wrench-python-api.git
           cd wrench-python-api;
+          echo "ORIGINAL README:"
+          tail README.md
           sed -i "s|!\\[coverage-badge\\](.*)|![coverage-badge](${badge_url})|" README.md;
           echo "UPDATED README:"
           tail README.md
