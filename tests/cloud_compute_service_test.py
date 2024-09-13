@@ -9,6 +9,8 @@
 # (at your option) any later version.
 
 import pathlib
+import sys
+
 import wrench
 
 if __name__ == "__main__":
@@ -144,5 +146,5 @@ if __name__ == "__main__":
         simulation.terminate()
 
     except wrench.WRENCHException as e:
-        print(f"Error: {e}")
+        sys.stderr.write(f"Error: {e}\n")
         exit(1)
