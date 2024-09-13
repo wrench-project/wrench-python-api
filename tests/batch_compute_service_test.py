@@ -25,7 +25,7 @@ if __name__ == "__main__":
     except wrench.WRENCHException as e:
         sys.stderr.write(f"Error: {e}\n")
         exit(1)
-        
+
     cs = simulation.create_batch_compute_service(
         "BatchHeadHost",
         ["BatchHost1", "BatchHost2"],
