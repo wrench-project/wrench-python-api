@@ -119,6 +119,9 @@ if __name__ == "__main__":
 
         print(f"Time is {simulation.get_simulated_time()}")
 
+        if not workflow.is_done():
+            raise wrench.WRENCHException("The workflow should be done")
+
         print("Terminating simulation")
         simulation.terminate()
 

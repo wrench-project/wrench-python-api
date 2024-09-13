@@ -42,12 +42,18 @@ if __name__ == "__main__":
               f", max_num_cores={task1.get_max_num_cores()}" +
               f", memory={task1.get_memory()}")
 
+        if workflow1.get_ready_tasks() != [task1]:
+            raise wrench.WRENCHException("The list of ready tasks is invalid (should be [task1])")
+
         task1.add_input_file(file1)
         print(f"Attached file {file1} as input file to task {task1.get_name()}")
         print(f"The list of input files for task {task1.get_name()} is: {task1.get_input_files()}")
         task1.add_output_file(file2)
         print(f"Attached file {file2} as output file to task {task1.get_name()}")
         print(f"The list of output files for task {task1.get_name()} is: {task1.get_output_files()}")
+
+        if workflow1.is_done():
+            raise wrench.WRENCHException("The workflow should not be done")
 
         print("Creating another task")
         task2 = workflow1.add_task("task2", 1000.0, 4, 4, 0)
@@ -62,6 +68,13 @@ if __name__ == "__main__":
         task2.add_output_file(file3)
         print(f"Attached file {file3} as output file to task {task2.get_name()}")
         print(f"The list of output files for task {task2.get_name()} is: {task2.get_output_files()}")
+
+        if task1 not in workflow1.get_ready_tasks():
+            raise wrench.WRENCHException("task1 should be ready")
+        if task2 in workflow1.get_ready_tasks():
+            raise wrench.WRENCHException("task2 should not be ready")
+        if len(workflow1.get_ready_tasks()) != 1:
+            raise wrench.WRENCHException("There should be 1 ready tasks")
 
         print(f"The tasks in the workflow are: {workflow1.get_tasks()}")
 
@@ -82,6 +95,7 @@ if __name__ == "__main__":
         print(f"{workflow2}")
         print(f"The imported workflow from JSON has {len(workflow2.get_tasks())} tasks")
         print(f"One of its tasks is: {workflow2.get_tasks()[next(iter(workflow2.get_tasks()))]}")
+        print(f"It's input files are: {workflow2.get_input_files()}")
 
         print("Terminating simulation")
         simulation.terminate()

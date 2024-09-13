@@ -17,7 +17,7 @@ from typing import List
 from typing import Tuple
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
+if TYPE_CHECKING: # pragma: no cover
     # from wrench.compound_job import CompoundJob
     from wrench.action import Action
     from wrench.compute_action import ComputeAction
