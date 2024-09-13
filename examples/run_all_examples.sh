@@ -2,6 +2,7 @@
 
 set -e
 
-python3 compound_job_simulator/simulator.py
-python3 json_workflow_simulator/simulator.py
-python3 simple_simulator/simulator.py
+for file in */*.py; do
+	echo "*** RUNNING EXAMPLE $file ***"
+	python3 $file
+done
