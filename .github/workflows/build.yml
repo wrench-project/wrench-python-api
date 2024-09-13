@@ -96,7 +96,7 @@ jobs:
           docker exec wrench-daemon-container sudo pip install coverage
           COVERAGE_PERCENTAGE=$(docker exec --workdir /home/wrench/ wrench-daemon-container bash ./.compute_coverage.sh)
           echo "COVERAGE_PERCENTAGE: $COVERAGE_PERCENTAGE"
-          badge_url="https://img.shields.io/badge/coverage-${COVERAGE_PERCENTAGE}25-brightgreen"
+          badge_url="https://img.shields.io/badge/Coverage-${COVERAGE_PERCENTAGE}25-brightgreen"
           git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} repo
           cd repo;
           tail README.md

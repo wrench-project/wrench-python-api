@@ -14,6 +14,7 @@ import wrench
 
 if __name__ == "__main__":
 
+
     current_dir = pathlib.Path(__file__).parent.resolve()
     platform_file_path = pathlib.Path(current_dir / "sample_platform.xml")
 
@@ -138,4 +139,3 @@ if __name__ == "__main__":
     assert workflow.is_done(), "The workflow should be done"
 
     simulation.terminate()
-    print("PASSED")
