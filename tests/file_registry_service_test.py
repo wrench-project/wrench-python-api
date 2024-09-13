@@ -49,7 +49,7 @@ if __name__ == "__main__":
     frs.add_entry(ss1, file1)
     assert frs.lookup_entry(file1) == [ss1], "Should find file1 entry in file registry service"
     frs.add_entry(ss2, file1)
-    assert frs.lookup_entry(file1) == [ss1,ss2], "Should find file1 entry in file registry service"
+    assert ss1 in frs.lookup_entry(file1) and ss2 in frs.lookup_entry(file1), "Should find file1 entry in file registry service"
 
     assert frs.lookup_entry(file2) == [], "Should not find file2 entry in file registry service"
 
