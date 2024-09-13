@@ -141,7 +141,7 @@ def main():
         # Create a data structure that keeps track of the compute resources, which
         # will be used for scheduling
         print(f"Creating a convenient data structure for scheduling...")
-        compute_resources = {}
+        compute_resources: dict[ComputeService, dict] = {}
         for bmcs in running_bmcss:
             # print(f"Getting core counts...")
             per_host_num_cores = bmcs.get_core_counts()
@@ -184,7 +184,7 @@ def main():
             event = simulation.wait_for_next_event()
             if event["event_type"] != "standard_job_completion":
                 print(f"  - Event: {event}")  # Should make sure it's a job completion
-                raise WRENCHException("Received an unexpected event")
+                raise wrench.WRENCHException("Received an unexpected event")
             else:
                 completed_job = event["standard_job"]
                 completed_task_name = completed_job.get_tasks()[0].get_name()

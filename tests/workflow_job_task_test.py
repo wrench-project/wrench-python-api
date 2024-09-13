@@ -20,6 +20,10 @@ if __name__ == "__main__":
         simulation = wrench.Simulation()
         simulation.start(platform_file_path, "ControllerHost")
         workflow = simulation.create_workflow()
+        workflow.get_name()
+        str(workflow)
+        repr(workflow)
+
         print("Adding a a 1kB file to the simulation...")
         file1 = simulation.add_file("file1", 1024)
         print(f"Created file {file1}")
