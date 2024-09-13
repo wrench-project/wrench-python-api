@@ -155,7 +155,6 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.get, f"{self.daemon_url}/{self.simid}/waitForNextSimulationEvent",
                                           json_data={})
         response = r.json()["event"]
-        print(response)
         return self.__json_event_to_dict(response)
 
     def get_simulation_events(self) -> List[Dict[str, Union[str, StandardJob, ComputeService]]]:
