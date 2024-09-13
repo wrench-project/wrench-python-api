@@ -41,7 +41,7 @@ class FileCopyAction(Action):
         self.src_storage_service = src_storage_service
         self.dest_storage_service = dest_storage_service
         self.file = file
-        self.uses_scratch = uses_scratch
+        self._uses_scratch = uses_scratch
         super().__init__(simulation, name, compound_job)
 
     def get_destination_file_location(self) -> StorageService:
@@ -78,7 +78,7 @@ class FileCopyAction(Action):
         :return: boolean on whether action uses scratch
         :rtype: boolean
         """
-        return self.uses_scratch
+        return self._uses_scratch
 
     def __str__(self) -> str:
         """

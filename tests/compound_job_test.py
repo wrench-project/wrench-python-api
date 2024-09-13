@@ -10,137 +10,134 @@
 
 import pathlib
 import sys
+
 import wrench
 
 if __name__ == "__main__":
 
-    try:
-        # Instantiating the simulation based on a platform description file
-        current_dir = pathlib.Path(__file__).parent.resolve()
-        platform_file_path = pathlib.Path(current_dir / "sample_platform.xml")
+    # Instantiating the simulation based on a platform description file
+    current_dir = pathlib.Path(__file__).parent.resolve()
+    platform_file_path = pathlib.Path(current_dir / "sample_platform.xml")
 
-        # Creating a new WRENCH simulation
-        simulation = wrench.Simulation()
+    # Creating a new WRENCH simulation
+    simulation = wrench.Simulation()
 
-        # Starting the simulation, with this simulated process running on the host ControllerHost
-        simulation.start(platform_file_path, "ControllerHost")
+    # Starting the simulation, with this simulated process running on the host ControllerHost
+    simulation.start(platform_file_path, "ControllerHost")
 
-        # Creating a  compute services
-        bmcs = simulation.create_bare_metal_compute_service(
-            "BatchHeadHost",
-            {"BatchHost1": (6, 10.0),
-             "BatchHost2": (6, 12.0)},
-            "/scratch",
-            {"BareMetalComputeServiceProperty::THREAD_STARTUP_OVERHEAD": "12s"},
-            {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
+    # Creating a  compute services
+    bmcs = simulation.create_bare_metal_compute_service(
+        "BatchHeadHost",
+        {"BatchHost1": (6, 10.0),
+         "BatchHost2": (6, 12.0)},
+        "/scratch",
+        {"BareMetalComputeServiceProperty::THREAD_STARTUP_OVERHEAD": "12s"},
+        {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
 
-        # Create two storage service
-        ss1 = simulation.create_simple_storage_service("StorageHost", ["/"])
-        ss2 = simulation.create_simple_storage_service("ControllerHost", ["/"])
+    # Create two storage service
+    ss1 = simulation.create_simple_storage_service("StorageHost", ["/"])
+    ss2 = simulation.create_simple_storage_service("ControllerHost", ["/"])
 
-        # Creating files
-        file1 = simulation.add_file("file1", 1024)
-        file2 = simulation.add_file("file2", 1024)
+    # Creating files
+    file1 = simulation.add_file("file1", 1024)
+    file2 = simulation.add_file("file2", 1024)
 
-        # Adding a file to a storage service
-        ss1.create_file_copy(file1)
+    # Adding a file to a storage service
+    ss1.create_file_copy(file1)
 
-        # Creating a compound job
-        cj = simulation.create_compound_job("")
-        print(f"Created compound job with name {cj.get_name()}")
+    # Creating a compound job
+    cj = simulation.create_compound_job("")
+    cj.get_name()
+    str(cj)
+    repr(cj)
 
-        # Add a file write action to compound job
-        fwa = cj.add_file_write_action("FileWriteAction1", file1, ss1)
-        print(f"Adding {fwa.get_name()} to {cj.get_name()}")
+    # Add a file write action to compound job
+    fwa = cj.add_file_write_action("FileWriteAction1", file1, ss1)
+    fwa.get_name()
+    str(fwa)
+    repr(fwa)
 
-        print(f"File Write Action get_file = {fwa.get_file()}")
-        print(f"File Write Action get_file_location = {fwa.get_file_location()}")
-        print(f"File Write Action uses_scratch = {fwa.uses_scratch}")
+    assert fwa.get_file() == file1, "FileWriteAction1 doesn't have the correct file"
+    assert fwa.get_file_location() == ss1, "FileWriteAction1 doesn't have the correct file location"
+    assert not fwa.uses_scratch(), "FileWriteAction1 doesn't have the correct use of scratch"
 
-        # Add a file read action to compound job
-        fra = cj.add_file_read_action("FileReadAction1", file1, ss1)
-        print(f"Adding {fra.get_name()} to {cj.get_name()}")
+    # Add a file read action to compound job
+    fra = cj.add_file_read_action("FileReadAction1", file1, ss1)
+    fra.get_name()
+    str(fra)
+    repr(fra)
 
-        print(f"File Read Action get_file = {fra.get_file()}")
-        print(f"File Read Action get_file_location = {fra.get_file_location()}")
-        print(f"File Read Action get_num_bytes_to_read = {fra.get_file_location()}")
-        print(f"File Read Action uses_scratch = {fra.uses_scratch}")
+    assert fra.get_file() == file1, "FileReadAction1 doesn't have the correct file"
+    assert fra.get_file_location() == ss1, "FileReadAction1 doesn't have the correct file location"
+    assert fra.get_num_bytes_to_read() == file1.get_size(), "FileReadAction1 doesn't have the correct number of bytes"
+    assert not fra.uses_scratch(), "FileReadAction1 doesn't have the correct use of scratch"
 
-        # Add a file copy action to compound job
-        fca = cj.add_file_copy_action("FileCopyAction1", file1, ss1, ss2)
-        print(f"Adding {fca.get_name()} to {cj.get_name()}")
+    # Add a file copy action to compound job
+    fca = cj.add_file_copy_action("FileCopyAction1", file1, ss1, ss2)
+    fca.get_name()
+    str(fca)
+    repr(fca)
 
-        print(f"File Copy Action getFile = {fca.get_file()}")
-        print(f"File Copy Action getSourceFileLocation = {fca.get_source_file_location()}")
-        print(f"File Copy Action getDestinationFileLocation = {fca.get_destination_file_location()}")
-        print(f"File Copy Action usesScratch = {fca.uses_scratch}")
+    assert fca.get_file() == file1, "FileCopyAction1 doesn't have the correct file"
+    assert fca.get_source_file_location() == ss1, "FileCopyAction1 doesn't have the correct source file location"
+    assert fca.get_destination_file_location() == ss2, "FileCopyAction1 doesn't have the correct dest file location"
+    assert not fca.uses_scratch(), "FileCopyAction1 doesn't have the correct use of scratch"
 
-        # Add a file delete action to compound job
-        fda = cj.add_file_delete_action("FileDeleteAction1", file1, ss1)
-        print(f"Adding {fda.get_name()} to {cj.get_name()}")
+    # TODO
 
-        print(f"File Delete Action getFile = {fda.get_file()}")
-        print(f"File Delete Action getFileLocation = {fda.get_file_location()}")
-        print(f"File Delete Action usesScratch = {fda.uses_scratch}")
+    # Add a file delete action to compound job
+    fda = cj.add_file_delete_action("FileDeleteAction1", file1, ss1)
+    fda.get_name()
+    str(fda)
+    repr(fda)
 
-        # Add a sleep action to compound job
-        sa = cj.add_sleep_action("SleepAction1", 5.0)
-        print(f"Adding {sa.get_name()} to {cj.get_name()}")
+    assert fda.get_file() == file1, "FileDeleteAction1 doesn't have the correct file"
+    assert fda.get_file_location() == ss1, "FileDeleteAction1 doesn't have the correct file location"
+    assert not fda.uses_scratch(), "FileDeleteAction1 doesn't have the correct use of scratch"
 
-        print(f"Sleep Action getSleepTime = {sa.get_sleep_time()}")
+    # Add a sleep action to compound job
+    sa = cj.add_sleep_action("SleepAction1", 5.0)
+    sa.get_name()
+    str(sa)
+    repr(sa)
 
-        # Add a compute action to compound job
-        ca = cj.add_compute_action("ComputeAction1", 100.0, 0.0, 2, 1, ("AMDAHL", 0.8))
-        print(f"Adding {ca.get_name()} to {cj.get_name()}")
+    assert sa.get_sleep_time() == 5.0, "SleepAction1 doesn't have the correct sleeptime"
 
-        print(f"Compute Action getFlops = {ca.get_flops()}")
-        print(f"Compute Action getMaxNumCores = {ca.get_max_num_cores()}")
-        print(f"Compute Action getMinNumCores = {ca.get_min_num_cores()}")
-        print(f"Compute Action getMinRAMFootprint = {ca.get_min_ram_footprint()}")
-        print(f"Compute Action getParallelModel = {ca.get_parallel_model()}")
+    # Add a compute action to compound job
+    ca = cj.add_compute_action("ComputeAction1", 100.0, 0.0, 2, 1, ("AMDAHL", 0.8))
+    ca.get_name()
+    str(ca)
+    repr(ca)
 
-        # # Add a parent compound job to another compound job
-        cj2_0 = simulation.create_compound_job("")
-        print(f"Created compound job with name {cj2_0.get_name()}")
-        cj2_0.add_sleep_action("SleepAction2", 2.0)
+    assert ca.get_flops() == 100.0, "ComputeAction1 doesn't have the correct flops"
+    assert ca.get_max_num_cores() == 2, "ComputeAction1 doesn't have the correct max cores"
+    assert ca.get_min_num_cores() == 1, "ComputeAction1 doesn't have the correct min cores"
+    assert ca.get_min_ram_footprint() == 0.0, "ComputeAction1 doesn't have the correct ram"
+    assert ca.get_parallel_model() == ("AMDAHL", 0.8), "ComputeAction1 doesn't have the correct parallel model"
 
-        cj2_1 = simulation.create_compound_job("")
-        print(f"Created compound job with name {cj2_1.get_name()}")
-        cj2_1.add_sleep_action("SleepAction3", 2.0)
+    actions = cj.get_actions()
+    assert fwa in actions and fra in actions and fca in actions and fda in actions and \
+           sa in actions and ca in actions, "Job's action list is invalid"
 
-        print("Adding parent compound job")
-        cj2_1.add_parent_job(cj2_0)
+    # Add a parent compound job to another compound job
+    cj2_0 = simulation.create_compound_job("")
+    cj2_0.add_sleep_action("SleepAction2", 2.0)
 
-        print(f"Time before submitting compound jobs 2/3 is {simulation.get_simulated_time()}")
+    cj2_1 = simulation.create_compound_job("")
+    cj2_1.add_sleep_action("SleepAction3", 2.0)
 
-        print("Submitting the parent compound job to the base metal compute service...")
-        bmcs.submit_compound_job(cj2_0)
+    cj2_1.add_parent_job(cj2_0)
 
-        print(f"Time after submitting compound jobs 2/3 is {simulation.get_simulated_time()}")
+    bmcs.submit_compound_job(cj2_0)
 
-        # Get the actions of compound job
-        print(f"Compound Job's get_actions = {cj.get_actions()}")
+    bmcs.submit_compound_job(cj)
 
-        print("Submitting the compound job to the base metal compute service...")
-        bmcs.submit_compound_job(cj)
+    event = simulation.wait_for_next_event()
+    assert event["event_type"] == "compound_job_completion", f"Received an unexpected event: {event['event_type']}"
 
-        print("Synchronously waiting for the next simulation event...")
-        event = simulation.wait_for_next_event()
-        print(f"  - Event: {event}")
-        print(f"Time is {simulation.get_simulated_time()}")
+    event = simulation.wait_for_next_event()
+    assert event["event_type"] == "compound_job_completion", f"Received an unexpected event: {event['event_type']}"
 
-        print("Synchronously waiting for the next simulation event...")
-        event = simulation.wait_for_next_event()
-        print(f"  - Event: {event}")
-        print(f"Time is {simulation.get_simulated_time()}")
+    assert ca.get_start_date() < ca.get_end_date(), "Incoherent ca start/end dates"
 
-        print("Get the start/end date of the compute action...")
-        print(f"Compute action start date: {ca.get_start_date()}")
-        print(f"Compute action end date: {ca.get_end_date()}")
-
-        print("Terminating simulation")
-        simulation.terminate()
-
-    except wrench.WRENCHException as e:
-        sys.stderr.write(f"Error: {e}\n")
-        exit(1)
+    simulation.terminate()

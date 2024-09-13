@@ -37,7 +37,7 @@ class FileDeleteAction(Action):
         """
         self.storage_service = storage_service
         self.file = file
-        self.uses_scratch = uses_scratch
+        self._uses_scratch = uses_scratch
         super().__init__(simulation, name, compound_job)
 
     def get_file(self) -> File:
@@ -65,7 +65,7 @@ class FileDeleteAction(Action):
         :return: boolean on whether action uses scratch
         :rtype: boolean
         """
-        return self.uses_scratch
+        return self._uses_scratch
 
     def __str__(self) -> str:
         """

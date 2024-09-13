@@ -39,7 +39,7 @@ class FileReadAction(Action):
         self.file = file
         self.storage_service = storage_service
         self.num_bytes_to_read = num_bytes_to_read
-        self.uses_scratch = uses_scratch
+        self._uses_scratch = uses_scratch
         super().__init__(simulation, name, compound_job)
 
     def get_file(self) -> File:
@@ -87,7 +87,7 @@ class FileReadAction(Action):
         :return: boolean on whether action uses scratch
         :rtype: boolean
         """
-        return self.uses_scratch
+        return self._uses_scratch
 
     def __str__(self) -> str:
         """
