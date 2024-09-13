@@ -21,7 +21,7 @@ if __name__ == "__main__":
     simulation = wrench.Simulation()
     simulation.start(platform_file_path, "ControllerHost")
 
-    assert simulation.get_simulated_time() == 10, "The simulation time should be zero"
+    assert simulation.get_simulated_time() == 0, "The simulation time should be zero"
 
     assert sorted(simulation.get_all_hostnames()) == sorted(
         ["ControllerHost", "StorageHost", "CloudHeadHost", "CloudHost1", "CloudHost2", "BatchHeadHost",
