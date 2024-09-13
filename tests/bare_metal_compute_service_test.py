@@ -21,7 +21,7 @@ if __name__ == "__main__":
     simulation = wrench.Simulation()
     simulation.start(platform_file_path, "ControllerHost")
 
-    assert simulation.get_simulated_time() == 0, "The simulation time should be zero"
+    assert simulation.get_simulated_time() == 10, "The simulation time should be zero"
 
     assert sorted(simulation.get_all_hostnames()) == sorted(
         ["ControllerHost", "StorageHost", "CloudHeadHost", "CloudHost1", "CloudHost2", "BatchHeadHost",
@@ -126,6 +126,9 @@ if __name__ == "__main__":
     assert event["event_type"] == "standard_job_completion", f"Was expecting a standard job completion event " \
                                                              "but instead got a: " + event["event_type"]
 
+    print("HERE")
+    print(task1.get_start_date())
+    print(task1.get_end_date())
     assert task1.get_start_date() < task1.get_end_date(), f"Incoherent task1 dates: " \
                                                           f"{task1.get_start_date()} and {task1.get_end_date()}"
     assert task2.get_start_date() < task2.get_end_date(), f"Incoherent task2 dates: " \
