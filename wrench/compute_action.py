@@ -9,6 +9,7 @@
 from wrench.action import Action
 from wrench.compound_job import CompoundJob
 
+from typing import Tuple
 
 class ComputeAction(Action):
     """
@@ -79,7 +80,7 @@ class ComputeAction(Action):
         """
         return self.ram
 
-    def get_parallel_model(self) -> tuple:
+    def get_parallel_model(self) -> Tuple[str, float]:
         """
         Returns type of parallel model and settings for it
 

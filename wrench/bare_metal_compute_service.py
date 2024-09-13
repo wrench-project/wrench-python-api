@@ -28,24 +28,6 @@ class BareMetalComputeService(ComputeService):
         """
         super().__init__(simulation, name)
 
-    def submit_standard_job(self, standard_job: StandardJob) -> None:
-        """
-        Submit a standard job to the compute service
-
-        :param standard_job: the standard job
-        :type standard_job: StandardJob
-        """
-        return self.simulation._submit_standard_job(standard_job, self)
-
-    def submit_compound_job(self, compound_job: CompoundJob) -> None:
-        """
-        Submit a compound job to the compute service
-
-        :param compound_job: the compound job
-        :type compound_job: CompoundJob
-        """
-        return self.simulation._submit_compound_job(compound_job, self)
-
     def __str__(self) -> str:
         """
         :return: String representation of the bare metal compute service

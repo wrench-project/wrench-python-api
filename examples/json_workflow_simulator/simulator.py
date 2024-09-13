@@ -33,7 +33,7 @@ def pick_task_to_schedule(tasks: List[Task]):
     return target_task
 
 
-def pick_target_cs(compute_resources: Dict[ComputeService, Dict[str, float]], desired_num_cores: int) -> Task:
+def pick_target_cs(compute_resources: Dict[ComputeService, Dict[str, float]], desired_num_cores: int) -> ComputeService:
     """
     A method to select a compute service on which to schedule a task. Right now,
     just selects the compute service with the largest flop rate

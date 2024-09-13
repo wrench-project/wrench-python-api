@@ -14,6 +14,7 @@ from wrench.file import File
 from wrench.storage_service import StorageService
 
 from typing import List
+from typing import Tuple
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -53,7 +54,7 @@ class CompoundJob(SimulationItem):
         return self.actions
 
     def add_compute_action(self, name: str, flops: float, ram: float,
-                           max_num_cores: int, min_num_cores: int, parallel_model: tuple) -> ComputeAction:
+                           max_num_cores: int, min_num_cores: int, parallel_model: Tuple[str, float]) -> ComputeAction:
         """
         Add a sleep action to the compound job
 
@@ -67,7 +68,10 @@ class CompoundJob(SimulationItem):
         :type min_num_cores: int
         :param max_num_cores: maximum amount of cores this action can use
         :type max_num_cores: int
-        :param parallel_model: type of parallel model and settings for it
+        :param parallel_model: type of parallel model and settings for it. Allowed types
+        are "AMDAHL" or "CONSTANTEFFICIENCY", both of which take a float parameters between 0.0 and 1.0.
+        The AMDAHL model's parameter denotes the fraction of the sequential execution time that is perfectly parallelizable.
+        The CONSTANTEFFICIENCY model's parameter is simply the parallel efficiency. For instance, one could pass ("AMDAHL", 0.8).
         :type parallel_model: tuple
         """
         return self.simulation._add_compute_action(self, name, flops, ram, max_num_cores, min_num_cores, parallel_model)

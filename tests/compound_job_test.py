@@ -78,6 +78,16 @@ if __name__ == "__main__":
 
         print(f"Sleep Action getSleepTime = {sa.get_sleep_time()}")
 
+        # Add a compute action to compound job
+        ca = cj.add_compute_action("ComputeAction1", 100.0, 0.0, 2, 1, ("AMDAHL", 0.8))
+        print(f"Adding {ca.get_name()} to {cj.get_name()}")
+
+        print(f"Compute Action getFlops = {ca.get_flops()}")
+        print(f"Compute Action getMaxNumCores = {ca.get_max_num_cores()}")
+        print(f"Compute Action getMinNumCores = {ca.get_min_num_cores()}")
+        print(f"Compute Action getMinRAMFootprint = {ca.get_min_ram_footprint()}")
+        print(f"Compute Action getParallelModel = {ca.get_parallel_model()}")
+
         # # Add a parent compound job to another compound job
         cj2_0 = simulation.create_compound_job("")
         print(f"Created compound job with name {cj2_0.get_name()}")
@@ -113,10 +123,9 @@ if __name__ == "__main__":
         print(f"  - Event: {event}")
         print(f"Time is {simulation.get_simulated_time()}")
 
-        # print("Synchronously waiting for the next simulation event...")
-        # event = simulation.wait_for_next_event()
-        # print(f"  - Event: {event}")
-        # print(f"Time is {simulation.get_simulated_time()}")
+        print("Get the start/end date of the compute action...")
+        print(f"Compute action start date: {ca.get_start_date()}")
+        print(f"Compute action end date: {ca.get_end_date()}")
 
         print("Terminating simulation")
         simulation.terminate()

@@ -58,21 +58,30 @@ class Action(SimulationItem):
 
     def get_job(self) -> CompoundJob:
         """
-        Get the job
+        Get the job that this task belongs to
 
         :return: a list of task objects
         :rtype: List[Task]
         """
         return self.compound_job
 
-    def get_name(self) -> str:
+    def get_start_date(self) -> float:
         """
-        Get the list of tasks in the job
+        Get the action's start date
 
-        :return: a list of task objects
-        :rtype: List[Task]
+        :return: a date (or -1 if not started)
+        :rtype: float
         """
-        return self.name
+        return self.simulation._action_get_start_date(self)
+
+    def get_end_date(self) -> float:
+        """
+        Get the action's end date
+
+        :return: a date (or -1 if not ended)
+        :rtype: float
+        """
+        return self.simulation._action_get_end_date(self)
 
     def __str__(self) -> str:
         """

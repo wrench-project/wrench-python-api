@@ -2,6 +2,7 @@
 .cache/
 .local/
 .coverage
+htmlcov/
 docs/build
 wrench/__pycache__/
 build/

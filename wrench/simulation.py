@@ -759,7 +759,7 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.get,
                                           f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/"
-                                          f"{task.get_name()}/taskGetFlops",
+                                          f"{task.get_name()}/getFlops",
                                           json_data={})
 
         response = r.json()
@@ -781,7 +781,7 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.get,
                                           f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/"
-                                          f"{task.get_name()}/taskGetMinNumCores",
+                                          f"{task.get_name()}/getMinNumCores",
                                           json_data={})
 
         response = r.json()
@@ -803,7 +803,7 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.get,
                                           f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/"
-                                          f"{task.get_name()}/taskGetMaxNumCores",
+                                          f"{task.get_name()}/getMaxNumCores",
                                           json_data={})
 
         response = r.json()
@@ -825,7 +825,7 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.get,
                                           f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/"
-                                          f"{task.get_name()}/taskGetMemory", json_data={})
+                                          f"{task.get_name()}/getMemory", json_data={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -846,7 +846,7 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.get,
                                           f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/{task.get_name()}/"
-                                          f"taskGetStartDate", json_data={})
+                                          f"getStartDate", json_data={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -867,7 +867,7 @@ class Simulation:
         r = self.__send_request_to_daemon(requests.get,
                                           f"{self.daemon_url}/{self.simid}/workflows/"
                                           f"{task.get_workflow().get_name()}/tasks/{task.get_name()}/"
-                                          f"taskGetEndDate", json_data={})
+                                          f"getEndDate", json_data={})
 
         response = r.json()
         if response["wrench_api_request_success"]:
@@ -1103,6 +1103,48 @@ class Simulation:
             return sleep_action
         raise WRENCHException(response["failure_cause"])
 
+    def _action_get_start_date(self, action: Action) -> float:
+        """
+        Get the action's start date
+        :param action: the action
+        :type action: Action
+
+        :return: a date in seconds
+        :rtype: float
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get,
+                                          f"{self.daemon_url}/{self.simid}/compoundJobs/"
+                                          f"{action.get_job().get_name()}/actions/{action.get_name()}/"
+                                          f"getStartDate", json_data={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["time"]
+        raise WRENCHException(response["failure_cause"])
+
+    def _action_get_end_date(self, action: Action) -> float:
+        """
+        Get the action's end date
+        :param action: the action
+        :type action: Action
+
+        :return: a date in seconds
+        :rtype: float
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get,
+                                          f"{self.daemon_url}/{self.simid}/compoundJobs/"
+                                          f"{action.get_job().get_name()}/actions/{action.get_name()}/"
+                                          f"getEndDate", json_data={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["time"]
+        raise WRENCHException(response["failure_cause"])
+
     def _add_parent_job(self, compound_job: CompoundJob, parent_compound_job: CompoundJob) -> None:
         """
         Add a parent compound job to this compound job
@@ -1119,7 +1161,8 @@ class Simulation:
 
         data = {"parent_compound_job": parent_compound_job.get_name()}
         r = self.__send_request_to_daemon(requests.post,
-                                          f"{self.daemon_url}/{self.simid}/compoundJobs/{compound_job.get_name()}/addParentJob",
+                                          f"{self.daemon_url}/{self.simid}/compoundJobs/"
+                                          f"{compound_job.get_name()}/addParentJob",
                                           json_data=data)
         response = r.json()
 
