@@ -16,97 +16,76 @@ import wrench
 
 if __name__ == "__main__":
 
+    current_dir = pathlib.Path(__file__).parent.resolve()
+    platform_file_path = pathlib.Path(current_dir / "batch_platform.xml")
+
+    simulation = wrench.Simulation()
     try:
-        current_dir = pathlib.Path(__file__).parent.resolve()
-        platform_file_path = pathlib.Path(current_dir / "batch_platform.xml")
-
-        simulation = wrench.Simulation()
         simulation.start(platform_file_path, "ControllerHost")
-
-        print(f"New simulation, time is {simulation.get_simulated_time()}")
-        hosts = simulation.get_all_hostnames()
-        print(f"Hosts in the platform are: {hosts}")
-
-        print("Creating a batch compute service on BatchHeadHost...")
-
-        cs = simulation.create_batch_compute_service(
-            "BatchHeadHost",
-            ["BatchHost1", "BatchHost2"],
-            "/scratch",
-            {},
-            {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
-
-        print(f"Created compute service has name {cs.get_name()}")
-
-        print(f"Compute service supported jobs")
-        print(f"Supports Compound Jobs: {cs.supports_compound_jobs()}\n"
-              f"Supports Pilot Jobs: {cs.supports_pilot_jobs()}\n"
-              f"Supports Standard Jobs: {cs.supports_standard_jobs()}")
-
-        print("Creating a simple storage service on StorageHost...")
-        ss = simulation.create_simple_storage_service("StorageHost", ["/"])
-        print(f"Created storage service has name {ss.get_name()}")
-
-        print("Creating a file registry service on StorageHost...")
-        frs = simulation.create_file_registry_service("ControllerHost")
-        print(f"Created file registry service has name {frs.get_name()}")
-
-        workflow = simulation.create_workflow()
-        print("Creating a 2-task chain workflow as a single job, which will fail due to missing file locations...")
-        file1 = simulation.add_file("file1", 1024)
-        ss.create_file_copy(file1)
-        file2 = simulation.add_file("file2", 1024)
-        file3 = simulation.add_file("file3", 1024)
-
-        task1 = workflow.add_task("task1", 10000000000, 1, 1, 0)
-        task1.add_input_file(file1)
-        task1.add_output_file(file2)
-        task2 = workflow.add_task("task2", 200000000000, 1, 1, 0)
-        task2.add_input_file(file2)
-        task2.add_output_file(file3)
-
-        print("Creating a standard job with both tasks, but that doesn't specify file locations")
-        job = simulation.create_standard_job([task1, task2], {})
-
-        print("Random select args for job")
-        host = random.randint(1,2)
-        core = random.randint(1,6)
-        second = random.randint(5*60, 15*50)
-        service_specific_args = {"-N": str(host), "-c": str(core), "-t":str(second)}
-
-        print("Submitting the standard job to the compute service...")
-        cs.submit_standard_job(job, service_specific_args)
-        print("Job submitted!")
-
-        print("Getting simulation events...")
-        event = simulation.wait_for_next_event()
-        print(f"Received this event: {event}")
-        if event["event_type"] != "standard_job_failure":
-            raise wrench.WRENCHException("Was expecting a standard job failure event but instead got a: " + event["event_type"])
-
-        print("Trying again, but giving file locations for first and last file (second file will be on scratch!)...")
-        job = simulation.create_standard_job([task1, task2], {file1: ss, file3: ss})
-        cs.submit_standard_job(job, service_specific_args)
-        print("Getting simulation events...")
-        event = simulation.wait_for_next_event()
-        print(f"Received this event: {event}")
-        if event["event_type"] != "standard_job_completion":
-            raise wrench.WRENCHException("Was expecting a standard job completion event but instead got a: " + event["event_type"])
-
-        print(f"Task1's start date was: {task1.get_start_date()}")
-        print(f"Task1's end date was: {task1.get_end_date()}")
-        print(f"Task2's start date was: {task2.get_start_date()}")
-        print(f"Task2's end date was: {task2.get_end_date()}")
-
-        print(f"File1 present on the storage service: {ss.lookup_file(file1)}")
-        print(f"File2 present on the storage service: {ss.lookup_file(file2)}")
-        print(f"File3 present on the storage service: {ss.lookup_file(file3)}")
-
-        print(f"Time is {simulation.get_simulated_time()}")
-
-        print("Terminating simulation")
-        simulation.terminate()
-
     except wrench.WRENCHException as e:
         sys.stderr.write(f"Error: {e}\n")
         exit(1)
+        
+    cs = simulation.create_batch_compute_service(
+        "BatchHeadHost",
+        ["BatchHost1", "BatchHost2"],
+        "/scratch",
+        {},
+        {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
+
+    # Coverage
+    cs.get_name()
+    str(cs)
+    repr(cs)
+
+    assert cs.supports_compound_jobs(), "CS should support compound jobs"
+    assert cs.supports_pilot_jobs(), "CS should support pilot jobs"
+    assert cs.supports_standard_jobs(), "CS should support standard jobs"
+
+    ss = simulation.create_simple_storage_service("StorageHost", ["/"])
+
+    workflow = simulation.create_workflow()
+    file1 = simulation.add_file("file1", 1024)
+    ss.create_file_copy(file1)
+    file2 = simulation.add_file("file2", 1024)
+    file3 = simulation.add_file("file3", 1024)
+
+    task1 = workflow.add_task("task1", 10000000000, 1, 1, 0)
+    task1.add_input_file(file1)
+    task1.add_output_file(file2)
+    task2 = workflow.add_task("task2", 200000000000, 1, 1, 0)
+    task2.add_input_file(file2)
+    task2.add_output_file(file3)
+
+    job = simulation.create_standard_job([task1, task2], {})
+
+    host = random.randint(1, 2)
+    core = random.randint(1, 6)
+    second = random.randint(5*60, 15*50)
+    service_specific_args = {"-N": str(host), "-c": str(core), "-t":str(second)}
+
+    cs.submit_standard_job(job, service_specific_args)
+
+    event = simulation.wait_for_next_event()
+    assert event["event_type"] == "standard_job_failure", "Was expecting a standard job failure event " \
+                                                          "but instead got a: " + event["event_type"]
+
+    job = simulation.create_standard_job([task1, task2], {file1: ss, file3: ss})
+    cs.submit_standard_job(job, service_specific_args)
+    event = simulation.wait_for_next_event()
+    assert event["event_type"] == "standard_job_completion", "Was expecting a standard job completion event " \
+                                                             "but instead got a: " + event["event_type"]
+
+    assert task1.get_start_date() < task1.get_end_date(), f"Incoherent task1 dates: " \
+                                                          f"{task1.get_start_date()} and {task1.get_end_date()}"
+    assert task2.get_start_date() < task2.get_end_date(), f"Incoherent task2 dates: " \
+                                                          f"{task2.get_start_date()} and {task2.get_end_date()}"
+    assert task1.get_end_date() <= task2.get_start_date(), f"task2 should have started after task1 ended"
+
+    assert ss.lookup_file(file1), "File1 should be present in the storage service"
+    assert not ss.lookup_file(file2), "File2 should not be present in the storage service"
+    assert ss.lookup_file(file3), "File3 should be present in the storage service"
+
+    assert workflow.is_done(), "The workflow should be done"
+    simulation.terminate()
+

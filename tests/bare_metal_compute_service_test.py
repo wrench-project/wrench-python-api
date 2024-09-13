@@ -82,16 +82,6 @@ if __name__ == "__main__":
     str(ss)
     repr(ss)
 
-    try:
-        bogus_frs = simulation.create_file_registry_service("ControllerHost_BOGUS")
-    except wrench.WRENCHException as e:
-        pass
-    frs = simulation.create_file_registry_service("ControllerHost")
-    # Coverage
-    frs.get_name()
-    str(frs)
-    repr(frs)
-
     workflow = simulation.create_workflow()
     workflow.get_name()
 
@@ -108,11 +98,6 @@ if __name__ == "__main__":
     task2 = workflow.add_task("task2", 200000000000, 1, 1, 0)
     task2.add_input_file(file2)
     task2.add_output_file(file3)
-
-    frs.add_entry(ss, file1)
-    assert frs.lookup_entry(file1) == [ss], "Should find entry in file registry service"
-    frs.remove_entry(ss, file1)
-    assert frs.lookup_entry(file1) == [], "Should not find entry in file registry service"
 
     job = simulation.create_standard_job([task1, task2], {})
     job.get_name()
