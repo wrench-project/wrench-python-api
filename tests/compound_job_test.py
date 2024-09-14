@@ -156,4 +156,13 @@ if __name__ == "__main__":
 
     assert not ca.get_failure_cause(), "ComputeAction1 should have a None failure cause"
 
+    # Let's create a job that will fail
+    cj3 = simulation.create_compound_job("")
+    file4 = simulation.add_file("file4", 10)
+    doomed = cj3.add_file_read_action("doomed", file4, ss1)
+    bcs.submit_compound_job(cj3, service_specific_args)
+    event = simulation.wait_for_next_event()
+
+    assert event["event_type"] == "compound_job_failure", f"Received an unexpected event: {event['event_type']}"
+    assert doomed.get_failure_cause() != "", f"Doomed action should have a failure cause"
     simulation.terminate()
