@@ -154,4 +154,6 @@ if __name__ == "__main__":
 
     assert ca.get_start_date() < ca.get_end_date(), "Incoherent ca start/end dates"
 
+    assert not ca.get_failure_cause(), "ComputeAction1 should have a None failure cause"
+
     simulation.terminate()

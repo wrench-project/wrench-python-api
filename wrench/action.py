@@ -92,7 +92,7 @@ class Action(SimulationItem):
         """
         return self.simulation._action_get_failure_cause(self)
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # pragma: no cover
         """
         :return: String representation of the action
         :rtype: str
@@ -100,7 +100,7 @@ class Action(SimulationItem):
         s = f"Action {self.name}"
         return s
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> str:  # pragma: no cover
         """
         :return: String representation of the action object
         :rtype: str

@@ -31,6 +31,10 @@ if __name__ == "__main__":
     repr(workflow)
 
     file1 = simulation.add_file("file1", 1024)
+    file1.get_name()
+    str(file1)
+    repr(file1)
+    
     assert file1.get_size() == 1024, "File1 has an incorrect size"
     file2 = simulation.add_file("file2", 2048)
     file3 = simulation.add_file("file3", 10000)
@@ -58,6 +62,12 @@ if __name__ == "__main__":
     task2 = workflow.add_task("task2", 1000.0, 4, 4, 0)
     task2.add_input_file(file2)
     task1.add_output_file(file3)
+
+    assert workflow.get_tasks()[task1.get_name()] == task1, "Task1 should be in the workflow"
+    assert workflow.get_tasks()[task2.get_name()] == task2, "Task2 should be in the workflow"
+
+    assert workflow.get_input_files() == [file1], "The workflow's input files should only be File1"
+
     job = simulation.create_standard_job([task1, task2], {})
     str(job)
     repr(job)

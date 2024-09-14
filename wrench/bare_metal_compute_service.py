@@ -27,19 +27,3 @@ class BareMetalComputeService(ComputeService):
         :type name: str
         """
         super().__init__(simulation, name)
-
-    def __str__(self) -> str:
-        """
-        :return: String representation of the bare metal compute service
-        :rtype: str
-        """
-        s = f"Compute Service {self.name}"
-        return s
-
-    def __repr__(self) -> str:
-        """
-        :return: String representation of the BareMetalComputeService object
-        :rtype: str
-        """
-        s = f"ComputeService(name={self.name})"
-        return s

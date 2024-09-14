@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 
 from wrench.simulation_item import SimulationItem
 
-if TYPE_CHECKING: # pragma: no cover
+if TYPE_CHECKING:  # pragma: no cover
     from wrench.simulation import Simulation
 
 

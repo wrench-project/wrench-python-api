@@ -54,19 +54,3 @@ class CloudComputeService(ComputeService):
         :type vm: VirtualMachine
         """
         return self.simulation._destroy_vm(vm)
-
-    def __str__(self) -> str:
-        """
-        :return: String representation of the compute service
-        :rtype: str
-        """
-        s = f"Compute Service {self.name}"
-        return s
-
-    def __repr__(self) -> str:
-        """
-        :return: String representation of the CloudComputeService object
-        :rtype: str
-        """
-        s = f"ComputeService(name={self.name})"
-        return s

@@ -52,19 +52,3 @@ class BatchComputeService(ComputeService):
         :type service_specific_args: dict[str, str]
         """
         return self.simulation._submit_compound_job(compound_job, self, json.dumps(service_specific_args))
-
-    def __str__(self) -> str:
-        """
-        :return: String representation of the bare metal compute service
-        :rtype: str
-        """
-        s = f"Compute Service {self.name}"
-        return s
-
-    def __repr__(self) -> str:
-        """
-        :return: String representation of the BareMetalComputeService object
-        :rtype: str
-        """
-        s = f"ComputeService(name={self.name})"
-        return s
