@@ -36,12 +36,8 @@ if __name__ == "__main__":
     except wrench.WRENCHException as e:
         pass
 
-    try:
-        simulation.start(platform_file_path, "ControllerHost")
-    except wrench.WRENCHException as e:
-        sys.stderr.write(f"Error: {e}\n")
-        exit(1)
-
+    simulation.start(platform_file_path, "ControllerHost")
+    # Bogus restart that does nothing
     simulation.start(platform_file_path, "ControllerHost")
 
     workflow1 = simulation.create_workflow()
