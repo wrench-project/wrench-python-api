@@ -83,7 +83,7 @@ class Simulation:
         try:
             r = requests_method(route, json=json_data)
             return r
-        except Exception as e:
+        except Exception as e:  # pragma no cover
             raise WRENCHException("Connection to wrench-daemon severed: " + str(e) + "\n"
                                                                                      "This could be an error on the "
                                                                                      "wrench-daemon side (likely an uncaught maestro exception, e.g., a deadlock). Enable "
@@ -93,7 +93,7 @@ class Simulation:
     def start(self, platform_file_path: pathlib.Path,
               controller_hostname: str) -> None:
         """
-        Start a new simulation
+        Start a new simulation (will do nothing if simulation has already started)
 
         :param platform_file_path: path of a file that contains the simulated platform's description in XML
         :type platform_file_path: pathlib.Path
@@ -118,7 +118,7 @@ class Simulation:
             self.spec = {"platform_xml": xml, "controller_hostname": controller_hostname}
             try:
                 r = requests.post(f"{self.daemon_url}/startSimulation", json=self.spec)
-            except Exception:
+            except Exception:  # pragma: no cover
                 raise WRENCHException(
                     f"Cannot connect to WRENCH daemon ({self.daemon_host}:{self.daemon_port})."
                     f" Perhaps it needs to be started?")
@@ -157,7 +157,7 @@ class Simulation:
         response = r.json()["event"]
         return self.__json_event_to_dict(response)
 
-    def get_simulation_events(self) -> List[Dict[str, Union[str, StandardJob, ComputeService]]]:
+    def get_events(self) -> List[Dict[str, Union[str, StandardJob, ComputeService]]]:
         """
         Get all simulation events since last time we checked
 

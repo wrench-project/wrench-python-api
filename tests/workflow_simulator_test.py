@@ -21,11 +21,28 @@ if __name__ == "__main__":
     json_workflow_file_path = pathlib.Path(current_dir / "sample_wfcommons_workflow.json")
 
     simulation = wrench.Simulation()
+
+    try:
+        simulation_bogus = wrench.Simulation()
+        simulation_bogus.start(pathlib.Path("bogus/path/to/file"), "ControllerHost")
+        raise wrench.WRENCHException("Should be able to start a simulation with a bogus xml file")
+    except wrench.WRENCHException as e:
+        pass
+
+    try:
+        simulation_bogus = wrench.Simulation()
+        simulation_bogus.start(platform_file_path, "ControllerHost_BOGUS")
+        raise wrench.WRENCHException("Should be able to start a simulation with a bogus xml file")
+    except wrench.WRENCHException as e:
+        pass
+
     try:
         simulation.start(platform_file_path, "ControllerHost")
     except wrench.WRENCHException as e:
         sys.stderr.write(f"Error: {e}\n")
         exit(1)
+
+    simulation.start(platform_file_path, "ControllerHost")
 
     workflow1 = simulation.create_workflow()
     file1 = simulation.add_file("file1", 1024)
@@ -71,5 +88,11 @@ if __name__ == "__main__":
                                                      False, False)
 
     simulation.terminate()
+
+    try:
+        simulation.start(platform_file_path, "ControllerHost")
+        raise wrench.WRENCHException("Shouldn't be able to restart a simulation")
+    except wrench.WRENCHException as e:
+        pass
 
 

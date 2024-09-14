@@ -119,7 +119,7 @@ if __name__ == "__main__":
 
         print(f"Time now is {simulation.get_simulated_time()}")
         print("Getting simulation events that have occurred while I slept...")
-        events = simulation.get_simulation_events()
+        events = simulation.get_events()
         for event in events:
             print(f"  - Event: {event}")
 
