@@ -11,3 +11,4 @@ wrench_api.egg-info/
 .vscode/
 *.swp
 wrench.egg-info/
+.clang-format
