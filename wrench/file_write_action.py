@@ -16,9 +16,9 @@ class FileWriteAction(Action):
     """
     WRENCH File Write Action class
     """
+
     def __init__(self, simulation, compound_job: CompoundJob, name: str, file: File,
                  storage_service: StorageService, uses_scratch: bool) -> None:
-
         """
         Constructor
         :param simulation: simulation object

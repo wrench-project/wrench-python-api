@@ -14,6 +14,7 @@ class SleepAction(Action):
     """
     WRENCH Sleep Action class
     """
+
     def __init__(self, simulation, compound_job: CompoundJob, name: str, sleep_time: float) -> None:
         """
         Constructor

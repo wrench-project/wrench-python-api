@@ -19,7 +19,6 @@ class FileCopyAction(Action):
 
     def __init__(self, simulation, compound_job: CompoundJob, name: str, file: File,
                  src_storage_service: StorageService, dest_storage_service: StorageService, uses_scratch: bool) -> None:
-
         """
         Constructor
         :param simulation: simulation object

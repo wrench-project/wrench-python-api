@@ -183,4 +183,3 @@ class CompoundJob(SimulationItem):
         """
         s = f"CompoundJob(name={self.name})"
         return s
-

@@ -17,6 +17,7 @@ class FileRegistryService(SimulationItem):
     """
     WRENCH File Registry Service class
     """
+
     def __init__(self, simulation, name: str) -> None:
         """
         Constructor
@@ -77,4 +78,3 @@ class FileRegistryService(SimulationItem):
         """
         s = f"FileRegistryService(name={self.name})"
         return s
-

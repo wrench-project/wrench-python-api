@@ -11,13 +11,14 @@ from wrench.compound_job import CompoundJob
 
 from typing import Tuple
 
+
 class ComputeAction(Action):
     """
     WRENCH Action class
     """
+
     def __init__(self, simulation, compound_job: CompoundJob, name: str, flops: float, ram: float, min_num_cores: int,
                  max_num_cores: int, parallel_model: tuple) -> None:
-
         """
         Constructor
         :param simulation: simulation object
