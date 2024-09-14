@@ -283,23 +283,6 @@ class Simulation:
         """
         return self.files
 
-    def stage_files(self, storage_service: StorageService) -> None:
-        """
-        Stage all input files at a storage service
-
-        :param storage_service: Storage service's name
-        :type storage_service: StorageService
-
-        :raises WRENCHException: if there is any error in the response
-        """
-        data = {"storage": storage_service.get_name()}
-
-        r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/stageInputFiles", json_data=data)
-
-        response = r.json()
-        if not response["wrench_api_request_success"]:
-            raise WRENCHException(response["failure_cause"])
-
     def sleep(self, seconds: float) -> None:
         """
         Sleep (in simulation) for a number of seconds

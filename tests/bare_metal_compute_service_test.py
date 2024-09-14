@@ -129,4 +129,36 @@ if __name__ == "__main__":
 
     assert workflow.is_done(), "The workflow should be done"
 
+    # Trying a bogus job
+    workflow1 = simulation.create_workflow()
+    t1 = workflow1.add_task("task", 10.0, 1, 2, 0.0)
+    workflow2 = simulation.create_workflow()
+    t2 = workflow2.add_task("task", 10.0, 1, 2, 0.0)
+    try:
+        simulation.create_standard_job([t1, t2], {})
+        raise wrench.WRENCHException("Shouldn't be able to create a job with tasks from different workflows")
+    except wrench.WRENCHException as e:
+        pass
+
+    # Trying a job that is invalid
+    workflow3 = simulation.create_workflow()
+    t3 = workflow3.add_task("task", 10.0, 1, 1, 100000000000)
+    job = simulation.create_standard_job([t3], {})
+    try:
+        cs.submit_standard_job(job)
+        raise wrench.WRENCHException("Shouldn't be able to submit invalid job")
+    except wrench.WRENCHException as e:
+        pass
+
+    # Trying a job that should fail
+    workflow4 = simulation.create_workflow()
+    t4 = workflow4.add_task("task", 10.0, 1, 1, 0)
+    file4 = simulation.add_file("file4", 10)
+    t4.add_input_file(file4)
+    job = simulation.create_standard_job([t4], {file4: ss})
+    cs.submit_standard_job(job)
+
+    event = simulation.wait_for_next_event()
+    assert event["event_type"] == "standard_job_failure", "The job should have failed"
+
     simulation.terminate()
