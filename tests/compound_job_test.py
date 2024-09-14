@@ -27,11 +27,18 @@ if __name__ == "__main__":
 
     # Creating a  compute services
     bmcs = simulation.create_bare_metal_compute_service(
-        "BatchHeadHost",
-        {"BatchHost1": (6, 10.0),
-         "BatchHost2": (6, 12.0)},
+        "CloudHeadHost",
+        {"CloudHost1": (6, 10.0),
+         "CloudHost2": (6, 12.0)},
         "/scratch",
         {"BareMetalComputeServiceProperty::THREAD_STARTUP_OVERHEAD": "12s"},
+        {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
+
+    bcs = simulation.create_batch_compute_service(
+        "BatchHeadHost",
+        ["BatchHost1", "BatchHost2"],
+        "/scratch",
+        {},
         {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
 
     # Create two storage service
@@ -63,6 +70,7 @@ if __name__ == "__main__":
 
     # Add a file read action to compound job
     fra = cj.add_file_read_action("FileReadAction1", file1, ss1)
+    cj.add_action_dependency(fwa, fra)
     fra.get_name()
     str(fra)
     repr(fra)
@@ -74,6 +82,7 @@ if __name__ == "__main__":
 
     # Add a file copy action to compound job
     fca = cj.add_file_copy_action("FileCopyAction1", file1, ss1, ss2)
+    cj.add_action_dependency(fra, fca)
     fca.get_name()
     str(fca)
     repr(fca)
@@ -83,10 +92,9 @@ if __name__ == "__main__":
     assert fca.get_destination_file_location() == ss2, "FileCopyAction1 doesn't have the correct dest file location"
     assert not fca.uses_scratch(), "FileCopyAction1 doesn't have the correct use of scratch"
 
-    # TODO
-
     # Add a file delete action to compound job
     fda = cj.add_file_delete_action("FileDeleteAction1", file1, ss1)
+    cj.add_action_dependency(fca, fda)
     fda.get_name()
     str(fda)
     repr(fda)
@@ -129,8 +137,14 @@ if __name__ == "__main__":
     cj2_1.add_parent_job(cj2_0)
 
     bmcs.submit_compound_job(cj2_0)
+    bmcs.submit_compound_job(cj2_1)
 
-    bmcs.submit_compound_job(cj)
+    service_specific_args = {"-N": "1", "-c": "2", "-t": "60000"}
+    bcs.submit_compound_job(cj, service_specific_args)
+
+    event = simulation.wait_for_next_event()
+
+    assert event["event_type"] == "compound_job_completion", f"Received an unexpected event: {event['event_type']}"
 
     event = simulation.wait_for_next_event()
     assert event["event_type"] == "compound_job_completion", f"Received an unexpected event: {event['event_type']}"

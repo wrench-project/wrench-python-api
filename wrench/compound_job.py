@@ -146,6 +146,18 @@ class CompoundJob(SimulationItem):
         """
         return self.simulation._add_sleep_action(self, name, sleep_time)
 
+    def add_action_dependency(self, parent_action: Action, child_action: Action):
+        """
+        Add a dependency between two actions
+
+        :param parent_action: the parent action
+        :type parent_action: Action
+        :param child_action: the child action
+        :type child_action: Action
+        :return:
+        """
+        return self.simulation._add_action_dependency(self, parent_action, child_action)
+
     def add_parent_job(self, parent_compound_job: CompoundJob):
         """
         Add a parent compound job to this compound job

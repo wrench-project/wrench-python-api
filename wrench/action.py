@@ -83,6 +83,15 @@ class Action(SimulationItem):
         """
         return self.simulation._action_get_end_date(self)
 
+    def get_failure_cause(self) -> str:
+        """
+        Get the action's failure cause
+
+        :return: a failure cause (or None if no failure has occurred)
+        :rtype: str
+        """
+        return self.simulation._action_get_failure_cause(self)
+
     def __str__(self) -> str:
         """
         :return: String representation of the action

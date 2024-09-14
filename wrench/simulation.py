@@ -831,6 +831,48 @@ class Simulation:
             return response["memory"]
         raise WRENCHException(response["failure_cause"])
 
+    def _task_get_number_of_children(self, task: Task) -> float:
+        """
+        Get the task's number of children
+        :param task: the task
+        :type task: Task
+
+        :return: a number of children
+        :rtype: int
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get,
+                                          f"{self.daemon_url}/{self.simid}/workflows/"
+                                          f"{task.get_workflow().get_name()}/tasks/"
+                                          f"{task.get_name()}/getNumberOfChildren", json_data={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["number_of_children"]
+        raise WRENCHException(response["failure_cause"])
+
+    def _task_get_bottom_level(self, task: Task) -> float:
+        """
+        Get the task's bottom-level
+        :param task: the task
+        :type task: Task
+
+        :return: a bottom-level
+        :rtype: int
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get,
+                                          f"{self.daemon_url}/{self.simid}/workflows/"
+                                          f"{task.get_workflow().get_name()}/tasks/"
+                                          f"{task.get_name()}/getBottomLevel", json_data={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["bottom_level"]
+        raise WRENCHException(response["failure_cause"])
+
     def _task_get_start_date(self, task: Task) -> float:
         """
         Get the task's start date
@@ -1142,6 +1184,56 @@ class Simulation:
         response = r.json()
         if response["wrench_api_request_success"]:
             return response["time"]
+        raise WRENCHException(response["failure_cause"])
+
+    def _action_get_failure_cause(self, action: Action) -> str | None:
+        """
+        Get the action's failure cause
+        :param action: the action
+        :type action: Action
+
+        :return: a failure cause as a string (or None if no failure has occurred)
+        :rtype: str | None
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get,
+                                          f"{self.daemon_url}/{self.simid}/compoundJobs/"
+                                          f"{action.get_job().get_name()}/actions/{action.get_name()}/"
+                                          f"getFailureCause", json_data={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            if response["action_failure_cause"] == "":
+                return None
+            else:
+                return response["action_failure_cause"]
+        raise WRENCHException(response["failure_cause"])
+
+    def _add_action_dependency(self, compound_job: CompoundJob, parent_action: Action, child_action: Action):
+        """
+        Add an action dependency in a compound job
+
+        :param compound_job: compound job object
+        :type compound_job: CompoundJob
+        :param parent_action: parent action
+        :type parent_action: Action
+        :param child_action: child action
+        :type child_action: Action
+
+        :return:
+        :raises WRENCHException: if there is any error in the response
+        """
+        data = {"parent_action_name": parent_action.get_name(),
+                "child_action_name": child_action.get_name()}
+        r = self.__send_request_to_daemon(requests.post,
+                                          f"{self.daemon_url}/{self.simid}/compoundJobs/"
+                                          f"{compound_job.get_name()}/addActionDependency",
+                                          json_data=data)
+        response = r.json()
+
+        if response["wrench_api_request_success"]:
+            return
         raise WRENCHException(response["failure_cause"])
 
     def _add_parent_job(self, compound_job: CompoundJob, parent_compound_job: CompoundJob) -> None:

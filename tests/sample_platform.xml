@@ -46,7 +46,7 @@
             <prop id="ram" value="10GB" />
         </host>
         <host id="BatchHost2" speed="10Gf" core="6">
-            <prop id="ram" value="12GB" />
+            <prop id="ram" value="10GB" />
         </host>
 
         <!-- A network link -->

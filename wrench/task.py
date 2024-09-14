@@ -101,13 +101,29 @@ class Task(SimulationItem):
         """
         return self.simulation._task_get_max_num_cores(self)
 
-    def get_memory(self) -> int:
+    def get_memory(self) -> float:
         """
         Get the task's memory requirement
         :return: A memory size in bytes
         :rtype: float
         """
         return self.simulation._task_get_memory(self)
+
+    def get_number_of_children(self) -> int:
+        """
+        Get the task's number of children
+        :return: A number of children
+        :rtype: int
+        """
+        return self.simulation._task_get_number_of_children(self)
+
+    def get_bottom_level(self) -> int:
+        """
+        Get the task's bottom-level
+        :return: A bottom-level
+        :rtype: int
+        """
+        return self.simulation._task_get_bottom_level(self)
 
     def get_start_date(self) -> float:
         """

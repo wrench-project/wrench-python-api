@@ -17,7 +17,7 @@ import wrench
 if __name__ == "__main__":
 
     current_dir = pathlib.Path(__file__).parent.resolve()
-    platform_file_path = pathlib.Path(current_dir / "batch_platform.xml")
+    platform_file_path = pathlib.Path(current_dir / "sample_platform.xml")
 
     simulation = wrench.Simulation()
     try:
@@ -25,6 +25,17 @@ if __name__ == "__main__":
     except wrench.WRENCHException as e:
         sys.stderr.write(f"Error: {e}\n")
         exit(1)
+
+    try:
+        bogus_cs = simulation.create_batch_compute_service(
+            "BatchHeadHost",
+            ["BatchHost1", "CloudHost2"],
+            "/scratch",
+            {},
+            {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
+        raise wrench.WRENCHException("Shouldn't be able to create a bogus batch compute service")
+    except wrench.WRENCHException as e:
+        pass
 
     cs = simulation.create_batch_compute_service(
         "BatchHeadHost",
