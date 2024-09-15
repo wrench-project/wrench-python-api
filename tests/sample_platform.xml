@@ -12,7 +12,7 @@
 
         <host id="StorageHost" speed="1f" core="1">
             <disk id="hard_drive" read_bw="100MBps" write_bw="100MBps">
-                <prop id="size" value="5000GiB"/>
+                <prop id="size" value="5MB"/>
                 <prop id="mount" value="/"/>
             </disk>
         </host>

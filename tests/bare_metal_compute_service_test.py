@@ -77,10 +77,6 @@ if __name__ == "__main__":
         pass
 
     ss = simulation.create_simple_storage_service("StorageHost", ["/"])
-    # Coverage
-    ss.get_name()
-    str(ss)
-    repr(ss)
 
     workflow = simulation.create_workflow()
     workflow.get_name()

@@ -16,6 +16,7 @@ from wrench.simulation_item import SimulationItem
 
 if TYPE_CHECKING:  # pragma: no cover
     from wrench.workflow import Workflow
+    from wrench.simulation import Simulation
 
 from typing import List
 
@@ -51,7 +52,7 @@ class Task(SimulationItem):
         :param file: File name
         :type file: File
         """
-        return self.simulation._add_input_file(self, file)
+        return self._simulation._add_input_file(self, file)
 
     def add_output_file(self, file: File) -> None:
         """
@@ -59,7 +60,7 @@ class Task(SimulationItem):
         :param file: File name
         :type file: File
         """
-        return self.simulation._add_output_file(self, file)
+        return self._simulation._add_output_file(self, file)
 
     def get_input_files(self) -> List[File]:
         """
@@ -67,7 +68,7 @@ class Task(SimulationItem):
         :return: List of input file names
         :rtype: List[File]
         """
-        return self.simulation._get_task_input_files(self)
+        return self._simulation._get_task_input_files(self)
 
     def get_output_files(self) -> List[File]:
         """
@@ -75,7 +76,7 @@ class Task(SimulationItem):
         :return: List of output file names
         :rtype: List[File]
         """
-        return self.simulation._get_task_output_files(self)
+        return self._simulation._get_task_output_files(self)
 
     def get_flops(self) -> float:
         """
@@ -83,7 +84,7 @@ class Task(SimulationItem):
         :return: A number of flops
         :rtype: float
         """
-        return self.simulation._task_get_flops(self)
+        return self._simulation._task_get_flops(self)
 
     def get_min_num_cores(self) -> int:
         """
@@ -91,7 +92,7 @@ class Task(SimulationItem):
         :return: A number of cores
         :rtype: integer
         """
-        return self.simulation._task_get_min_num_cores(self)
+        return self._simulation._task_get_min_num_cores(self)
 
     def get_max_num_cores(self) -> int:
         """
@@ -99,7 +100,7 @@ class Task(SimulationItem):
         :return: A number of cores
         :rtype: integer
         """
-        return self.simulation._task_get_max_num_cores(self)
+        return self._simulation._task_get_max_num_cores(self)
 
     def get_memory(self) -> float:
         """
@@ -107,7 +108,7 @@ class Task(SimulationItem):
         :return: A memory size in bytes
         :rtype: float
         """
-        return self.simulation._task_get_memory(self)
+        return self._simulation._task_get_memory(self)
 
     def get_number_of_children(self) -> int:
         """
@@ -115,7 +116,7 @@ class Task(SimulationItem):
         :return: A number of children
         :rtype: int
         """
-        return self.simulation._task_get_number_of_children(self)
+        return self._simulation._task_get_number_of_children(self)
 
     def get_bottom_level(self) -> int:
         """
@@ -123,7 +124,7 @@ class Task(SimulationItem):
         :return: A bottom-level
         :rtype: int
         """
-        return self.simulation._task_get_bottom_level(self)
+        return self._simulation._task_get_bottom_level(self)
 
     def get_start_date(self) -> float:
         """
@@ -131,7 +132,7 @@ class Task(SimulationItem):
         :return: A date in seconds
         :rtype: float
         """
-        return self.simulation._task_get_start_date(self)
+        return self._simulation._task_get_start_date(self)
 
     def get_end_date(self) -> float:
         """
@@ -139,7 +140,7 @@ class Task(SimulationItem):
         :return: A date in seconds
         :rtype: float
         """
-        return self.simulation._task_get_end_date(self)
+        return self._simulation._task_get_end_date(self)
 
     def __str__(self) -> str:
         """
@@ -156,7 +157,7 @@ class Task(SimulationItem):
         sep = ''
         offset = ' '
 
-        s = f"Task {self.name}:\n"
+        s = f"Task {self._name}:\n"
         s += f"{offset}{text_flops:<18}{sep}{self.get_flops():10.2f}\n"
         s += f"{offset}{text_min_num_cores:<18}{sep}{self.get_min_num_cores():10d}\n"
         s += f"{offset}{text_max_num_cores:<18}{sep}{self.get_max_num_cores():10d}\n"
@@ -171,7 +172,7 @@ class Task(SimulationItem):
         :return: String representation of the Task object
         :rtype: str
         """
-        s = f"Task(name={self.name}, " + \
+        s = f"Task(name={self._name}, " + \
             f"flops={self.get_flops()}, " + \
             f"min_num_cores={self.get_min_num_cores()}, " + \
             f"max_num_cores={self.get_max_num_cores()}, " + \

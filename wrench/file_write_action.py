@@ -72,7 +72,7 @@ class FileWriteAction(Action):
         :return: String representation of the file write action
         :rtype: str
         """
-        s = f"File Write Action {self.name}"
+        s = f"File Write Action {self._name}"
         return s
 
     def __repr__(self) -> str:
@@ -80,5 +80,5 @@ class FileWriteAction(Action):
         :return: String representation of the file write action object
         :rtype: str
         """
-        s = f"FileWriteAction(name={self.name})"
+        s = f"FileWriteAction(name={self._name})"
         return s

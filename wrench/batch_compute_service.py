@@ -40,7 +40,7 @@ class BatchComputeService(ComputeService):
         :param service_specific_args: the service-specific arguments
         :type service_specific_args: dict[str, str]
         """
-        return self.simulation._submit_standard_job(standard_job, self, json.dumps(service_specific_args))
+        return self._simulation._submit_standard_job(standard_job, self, json.dumps(service_specific_args))
 
     def submit_compound_job(self, compound_job: CompoundJob, service_specific_args: dict[str, str]) -> None:
         """
@@ -51,4 +51,4 @@ class BatchComputeService(ComputeService):
         :param service_specific_args: the service-specific arguments
         :type service_specific_args: dict[str, str]
         """
-        return self.simulation._submit_compound_job(compound_job, self, json.dumps(service_specific_args))
+        return self._simulation._submit_compound_job(compound_job, self, json.dumps(service_specific_args))

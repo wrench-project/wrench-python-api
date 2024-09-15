@@ -38,7 +38,7 @@ class ComputeService(SimulationItem):
         :return: True if compound jobs are supported, false otherwise
         :rtype: bool
         """
-        return self.simulation._supports_compound_jobs(self)
+        return self._simulation._supports_compound_jobs(self)
 
     def supports_pilot_jobs(self) -> bool:
         """
@@ -47,7 +47,7 @@ class ComputeService(SimulationItem):
         :return: True if pilot jobs are supported, false otherwise
         :rtype: bool
         """
-        return self.simulation._supports_pilot_jobs(self)
+        return self._simulation._supports_pilot_jobs(self)
 
     def supports_standard_jobs(self) -> bool:
         """
@@ -56,7 +56,7 @@ class ComputeService(SimulationItem):
         :return: True if standard jobs are supported, false otherwise
         :rtype: bool
         """
-        return self.simulation._supports_standard_jobs(self)
+        return self._simulation._supports_standard_jobs(self)
 
     def get_core_flop_rates(self) -> Dict[str, float]:
         """
@@ -65,7 +65,7 @@ class ComputeService(SimulationItem):
         :return: A dictionary of core speeds
         :rtype: Dict[str, float]
         """
-        return self.simulation._get_core_flop_rates(self)
+        return self._simulation._get_core_flop_rates(self)
 
     def get_core_counts(self) -> Dict[str, int]:
         """
@@ -74,7 +74,7 @@ class ComputeService(SimulationItem):
         :return: A dictionary of core counts
         :rtype: Dict[str, int]
         """
-        return self.simulation._get_core_counts(self)
+        return self._simulation._get_core_counts(self)
 
     def submit_standard_job(self, standard_job: StandardJob) -> None:
         """
@@ -83,7 +83,7 @@ class ComputeService(SimulationItem):
         :param standard_job: the standard job
         :type standard_job: StandardJob
         """
-        return self.simulation._submit_standard_job(standard_job, self)
+        return self._simulation._submit_standard_job(standard_job, self)
 
     def submit_compound_job(self, compound_job: CompoundJob) -> None:
         """
@@ -92,7 +92,7 @@ class ComputeService(SimulationItem):
         :param compound_job: the compound job
         :type compound_job: CompoundJob
         """
-        return self.simulation._submit_compound_job(compound_job, self)
+        return self._simulation._submit_compound_job(compound_job, self)
 
     def __str__(self) -> str:
         """
@@ -100,7 +100,7 @@ class ComputeService(SimulationItem):
 
         :rtype: str
         """
-        s = f"Compute Service {self.name}"
+        s = f"Compute Service {self._name}"
         return s
 
     def __repr__(self) -> str:
@@ -108,5 +108,5 @@ class ComputeService(SimulationItem):
         :return: String representation of the ComputeService object
         :rtype: str
         """
-        s = f"ComputeService(name={self.name})"
+        s = f"ComputeService(name={self._name})"
         return s

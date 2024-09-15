@@ -23,11 +23,11 @@ class SimulationItem:
         :param name: simulation item name
         :type name: str
         """
-        self.simulation = simulation
-        self.name = name
+        self._simulation = simulation
+        self._name = name
 
     def get_name(self) -> str:
         """
         Get the name
         """
-        return self.name
+        return self._name

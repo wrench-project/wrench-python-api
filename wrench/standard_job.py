@@ -47,7 +47,7 @@ class StandardJob(SimulationItem):
         :return: String representation of the standard job
         :rtype: str
         """
-        s = f"Standard Job {self.name} with {len(self.tasks)} tasks"
+        s = f"Standard Job {self._name} with {len(self.tasks)} tasks"
         return s
 
     def __repr__(self) -> str:
@@ -55,5 +55,5 @@ class StandardJob(SimulationItem):
         :return: String representation of the StandardJob object
         :rtype: str
         """
-        s = f"StandardJob(name={self.name})"
+        s = f"StandardJob(name={self._name})"
         return s

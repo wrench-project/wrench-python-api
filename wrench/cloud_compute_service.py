@@ -44,7 +44,7 @@ class CloudComputeService(ComputeService):
         :return: a VirtualMachine object
         :rtype: VirtualMachine
         """
-        return self.simulation._create_vm(self, num_cores, ram_memory, property_list, message_payload_list)
+        return self._simulation._create_vm(self, num_cores, ram_memory, property_list, message_payload_list)
 
     def destroy_vm(self, vm: VirtualMachine) -> None:
         """
@@ -53,4 +53,4 @@ class CloudComputeService(ComputeService):
         :param vm: A virtual machine
         :type vm: VirtualMachine
         """
-        return self.simulation._destroy_vm(vm)
+        return self._simulation._destroy_vm(vm)

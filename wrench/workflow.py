@@ -15,12 +15,9 @@ if TYPE_CHECKING:  # pragma: no cover
     from wrench.simulation import Simulation
     from wrench.task import Task
     from wrench.file import File
-    from wrench.storage_service import StorageService
 from wrench.simulation_item import SimulationItem
 
 from typing import List
-import json
-
 
 # noinspection GrazieInspection
 class Workflow(SimulationItem):
@@ -60,7 +57,7 @@ class Workflow(SimulationItem):
 
         :raises WRENCHException: if there is any error in the response
         """
-        return self.simulation._workflow_create_task(self, name, flops, min_num_cores, max_num_cores, memory)
+        return self._simulation._workflow_create_task(self, name, flops, min_num_cores, max_num_cores, memory)
 
     def get_tasks(self) -> dict[str, Task]:
         """
@@ -78,7 +75,7 @@ class Workflow(SimulationItem):
         :return: A dictionary of Task objects where task names are keys
         :rtype: List[File]
         """
-        return self.simulation._workflow_get_input_files(self)
+        return self._simulation._workflow_get_input_files(self)
 
     def get_ready_tasks(self) -> List[Task]:
         """
@@ -87,7 +84,7 @@ class Workflow(SimulationItem):
         :return: A list of Task objects
         :rtype: List[Task]
         """
-        return self.simulation._workflow_get_ready_tasks(self)
+        return self._simulation._workflow_get_ready_tasks(self)
 
     def is_done(self) -> bool:
         """
@@ -96,7 +93,7 @@ class Workflow(SimulationItem):
         :return: True if the workflow is done, false otherwise
         :rtype: bool
         """
-        return self.simulation._workflow_is_done(self)
+        return self._simulation._workflow_is_done(self)
 
     def __str__(self) -> str:
         """
@@ -105,7 +102,7 @@ class Workflow(SimulationItem):
         :return: String representation of the workflow
         :rtype: str
         """
-        s = f'Workflow ' + self.name
+        s = f'Workflow ' + self._name
         return s
 
     def __repr__(self) -> str:
@@ -115,5 +112,5 @@ class Workflow(SimulationItem):
         :return: String representation of the Workflow object
         :rtype: str
         """
-        s = f"Workflow(name={self.name})"
+        s = f"Workflow(name={self._name})"
         return s

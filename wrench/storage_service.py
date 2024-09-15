@@ -34,7 +34,7 @@ class StorageService(SimulationItem):
 
         :param file: the file
         """
-        return self.simulation._create_file_copy_at_storage_service(file, self)
+        return self._simulation._create_file_copy_at_storage_service(file, self)
 
     def lookup_file(self, file: File) -> bool:
         """
@@ -44,14 +44,14 @@ class StorageService(SimulationItem):
         :return: true or false
         :rtype: bool
         """
-        return self.simulation._lookup_file_at_storage_service(file, self)
+        return self._simulation._lookup_file_at_storage_service(file, self)
 
     def __str__(self) -> str:
         """
         :return: String representation of the storage service
         :rtype: str
         """
-        s = f"Storage Service {self.name}"
+        s = f"Storage Service {self._name}"
         return s
 
     def __repr__(self) -> str:
@@ -59,5 +59,5 @@ class StorageService(SimulationItem):
         :return: String representation of the StorageService object
         :rtype: str
         """
-        s = f"StorageService(name={self.name})"
+        s = f"StorageService(name={self._name})"
         return s

@@ -54,25 +54,25 @@ class VirtualMachine(SimulationItem):
         :return: A bare-metal compute service running on the VM
         :rtype: BareMetalComputeService
         """
-        return self.simulation._start_vm(self)
+        return self._simulation._start_vm(self)
 
     def suspend(self) -> None:
         """
         Suspend the VM
         """
-        return self.simulation._suspend_vm(self)
+        return self._simulation._suspend_vm(self)
 
     def resume(self) -> None:
         """
         Resume the VM
         """
-        return self.simulation._resume_vm(self)
+        return self._simulation._resume_vm(self)
 
     def shutdown(self) -> None:
         """
         Shutdown the VM
         """
-        return self.simulation._shutdown_vm(self)
+        return self._simulation._shutdown_vm(self)
 
     def is_running(self) -> bool:
         """
@@ -81,7 +81,7 @@ class VirtualMachine(SimulationItem):
         :return: True if the VM is running, false otherwise
         :rtype: bool
         """
-        return self.simulation._is_vm_running(self)
+        return self._simulation._is_vm_running(self)
 
     def is_suspended(self) -> bool:
         """
@@ -90,7 +90,7 @@ class VirtualMachine(SimulationItem):
         :return: True if the VM is suspended, false otherwise
         :rtype: bool
         """
-        return self.simulation._is_vm_suspended(self)
+        return self._simulation._is_vm_suspended(self)
 
     def is_down(self) -> bool:
         """
@@ -99,14 +99,14 @@ class VirtualMachine(SimulationItem):
         :return: True if the VM is down, false otherwise
         :rtype: bool
         """
-        return self.simulation._is_vm_down(self)
+        return self._simulation._is_vm_down(self)
 
     def __str__(self) -> str:
         """
         :return: String representation of the VM
         :rtype: str
         """
-        s = f"Virtual Machine {self.name} on Cloud Compute Service {self.get_cloud_compute_service().get_name()}"
+        s = f"Virtual Machine {self._name} on Cloud Compute Service {self.get_cloud_compute_service().get_name()}"
         return s
 
     def __repr__(self) -> str:
@@ -114,5 +114,5 @@ class VirtualMachine(SimulationItem):
         :return: String representation of the VirtualMachine object
         :rtype: str
         """
-        s = f"VirtualMachine(name={self.name},cloud_compute_service={self.get_cloud_compute_service().get_name()})"
+        s = f"VirtualMachine(name={self._name},cloud_compute_service={self.get_cloud_compute_service().get_name()})"
         return s

@@ -94,7 +94,7 @@ class FileReadAction(Action):
         :return: String representation of the file copy action
         :rtype: str
         """
-        s = f"File Copy Action {self.name}"
+        s = f"File Copy Action {self._name}"
         return s
 
     def __repr__(self) -> str:
@@ -102,4 +102,4 @@ class FileReadAction(Action):
         :return: String representation of the file copy action object
         :rtype: str
         """
-        return f"FileCopyAction(name={self.name})"
+        return f"FileCopyAction(name={self._name})"

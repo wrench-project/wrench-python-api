@@ -74,7 +74,7 @@ class Action(SimulationItem):
         :return: a date (or -1 if not started)
         :rtype: float
         """
-        return self.simulation._action_get_start_date(self)
+        return self._simulation._action_get_start_date(self)
 
     def get_end_date(self) -> float:
         """
@@ -83,7 +83,7 @@ class Action(SimulationItem):
         :return: a date (or -1 if not ended)
         :rtype: float
         """
-        return self.simulation._action_get_end_date(self)
+        return self._simulation._action_get_end_date(self)
 
     def get_failure_cause(self) -> str:
         """
@@ -92,14 +92,14 @@ class Action(SimulationItem):
         :return: a failure cause (or None if no failure has occurred)
         :rtype: str
         """
-        return self.simulation._action_get_failure_cause(self)
+        return self._simulation._action_get_failure_cause(self)
 
     def __str__(self) -> str:  # pragma: no cover
         """
         :return: String representation of the action
         :rtype: str
         """
-        s = f"Action {self.name}"
+        s = f"Action {self._name}"
         return s
 
     def __repr__(self) -> str:  # pragma: no cover
@@ -107,5 +107,5 @@ class Action(SimulationItem):
         :return: String representation of the action object
         :rtype: str
         """
-        s = f"Action(name={self.name})"
+        s = f"Action(name={self._name})"
         return s

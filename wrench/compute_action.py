@@ -95,7 +95,7 @@ class ComputeAction(Action):
         :return: String representation of the sleep action
         :rtype: str
         """
-        s = f"Sleep Action {self.name}"
+        s = f"Sleep Action {self._name}"
         return s
 
     def __repr__(self) -> str:
@@ -103,5 +103,5 @@ class ComputeAction(Action):
         :return: String representation of the sleep action object
         :rtype: str
         """
-        s = f"SleepAction(name={self.name})"
+        s = f"SleepAction(name={self._name})"
         return s

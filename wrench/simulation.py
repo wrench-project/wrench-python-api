@@ -191,7 +191,7 @@ class Simulation:
             if task.get_workflow() != workflow:
                 raise WRENCHException("Cannot create a standard job with tasks from different workflows")
 
-        task_names = [t.name for t in tasks]
+        task_names = [t.get_name() for t in tasks]
 
         file_locations_specs = {}
         for fl in file_locations:

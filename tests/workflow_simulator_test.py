@@ -53,6 +53,20 @@ if __name__ == "__main__":
     task1.add_input_file(file1)
     task1.add_output_file(file2)
 
+    bogus_file = simulation.add_file("bogus", 1)
+    bogus_file._name = "really_bogus"
+    try:
+        task1.add_input_file(bogus_file)
+        raise wrench.WRENCHException("Shouldn't be able to add bogus file as input to a task")
+    except wrench.WRENCHException as e:
+        pass
+
+    try:
+        task1.add_output_file(bogus_file)
+        raise wrench.WRENCHException("Shouldn't be able to add bogus file as input to a task")
+    except wrench.WRENCHException as e:
+        pass
+
     if workflow1.is_done():
         raise wrench.WRENCHException("The workflow should not be done")
 

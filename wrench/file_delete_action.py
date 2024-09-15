@@ -72,7 +72,7 @@ class FileDeleteAction(Action):
         :return: String representation of the file delete action
         :rtype: str
         """
-        s = f"File Delete Action {self.name}"
+        s = f"File Delete Action {self._name}"
         return s
 
     def __repr__(self) -> str:
@@ -80,5 +80,5 @@ class FileDeleteAction(Action):
         :return: String representation of the file delete action object
         :rtype: str
         """
-        s = f"FileDeleteAction(name={self.name})"
+        s = f"FileDeleteAction(name={self._name})"
         return s

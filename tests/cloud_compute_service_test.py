@@ -108,6 +108,26 @@ if __name__ == "__main__":
         raise wrench.WRENCHException("VM should be running")
 
     task2 = workflow.add_task("task2", 10000000000.0, 1, 1, 0)
+
+    # Bogus job submission
+    try:
+        bogus_job = simulation.create_standard_job([task2], {})
+        ccs.submit_standard_job(bogus_job)
+        raise wrench.WRENCHException("Should not be able to submit a standard job to a cloud compute service")
+    except wrench.WRENCHException as e:
+        pass
+
+    # Bogus job submission
+    try:
+        bogus_cjob = simulation.create_compound_job("cjob")
+        bogus_cjob.add_sleep_action("", 10)
+        ccs.submit_compound_job(bogus_cjob)
+        raise wrench.WRENCHException("Should not be able to submit a compound job to a cloud compute service")
+    except wrench.WRENCHException as e:
+        print(e)
+        pass
+
+
     job = simulation.create_standard_job([task2], {})
     vm_cs.submit_standard_job(job)
     event = simulation.wait_for_next_event()

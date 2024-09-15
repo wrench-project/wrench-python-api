@@ -42,7 +42,7 @@ class File(SimulationItem):
         :return: A number of bytes
         :rtype: int
         """
-        return self.simulation._file_get_size(self)
+        return self._simulation._file_get_size(self)
 
     def __str__(self) -> str:
         """
@@ -51,7 +51,7 @@ class File(SimulationItem):
         :return: String representation of the file
         :rtype: str
         """
-        s = f'File {self.name} of {self.get_size()} bytes'
+        s = f'File {self._name} of {self.get_size()} bytes'
         return s
 
     def __repr__(self) -> str:
@@ -61,5 +61,5 @@ class File(SimulationItem):
         :return: String representation of the File object
         :rtype: str
         """
-        s = f'File(name={self.name}, size={self.get_size()})'
+        s = f'File(name={self._name}, size={self.get_size()})'
         return s
