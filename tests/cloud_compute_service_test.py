@@ -25,6 +25,16 @@ if __name__ == "__main__":
         sys.stderr.write(f"Error: {e}\n")
         exit(1)
 
+    try:
+        simulation.create_cloud_compute_service("CloudHeadHost_BOGUS",
+                                                      ["CloudHost1_BOGUS", "CloudHost2"],
+                                                      "/scratch",
+                                                      {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
+                                                      {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
+        raise wrench.WRENCHException("Shouldn't be able to create bogus cloud compute service")
+    except wrench.WRENCHException as e:
+        pass
+
     ccs = simulation.create_cloud_compute_service("CloudHeadHost",
                                                   ["CloudHost1", "CloudHost2"],
                                                   "/scratch",
@@ -124,7 +134,6 @@ if __name__ == "__main__":
         ccs.submit_compound_job(bogus_cjob)
         raise wrench.WRENCHException("Should not be able to submit a compound job to a cloud compute service")
     except wrench.WRENCHException as e:
-        print(e)
         pass
 
 

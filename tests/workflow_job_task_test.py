@@ -37,6 +37,11 @@ if __name__ == "__main__":
     
     assert file1.get_size() == 1024, "File1 has an incorrect size"
     file2 = simulation.add_file("file2", 2048)
+    try:
+        invalid_file = simulation.add_file("file2", 1)
+        raise wrench.WRENCHException("Shouldn't be able to add an already-existing file to the simulation")
+    except wrench.WRENCHException as e:
+        pass
     file3 = simulation.add_file("file3", 10000)
 
     files = simulation.get_all_files()
@@ -68,11 +73,76 @@ if __name__ == "__main__":
 
     assert workflow.get_input_files() == [file1], "The workflow's input files should only be File1"
 
+    try:
+        job = simulation.create_standard_job([task2], {})
+        raise wrench.WRENCHException("Should not be able to create a job with non-completed parents not in job")
+    except wrench.WRENCHException as e:
+        pass
+
     job = simulation.create_standard_job([task1, task2], {})
     str(job)
     repr(job)
     assert task1 in job.get_tasks(), "Task1 should be in job"
     assert task2 in job.get_tasks(), "Task2 should be in job"
+
+    # Coverage
+    task1._name = "BOGUS"
+    try:
+        task1.get_input_files()
+        raise wrench.WRENCHException("Shouldb't be able to get the input files of a bogus task")
+    except wrench.WRENCHException as e:
+        pass
+    try:
+        task1.get_output_files()
+        raise wrench.WRENCHException("Shouldb't be able to get the output files of a bogus task")
+    except wrench.WRENCHException as e:
+        pass
+    try:
+        task1.get_start_date()
+        raise wrench.WRENCHException("Shouldn't be able to get the start date of a bogus task")
+    except wrench.WRENCHException as e:
+        pass
+    try:
+        task1.get_end_date()
+        raise wrench.WRENCHException("Shouldn't be able to get the end date of a bogus task")
+    except wrench.WRENCHException as e:
+        pass
+    try:
+        task1.get_flops()
+        raise wrench.WRENCHException("Shouldn't be able to get the flops of a bogus task")
+    except wrench.WRENCHException as e:
+        pass
+    try:
+        task1.get_memory()
+        raise wrench.WRENCHException("Shouldn't be able to get the memory of a bogus task")
+    except wrench.WRENCHException as e:
+        pass
+    try:
+        task1.get_state()
+        raise wrench.WRENCHException("Shouldn't be able to get the flops of a bogus task")
+    except wrench.WRENCHException as e:
+        pass
+    try:
+        task1.get_number_of_children()
+        raise wrench.WRENCHException("Shouldn't be able to get the number of children of a bogus task")
+    except wrench.WRENCHException as e:
+        pass
+    try:
+        task1.get_bottom_level()
+        raise wrench.WRENCHException("Shouldn't be able to get the bottom level of a bogus task")
+    except wrench.WRENCHException as e:
+        pass
+    try:
+        task1.get_min_num_cores()
+        raise wrench.WRENCHException("Shouldn't be able to get the min num cores of a bogus task")
+    except wrench.WRENCHException as e:
+        pass
+    try:
+        task1.get_max_num_cores()
+        raise wrench.WRENCHException("Shouldn't be able to get the max num cores of a bogus task")
+    except wrench.WRENCHException as e:
+        pass
+
 
     simulation.terminate()
 
