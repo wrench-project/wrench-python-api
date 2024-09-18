@@ -8,25 +8,13 @@
 # (at your option) any later version.
 from wrench.simulation_item import SimulationItem
 from wrench.compound_job import CompoundJob
-
-
-# from enum import Enum
+from enum import Enum
 
 
 class Action(SimulationItem):
     """
     WRENCH Action class
     """
-
-    # class ActionState(Enum):
-    #     NOT_READY = 0
-    #     READY = 1
-    #     STARTED = 2
-    #     COMPLETED = 3
-    #     KILLED = 4
-    #     FAILED = 5
-    #
-    # getState-> return int
 
     def __init__(self, simulation, name: str, compound_job: CompoundJob) -> None:
         """
@@ -40,23 +28,22 @@ class Action(SimulationItem):
         self.compound_job = compound_job
         super().__init__(simulation, name)
 
-    # def get_state(self) -> Enum:
-    #     """
-    #     Get the job
-    #
-    #     :return: a list of task objects
-    #     :rtype: List[Task]
-    #     """
-    #     return None
-    #
-    # def get_state_as_string(self) -> str:
-    #     """
-    #     Get the job
-    #
-    #     :return: a list of task objects
-    #     :rtype: List[Task]
-    #     """
-    #     return None
+    """ This class HAS to match its corresponding C++ enum, which  
+         is not great from a software maintenance standpoint, but makes things simple """
+
+    class ActionState(Enum):
+        NOT_READY = 0
+        READY = 1
+        STARTED = 2
+        COMPLETED = 3
+        KILLED = 4
+        FAILED = 5
+
+    def get_state(self) -> ActionState:
+        """
+        Get the state of the action
+        """
+        return self.ActionState(self._simulation._action_get_state(self))
 
     def get_job(self) -> CompoundJob:
         """

@@ -95,6 +95,9 @@ if __name__ == "__main__":
     task2.add_input_file(file2)
     task2.add_output_file(file3)
 
+    assert task1.get_state() == wrench.Task.TaskState.READY, "task1 should be READY"
+    assert task2.get_state() == wrench.Task.TaskState.NOT_READY, "task2 should be NOT_READY"
+
     job = simulation.create_standard_job([task1, task2], {})
     job.get_name()
     assert set(job.get_tasks()) == {task1, task2}, "Job tasks are incoherent"
@@ -154,7 +157,11 @@ if __name__ == "__main__":
     job = simulation.create_standard_job([t4], {file4: ss})
     cs.submit_standard_job(job)
 
+    assert t4.get_state() == wrench.Task.TaskState.PENDING, "t4's state should be PENDING"
+
     event = simulation.wait_for_next_event()
     assert event["event_type"] == "standard_job_failure", "The job should have failed"
+
+    assert t4.get_state() == wrench.Task.TaskState.READY, "t4's state should be READY"
 
     simulation.terminate()

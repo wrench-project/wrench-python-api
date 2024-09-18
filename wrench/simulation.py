@@ -727,6 +727,28 @@ class Simulation:
             return response["size"]
         raise WRENCHException(response["failure_cause"])
 
+    def _task_get_state(self, task: Task) -> int:
+        """
+        Get the state of a task
+        :param task: the task
+        :type task: Task
+
+        :return: a state as an int (enum)
+        :rtype: int
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get,
+                                          f"{self.daemon_url}/{self.simid}/workflows/"
+                                          f"{task.get_workflow().get_name()}/tasks/"
+                                          f"{task.get_name()}/getState",
+                                          json_data={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["state"]
+        raise WRENCHException(response["failure_cause"])
+
     def _task_get_flops(self, task: Task) -> float:
         """
         Get the number of flops in a task
@@ -1125,6 +1147,27 @@ class Simulation:
             sleep_action = SleepAction(self, compound_job, response["sleep_action_name"], sleep_time)
             compound_job.actions.append(sleep_action)
             return sleep_action
+        raise WRENCHException(response["failure_cause"])
+
+    def _action_get_state(self, action: Action) -> int:
+        """
+        Get the action's state
+        :param action: the action
+        :type action: Action
+
+        :return: a state as an int (enum)
+        :rtype: int
+
+        :raises WRENCHException: if there is any error in the response
+        """
+        r = self.__send_request_to_daemon(requests.get,
+                                          f"{self.daemon_url}/{self.simid}/compoundJobs/"
+                                          f"{action.get_job().get_name()}/actions/{action.get_name()}/"
+                                          f"getState", json_data={})
+
+        response = r.json()
+        if response["wrench_api_request_success"]:
+            return response["state"]
         raise WRENCHException(response["failure_cause"])
 
     def _action_get_start_date(self, action: Action) -> float:

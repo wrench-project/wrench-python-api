@@ -13,6 +13,8 @@ from typing import TYPE_CHECKING
 
 from wrench.file import File
 from wrench.simulation_item import SimulationItem
+from enum import Enum
+
 
 if TYPE_CHECKING:  # pragma: no cover
     from wrench.workflow import Workflow
@@ -38,6 +40,19 @@ class Task(SimulationItem):
         """
         self.workflow = workflow
         super().__init__(simulation, name)
+
+    class TaskState(Enum):
+        NOT_READY = 0
+        READY = 1
+        PENDING = 2
+        COMPLETED = 3
+        UNKNOWN = 4
+
+    def get_state(self) -> TaskState:
+        """
+        Get the state of the action
+        """
+        return self.TaskState(self._simulation._task_get_state(self))
 
     def get_workflow(self) -> Workflow:
         """

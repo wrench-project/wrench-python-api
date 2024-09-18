@@ -64,6 +64,9 @@ if __name__ == "__main__":
     str(fwa)
     repr(fwa)
 
+    assert fwa.get_state() == wrench.Action.ActionState.READY, "FileWriteAction1 should be in the READY state"
+
+
     assert fwa.get_file() == file1, "FileWriteAction1 doesn't have the correct file"
     assert fwa.get_file_location() == ss1, "FileWriteAction1 doesn't have the correct file location"
     assert not fwa.uses_scratch(), "FileWriteAction1 doesn't have the correct use of scratch"
@@ -74,6 +77,9 @@ if __name__ == "__main__":
     fra.get_name()
     str(fra)
     repr(fra)
+
+    assert fra.get_state() == wrench.Action.ActionState.NOT_READY, "FileReadAction1 should be in the READY state"
+
 
     assert fra.get_file() == file1, "FileReadAction1 doesn't have the correct file"
     assert fra.get_file_location() == ss1, "FileReadAction1 doesn't have the correct file location"
@@ -156,6 +162,8 @@ if __name__ == "__main__":
 
     assert not ca.get_failure_cause(), "ComputeAction1 should have a None failure cause"
 
+    assert ca.get_state() == wrench.Action.ActionState.COMPLETED, "ComputeAction1 should be in the COMPLETED state"
+
     # Let's create a job that will fail
     cj3 = simulation.create_compound_job("")
     file4 = simulation.add_file("file4", 10)
@@ -165,4 +173,5 @@ if __name__ == "__main__":
 
     assert event["event_type"] == "compound_job_failure", f"Received an unexpected event: {event['event_type']}"
     assert doomed.get_failure_cause() != "", f"Doomed action should have a failure cause"
+    assert doomed.get_state() == wrench.Action.ActionState.FAILED, "Doomed should be in the FAILED state"
     simulation.terminate()

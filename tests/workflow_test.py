@@ -87,8 +87,6 @@ if __name__ == "__main__":
     if len(workflow1.get_ready_tasks()) != 1:
         raise wrench.WRENCHException("There should be 1 ready tasks")
 
-    job = simulation.create_standard_job([task1, task2], {})
-
     f = open(json_workflow_file_path)
     wfcommons_json_workflow = json.load(f)
     f.close()
