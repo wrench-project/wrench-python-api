@@ -68,9 +68,9 @@ jobs:
           # WIThOUT DOCKER
           #pip install .
           # END WITHOUT DOCKER
-          docker exec --workdir /home/wrench/ wrench-daemon-container python3 -m pip install build
-          docker exec --workdir /home/wrench/ wrench-daemon-container python3 -m build
-          docker exec --workdir /home/wrench/ wrench-daemon-container python3 -m pip install ./dist/wrench-*.whl
+          docker exec --workdir /home/wrench/ wrench-daemon-container sudo python3 -m pip install build
+          docker exec --workdir /home/wrench/ wrench-daemon-container sudo python3 -m build
+          docker exec --workdir /home/wrench/ wrench-daemon-container sudo python3 -m pip install ./dist/wrench-*.whl
       - name: Run all tests
         run: |
           # WITHOUT DOCKER
