@@ -20,4 +20,5 @@ for file in *.py; do
     fi
 done
 
+echo "Test script returning: $EXIT_CODE"
 exit $EXIT_CODE
