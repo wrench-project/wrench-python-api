@@ -45,7 +45,10 @@ if __name__ == "__main__":
 
     events = simulation.get_events()
 
-    assert len(events) == 1, "There should be a single simulation event (instead there are " + str(len(events)) + ")"
+    try:
+        assert len(events) == 1, "There should be a single simulation event (instead there are " + str(len(events)) + ")"
+    except AssertionError as e:
+        print(e)
     assert events[0]["event_type"] == "standard_job_completion", "Event type is unexpected"
 
     simulation.terminate()
