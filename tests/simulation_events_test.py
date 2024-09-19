@@ -41,12 +41,12 @@ if __name__ == "__main__":
 
     cs.submit_standard_job(job)
 
-    simulation.sleep(100)
+    simulation.sleep(10000)
 
     events = simulation.get_events()
-    print("Events = " + str(events))
+    print(events)
 
-    assert len(events) == 1, "There should be a single simulation event (instead there are " + str(len(events)) + ")"
+    assert len(events) == 1, "There should be a single simulation event"
 
     assert events[0]["event_type"] == "standard_job_completion", "Event type is unexpected"
 
