@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=65.5.1"]  # PEP 518 specifications
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wrench"
+authors = [{name = "WRENCH team", email = "support@wrench-project.org"}]
+description = "A Python API to the WRENCH simulation framework"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Natural Language :: English",
+    "Topic :: Documentation :: Sphinx",
+    "Topic :: System :: Distributed Computing"
+]
+license = {text = "GNU General Public License v3 (GPLv3)"}
+dependencies = [
+    "requests>=2.24.0"
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://wrench-project.org"
+Source = "https://github.com/wrench-project/wrench-python-api"
+Documentation = "https://wrench-python-api.readthedocs.io/en/latest/"
+Tracker = "https://github.com/wrench-project/wrench-python-api/issues"
+
+[project.optional-dependencies]
+test = ["coverage"]
+
+[tool.setuptools]
+packages = ["wrench"]
+
+[tool.setuptools.dynamic]
+version = {attr = "wrench.version.__version__"}
+
+
+
