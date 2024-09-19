@@ -5,6 +5,8 @@ NORMAL=$(tput sgr0)
 GREEN="\033[0;32m"
 RED="\033[0;31m"
 
+EXIT_CODE=0
+
 for file in *.py; do
     if [ -f "$file" ]; then
       	python3 "$file" 1> /dev/null 2> /tmp/stderr.txt
@@ -13,7 +15,9 @@ for file in *.py; do
 	else
   		echo -e "${BOLD}${RED}[FAILED] ${NORMAL}${BOLD}$file${NORMAL}"
 		cat /tmp/stderr.txt | sed 's/^/    /'
+		EXIT_CODE=1
 	fi      	
     fi
 done
 
+exit $EXIT_CODE
