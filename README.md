@@ -28,4 +28,4 @@ For complete documentation, see the [API Documentation page](https://wrench-pyth
 [build-badge]:         https://github.com/wrench-project/wrench-python-api/actions/workflows/build.yml/badge.svg
 [build-link]:          https://github.com/wrench-project/wrench-api/actions
 [license-badge]:       https://img.shields.io/badge/License-LGPL%20v3-blue.svg
-[coverage-badge]:     https://img.shields.io/badge/Coverage-95%25-brightgreen
+[coverage-badge]:     https://img.shields.io/badge/Coverage-97%25-brightgreen
