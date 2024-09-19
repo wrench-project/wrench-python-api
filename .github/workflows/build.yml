@@ -78,7 +78,7 @@ jobs:
           #bash ./run_all_tests.sh
           #cd ..
           # END WITHOUT DOCKER
-          docker exec -it --workdir /home/wrench/tests wrench-daemon-container bash ./run_all_tests.sh
+          docker exec --workdir /home/wrench/tests wrench-daemon-container bash ./run_all_tests.sh
       - name: Run all examples
         run: |
           # WITHOUT DOCKER
