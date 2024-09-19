@@ -15,7 +15,8 @@ Provide a Python API for [WRENCH](https://wrench-project.org). This API is built
   - [WRENCH](https://github.com/wrench-project/wrench) and its dependencies
     - You must compile the `wrench-daemon` target (i.e., `make wrench-daemon`) during the build process before doing the usual (`sudo make install`)
 
-  - Run `pip install .` to install the WRENCH Python API. 
+  - Run `python3 -m build` to build the package.
+  - Run `cd dist; python3 -m pip install ./wrench-*.whl` to install the package
 
 # Examples and API Documentation
 

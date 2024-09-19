@@ -80,7 +80,6 @@ class Simulation:
 
     @staticmethod
     def __send_request_to_daemon(requests_method, route, json_data):
-        print("TWF")
         try:
             r = requests_method(route, json=json_data)
             return r
