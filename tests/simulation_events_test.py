@@ -44,7 +44,6 @@ if __name__ == "__main__":
     simulation.sleep(10000)
 
     events = simulation.get_events()
-    print(events)
 
     assert len(events) == 1, "There should be a single simulation event"
 
