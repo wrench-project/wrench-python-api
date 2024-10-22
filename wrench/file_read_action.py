@@ -18,7 +18,7 @@ class FileReadAction(Action):
     """
 
     def __init__(self, simulation, compound_job: CompoundJob, name: str, file: File, storage_service: StorageService,
-                 num_bytes_to_read: float, uses_scratch: bool) -> None:
+                 num_bytes_to_read: int, uses_scratch: bool) -> None:
         """
         Constructor
         :param simulation: simulation object
@@ -32,7 +32,7 @@ class FileReadAction(Action):
         :param storage_service: storage service containing file
         :type storage_service: StorageService
         :param num_bytes_to_read: number of bytes to read
-        :type num_bytes_to_read: float
+        :type num_bytes_to_read: int
         :param uses_scratch: whether action uses scratch
         :type uses_scratch: bool
         """
@@ -61,11 +61,11 @@ class FileReadAction(Action):
         """
         return self.storage_service
 
-    def get_num_bytes_to_read(self) -> float:
+    def get_num_bytes_to_read(self) -> int:
         """
         Get number of bytes to read from file
-        :return: amount of bytes being read
-        :rtype: float
+        :return: number of bytes being read
+        :rtype: int
         """
         return self.num_bytes_to_read
 

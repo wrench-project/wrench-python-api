@@ -68,7 +68,6 @@ if __name__ == "__main__":
 
     assert fwa.get_state() == wrench.Action.ActionState.READY, "FileWriteAction1 should be in the READY state"
 
-
     assert fwa.get_file() == file1, "FileWriteAction1 doesn't have the correct file"
     assert fwa.get_file_location() == ss1, "FileWriteAction1 doesn't have the correct file location"
     assert not fwa.uses_scratch(), "FileWriteAction1 doesn't have the correct use of scratch"
@@ -82,9 +81,10 @@ if __name__ == "__main__":
 
     assert fra.get_state() == wrench.Action.ActionState.NOT_READY, "FileReadAction1 should be in the READY state"
 
-
     assert fra.get_file() == file1, "FileReadAction1 doesn't have the correct file"
     assert fra.get_file_location() == ss1, "FileReadAction1 doesn't have the correct file location"
+    print(fra.get_num_bytes_to_read())
+    print(file1.get_size())
     assert fra.get_num_bytes_to_read() == file1.get_size(), "FileReadAction1 doesn't have the correct number of bytes"
     assert not fra.uses_scratch(), "FileReadAction1 doesn't have the correct use of scratch"
 

@@ -53,7 +53,7 @@ class CompoundJob(SimulationItem):
         """
         return self.actions
 
-    def add_compute_action(self, name: str, flops: float, ram: float,
+    def add_compute_action(self, name: str, flops: float, ram: int,
                            max_num_cores: int, min_num_cores: int, parallel_model: Tuple[str, float]) -> ComputeAction:
         """
         Add a sleep action to the compound job
@@ -63,7 +63,7 @@ class CompoundJob(SimulationItem):
         :param flops: flops associated with this action
         :type flops: float
         :param ram: minimum amount of ram needed
-        :type ram: float
+        :type ram: int
         :param min_num_cores: minimum amount of cores this action needs
         :type min_num_cores: int
         :param max_num_cores: maximum amount of cores this action can use
@@ -119,7 +119,7 @@ class CompoundJob(SimulationItem):
         return self._simulation._add_file_write_action(self, name, file, storage_service)
 
     def add_file_read_action(self, name: str, file: File, storage_service: StorageService,
-                             num_bytes_to_read=0.0) -> FileReadAction:
+                             num_bytes_to_read: int = 0) -> FileReadAction:
         """
         Add a file write action to the compound job
 
@@ -130,7 +130,7 @@ class CompoundJob(SimulationItem):
         :param storage_service: storage service to write the file to
         :type storage_service: StorageService
         :param num_bytes_to_read: number of bytes to read in file
-        :type num_bytes_to_read: float
+        :type num_bytes_to_read: int
         """
         return self._simulation._add_file_read_action(self, name, file, storage_service, num_bytes_to_read)
 

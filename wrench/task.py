@@ -117,11 +117,11 @@ class Task(SimulationItem):
         """
         return self._simulation._task_get_max_num_cores(self)
 
-    def get_memory(self) -> float:
+    def get_memory(self) -> int:
         """
         Get the task's memory requirement
         :return: A memory size in bytes
-        :rtype: float
+        :rtype: int
         """
         return self._simulation._task_get_memory(self)
 

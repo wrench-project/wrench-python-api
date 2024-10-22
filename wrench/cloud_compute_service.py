@@ -28,15 +28,15 @@ class CloudComputeService(ComputeService):
         """
         super().__init__(simulation, name)
 
-    def create_vm(self, num_cores: int, ram_memory: float, property_list: dict[str, str],
-                  message_payload_list: dict[str, float]) -> VirtualMachine:
+    def create_vm(self, num_cores: int, ram_memory: int, property_list: dict[str, str],
+                  message_payload_list: dict[str, int]) -> VirtualMachine:
         """
         Create a new virtual machine instance on the compute service
 
         :param num_cores: number of cores in the virtual machine
         :type num_cores: int
         :param ram_memory: RAM size in bytes
-        :type ram_memory: float
+        :type ram_memory: int
         :param property_list: a property list ({} means “use all defaults”)
         :type property_list: dict
         :param message_payload_list: a message payload list ({} means “use all defaults”)

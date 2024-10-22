@@ -298,10 +298,10 @@ class Simulation:
         return response["time"]
 
     def create_bare_metal_compute_service(self, hostname: str,
-                                          resources: dict[str, [int, float]],
+                                          resources: dict[str, [int, int]],
                                           scratch_space: str,
                                           property_list: dict[str, str],
-                                          message_payload_list: dict[str, float]) -> BareMetalComputeService:
+                                          message_payload_list: dict[str, int]) -> BareMetalComputeService:
         """
         Create a bare metal compute service
 
@@ -467,7 +467,7 @@ class Simulation:
 
     def create_workflow_from_json(self, json_object: json, reference_flop_rate: str, ignore_machine_specs: bool,
                                   redundant_dependencies: bool, ignore_cycle_creating_dependencies: bool,
-                                  min_cores_per_task: float, max_cores_per_task: float, enforce_num_cores: bool,
+                                  min_cores_per_task: int, max_cores_per_task: int, enforce_num_cores: bool,
                                   ignore_avg_cpu: bool, show_warnings: bool) -> Workflow:
         """
         Create a workflow from a JSON file
@@ -482,10 +482,10 @@ class Simulation:
         :type redundant_dependencies: bool
         :param ignore_cycle_creating_dependencies: whether to ignore cycles when creating task dependencies
         :type ignore_cycle_creating_dependencies: bool
-        :param min_cores_per_task: the minimum cores for a task if not specified in the JSON
-        :type min_cores_per_task: float
-        :param max_cores_per_task: the maximum cores for a task if not specified in the JSON
-        :type max_cores_per_task: float
+        :param min_cores_per_task: the minimum number of cores for a task if not specified in the JSON
+        :type min_cores_per_task: int
+        :param max_cores_per_task: the maximum number of cores for a task if not specified in the JSON
+        :type max_cores_per_task: int
         :param enforce_num_cores: whether to enforce the number of cores for a task even if specified in the JSON
         :type enforce_num_cores: bool
         :param ignore_avg_cpu: whether to ignore the average CPU time information in the JSON to compute
@@ -808,14 +808,14 @@ class Simulation:
             return response["max_num_cores"]
         raise WRENCHException(response["failure_cause"])
 
-    def _task_get_memory(self, task: Task) -> float:
+    def _task_get_memory(self, task: Task) -> int:
         """
-        Get the task's memory requirement
+        Get the task's memory requirement in bytes
         :param task: the task
         :type task: Task
 
         :return: a memory footprint in bytes
-        :rtype: float
+        :rtype: int
 
         :raises WRENCHException: if there is any error in the response
         """
@@ -829,7 +829,7 @@ class Simulation:
             return response["memory"]
         raise WRENCHException(response["failure_cause"])
 
-    def _task_get_number_of_children(self, task: Task) -> float:
+    def _task_get_number_of_children(self, task: Task) -> int:
         """
         Get the task's number of children
         :param task: the task
@@ -850,7 +850,7 @@ class Simulation:
             return response["number_of_children"]
         raise WRENCHException(response["failure_cause"])
 
-    def _task_get_bottom_level(self, task: Task) -> float:
+    def _task_get_bottom_level(self, task: Task) -> int:
         """
         Get the task's bottom-level
         :param task: the task
@@ -913,7 +913,7 @@ class Simulation:
             return response["time"]
         raise WRENCHException(response["failure_cause"])
 
-    def _add_compute_action(self, compound_job: CompoundJob, name: str, flops: float, ram: float,
+    def _add_compute_action(self, compound_job: CompoundJob, name: str, flops: float, ram: int,
                             max_num_cores: int, min_num_cores: int, parallel_model: tuple) -> Action:
         """
         Add a compute action
@@ -924,8 +924,8 @@ class Simulation:
         :type name: str
         :param flops: number of flops this action has
         :type flops: float
-        :param ram: amount of ram this action has
-        :type ram: float
+        :param ram: amount of ram this action has in bytes
+        :type ram: int
         :param max_num_cores: maximum number of cores this action can have
         :type max_num_cores: long
         :param min_num_cores: minimum number of cores this action can have
@@ -1076,7 +1076,7 @@ class Simulation:
         raise WRENCHException(response["failure_cause"])
 
     def _add_file_read_action(self, compound_job: CompoundJob, name: str, file: File, storage_service: StorageService,
-                              num_bytes_to_read: float) -> Action:
+                              num_bytes_to_read: int) -> Action:
         """
         Add a file read action
         :param compound_job: the action's compound job
@@ -1088,7 +1088,7 @@ class Simulation:
         :param storage_service: the storage service the file is stored in
         :type storage_service: StorageService
         :param num_bytes_to_read: the number of bytes to read from the file
-        :type num_bytes_to_read: float
+        :type num_bytes_to_read: int
         :return: the action name
         :rtype: Action
 
@@ -1283,9 +1283,9 @@ class Simulation:
     def _create_vm(self,
                    service: CloudComputeService,
                    num_cores: int,
-                   ram_memory: float,
+                   ram_memory: int,
                    property_list: dict[str, str],
-                   message_payload_list: dict[str, float]) -> VirtualMachine:
+                   message_payload_list: dict[str, int]) -> VirtualMachine:
         """
         Create a VM instance
         :param service: the cloud compute service
@@ -1293,7 +1293,7 @@ class Simulation:
         :param num_cores: the number of cores for the VM
         :type num_cores: int
         :param ram_memory: the VM’s RAM memory_manager_service capacity
-        :type ram_memory: float
+        :type ram_memory: int
         :param property_list: a property list for the CloudComputeService that will run on the VM
                ({} means “use all defaults”)
         :type property_list: dict
@@ -1522,7 +1522,7 @@ class Simulation:
             to_return[response["hostnames"][i]] = response["flop_rates"][i]
         return to_return
 
-    def _get_core_counts(self, cs: ComputeService) -> Dict[str, float]:
+    def _get_core_counts(self, cs: ComputeService) -> Dict[str, int]:
         """
         Get the map of core counts, keyed by host name
         :param cs: the compute service
@@ -1541,7 +1541,7 @@ class Simulation:
         return to_return
 
     def _workflow_create_task(self, workflow: Workflow, name: str, flops: float, min_num_cores: int, max_num_cores: int,
-                              memory: float) -> Task:
+                              memory: int) -> Task:
         """
         Add a task to the workflow
         :param workflow: the workflow
@@ -1555,7 +1555,7 @@ class Simulation:
         :param max_num_cores: maximum number of cores
         :type max_num_cores: int
         :param memory: memory requirement in bytes
-        :type memory: float
+        :type memory: int
 
         :return: A task object
         :rtype: Task

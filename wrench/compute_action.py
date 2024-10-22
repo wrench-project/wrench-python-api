@@ -17,7 +17,7 @@ class ComputeAction(Action):
     WRENCH Action class
     """
 
-    def __init__(self, simulation, compound_job: CompoundJob, name: str, flops: float, ram: float, min_num_cores: int,
+    def __init__(self, simulation, compound_job: CompoundJob, name: str, flops: float, ram: int, min_num_cores: int,
                  max_num_cores: int, parallel_model: tuple) -> None:
         """
         Constructor
@@ -30,7 +30,7 @@ class ComputeAction(Action):
         :param flops: amount of flops this action has
         :type flops: float
         :param ram: minimum amount of ram this action needs
-        :type ram: float
+        :type ram: int
         :param min_num_cores: minimum amount of cores this action needs
         :type min_num_cores: int
         :param max_num_cores: maximum amount of cores this action can use
@@ -72,12 +72,12 @@ class ComputeAction(Action):
         """
         return self.min_num_cores
 
-    def get_min_ram_footprint(self) -> float:
+    def get_min_ram_footprint(self) -> int:
         """
         Minimum amount of ram needed for this action
 
         :return: Minimum amount of ram needed
-        :rtype: float
+        :rtype: int
         """
         return self.ram
 

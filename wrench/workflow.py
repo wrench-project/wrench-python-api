@@ -38,7 +38,7 @@ class Workflow(SimulationItem):
         self.tasks = {}
         super().__init__(simulation, name)
 
-    def add_task(self, name: str, flops: float, min_num_cores: int, max_num_cores: int, memory: float) -> Task:
+    def add_task(self, name: str, flops: float, min_num_cores: int, max_num_cores: int, memory: int) -> Task:
         """
         Add a task to the workflow
 
@@ -51,7 +51,7 @@ class Workflow(SimulationItem):
         :param max_num_cores: maximum number of cores
         :type max_num_cores: int
         :param memory: memory requirement in bytes
-        :type memory: float
+        :type memory: int
 
         :return: A task object
         :rtype: Task
