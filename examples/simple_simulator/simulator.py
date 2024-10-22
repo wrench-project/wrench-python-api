@@ -22,7 +22,9 @@ if __name__ == "__main__":
         simulation = wrench.Simulation()
 
         # Starting the simulation, with this simulated process running on the host ControllerHost
-        simulation.start(platform_file_path, "ControllerHost")
+        with open(platform_file_path, "r") as platform_file:
+            xml_string = platform_file.read()
+        simulation.start(xml_string, "ControllerHost")
 
         print(f"Simulation, time is {simulation.get_simulated_time()}")
 
@@ -121,7 +123,7 @@ if __name__ == "__main__":
         print("Getting simulation events that have occurred while I slept...")
         events = simulation.get_events()
         for event in events:
-            print(f"  - Event: {event}")
+            print(f"\t- Event: {event}")
 
         print("Creating another task")
         task2 = workflow.add_task("task2", 100.0, 1, 1, 0)
@@ -131,7 +133,7 @@ if __name__ == "__main__":
 
         print("Creating a VM on the cloud compute service...")
         my_vm = ccs.create_vm(1, 100,
-                              {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},{})
+                              {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"}, {})
 
         print("Starting the VM...")
         vm_cs = my_vm.start()
@@ -141,7 +143,7 @@ if __name__ == "__main__":
 
         print("Synchronously waiting for the next simulation event...")
         event = simulation.wait_for_next_event()
-        print(f"  - Event: {event}")
+        print(f"\t- Event: {event}")
 
         print(f"Time is {simulation.get_simulated_time()}")
 
@@ -157,7 +159,6 @@ if __name__ == "__main__":
         #     print("Action is still running!")
         # if (my_sleep_action_1.get_state_as_string() == "RUNNING"):
         #    print("Action is still running!")
-
 
         print("Terminating simulation")
 

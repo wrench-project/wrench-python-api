@@ -119,7 +119,7 @@ class CompoundJob(SimulationItem):
         return self._simulation._add_file_write_action(self, name, file, storage_service)
 
     def add_file_read_action(self, name: str, file: File, storage_service: StorageService,
-                             num_bytes_to_read=-1.0) -> FileReadAction:
+                             num_bytes_to_read=0.0) -> FileReadAction:
         """
         Add a file write action to the compound job
 

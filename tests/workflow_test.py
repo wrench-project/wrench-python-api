@@ -22,23 +22,27 @@ if __name__ == "__main__":
 
     simulation = wrench.Simulation()
 
+    with open(platform_file_path, "r") as platform_file:
+        bogus_xml_string = platform_file.read() + "BOGUS"
     try:
         simulation_bogus = wrench.Simulation()
-        simulation_bogus.start(pathlib.Path("bogus/path/to/file"), "ControllerHost")
+        simulation_bogus.start(bogus_xml_string, "ControllerHost")
+        raise wrench.WRENCHException("Should be able to start a simulation with a bogus xml")
+    except wrench.WRENCHException as e:
+        pass
+
+    with open(platform_file_path, "r") as platform_file:
+        xml_string = platform_file.read()
+    try:
+        simulation_bogus = wrench.Simulation()
+        simulation_bogus.start(xml_string, "ControllerHost_BOGUS")
         raise wrench.WRENCHException("Should be able to start a simulation with a bogus xml file")
     except wrench.WRENCHException as e:
         pass
 
-    try:
-        simulation_bogus = wrench.Simulation()
-        simulation_bogus.start(platform_file_path, "ControllerHost_BOGUS")
-        raise wrench.WRENCHException("Should be able to start a simulation with a bogus xml file")
-    except wrench.WRENCHException as e:
-        pass
-
-    simulation.start(platform_file_path, "ControllerHost")
+    simulation.start(xml_string, "ControllerHost")
     # Bogus restart that does nothing
-    simulation.start(platform_file_path, "ControllerHost")
+    simulation.start(xml_string, "ControllerHost")
 
     workflow1 = simulation.create_workflow()
     file1 = simulation.add_file("file1", 1024)
@@ -97,8 +101,10 @@ if __name__ == "__main__":
 
     simulation.terminate()
 
+    with open(platform_file_path, "r") as platform_file:
+        xml_string = platform_file.read()
     try:
-        simulation.start(platform_file_path, "ControllerHost")
+        simulation.start(xml_string, "ControllerHost")
         raise wrench.WRENCHException("Shouldn't be able to restart a simulation")
     except wrench.WRENCHException as e:
         pass

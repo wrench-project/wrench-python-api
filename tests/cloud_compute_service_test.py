@@ -19,8 +19,10 @@ if __name__ == "__main__":
     platform_file_path = pathlib.Path(current_dir / "sample_platform.xml")
 
     simulation = wrench.Simulation()
+    with open(platform_file_path, "r") as platform_file:
+        xml_string = platform_file.read()
     try:
-        simulation.start(platform_file_path, "ControllerHost")
+        simulation.start(xml_string, "ControllerHost")
     except wrench.WRENCHException as e:
         sys.stderr.write(f"Error: {e}\n")
         exit(1)

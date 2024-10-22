@@ -23,7 +23,9 @@ if __name__ == "__main__":
     simulation = wrench.Simulation()
 
     # Starting the simulation, with this simulated process running on the host ControllerHost
-    simulation.start(platform_file_path, "ControllerHost")
+    with open(platform_file_path, "r") as platform_file:
+        xml_string = platform_file.read()
+    simulation.start(xml_string, "ControllerHost")
 
     # Creating a  compute services
     bmcs = simulation.create_bare_metal_compute_service(

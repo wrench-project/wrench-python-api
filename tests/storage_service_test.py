@@ -22,7 +22,9 @@ if __name__ == "__main__":
 
     simulation = wrench.Simulation()
 
-    simulation.start(platform_file_path, "ControllerHost")
+    with open(platform_file_path, "r") as platform_file:
+        xml_string = platform_file.read()
+    simulation.start(xml_string, "ControllerHost")
 
     ss = simulation.create_simple_storage_service("StorageHost", ["/"])
     # Coverage

@@ -116,13 +116,15 @@ def main():
         print(f"Starting the simulation using the XML platform file...")
         current_dir = pathlib.Path(__file__).parent.resolve()
         platform_file_path = pathlib.Path(current_dir / "one_host_and_several_clusters.xml")
-        simulation.start(platform_file_path, user_host)
+        with open(platform_file_path, "r") as platform_file:
+            xml_string = platform_file.read()
+        simulation.start(xml_string, user_host)
 
         # Get the list of all hostnames in the platform
         print(f"Getting the list of all hostnames...")
         list_of_hostnames = simulation.get_all_hostnames()
 
-        if not "UserHost" in list_of_hostnames:
+        if "UserHost" not in list_of_hostnames:
             raise Exception("This simulator assumes that the XML platform files has a host with hostname UserHost that"
                             " has a disk mounted at '/'")
         list_of_hostnames.remove("UserHost")
@@ -183,7 +185,7 @@ def main():
             # Wait for next event
             event = simulation.wait_for_next_event()
             if event["event_type"] != "standard_job_completion":
-                print(f"  - Event: {event}")  # Should make sure it's a job completion
+                print(f"\t- Event: {event}")  # Should make sure it's a job completion
                 raise wrench.WRENCHException("Received an unexpected event")
             else:
                 completed_job = event["standard_job"]

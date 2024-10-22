@@ -23,7 +23,9 @@ if __name__ == "__main__":
         simulation = wrench.Simulation()
 
         # Starting the simulation, with this simulated process running on the host ControllerHost
-        simulation.start(platform_file_path, "ControllerHost")
+        with open(platform_file_path, "r") as platform_file:
+            xml_string = platform_file.read()
+        simulation.start(xml_string, "ControllerHost")
 
         hosts = simulation.get_all_hostnames()
         print(f"Hosts in the platform are: {hosts}")
@@ -142,12 +144,12 @@ if __name__ == "__main__":
 
         print("Synchronously waiting for the next simulation event...")
         event = simulation.wait_for_next_event()
-        print(f"  - Event: {event}")
+        print(f"\t- Event: {event}")
         print(f"Time is {simulation.get_simulated_time()}")
 
         print("Synchronously waiting for the next simulation event...")
         event = simulation.wait_for_next_event()
-        print(f"  - Event: {event}")
+        print(f"\t- Event: {event}")
         print(f"Time is {simulation.get_simulated_time()}")
 
         # print("Synchronously waiting for the next simulation event...")

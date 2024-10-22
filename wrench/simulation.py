@@ -84,19 +84,19 @@ class Simulation:
             r = requests_method(route, json=json_data)
             return r
         except Exception as e:  # pragma no cover
-            raise WRENCHException("Connection to wrench-daemon severed: " + str(e) + "\n"
-                                                                                     "This could be an error on the "
-                                                                                     "wrench-daemon side (likely an uncaught maestro exception, e.g., a deadlock). Enable "
-                                                                                     "logging with the --simulation-logging and --daemon-logging "
-                                                                                     "command-line arguments")
+            raise WRENCHException("Connection to wrench-daemon severed: " +
+                                  str(e) + "\n"
+                                           "This could be an error on the "
+                                           "wrench-daemon side (likely an uncaught maestro exception, e.g., a deadlock). Enable "
+                                           "logging with the --simulation-logging and --daemon-logging "
+                                           "command-line arguments")
 
-    def start(self, platform_file_path: pathlib.Path,
-              controller_hostname: str) -> None:
+    def start(self, platform_xml: str, controller_hostname: str) -> None:
         """
         Start a new simulation (will do nothing if simulation has already started)
 
-        :param platform_file_path: path of a file that contains the simulated platform's description in XML
-        :type platform_file_path: pathlib.Path
+        :param platform_xml: platform description string in XML
+        :type platform_xml: str
         :param controller_hostname: the name of the (simulated) host in the platform on which the
                simulation controller will run
         :type controller_hostname: str
@@ -108,14 +108,7 @@ class Simulation:
             raise WRENCHException("This simulation has been terminated.")
 
         if not self.started:
-            # Read the platform XML
-            try:
-                with open(platform_file_path, "r") as platform_file:
-                    xml = platform_file.read()
-            except Exception as e:
-                raise WRENCHException(f"Cannot read platform file '{platform_file_path.absolute().name}' ({str(e)})")
-
-            self.spec = {"platform_xml": xml, "controller_hostname": controller_hostname}
+            self.spec = {"platform_xml": platform_xml, "controller_hostname": controller_hostname}
             try:
                 r = requests.post(f"{self.daemon_url}/startSimulation", json=self.spec)
             except Exception:  # pragma: no cover
@@ -1627,8 +1620,7 @@ class Simulation:
             raise WRENCHException(response["failure_cause"])
         return
 
-    def _lookup_entry_in_file_registry_service(self, file_registry_service: FileRegistryService, file: File) -> List[
-        StorageService]:
+    def _lookup_entry_in_file_registry_service(self, file_registry_service: FileRegistryService, file: File) -> List[StorageService]:
         """
         Blah
         :param file_registry_service:

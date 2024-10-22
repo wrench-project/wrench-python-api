@@ -19,6 +19,7 @@ from wrench.simulation_item import SimulationItem
 
 from typing import List
 
+
 # noinspection GrazieInspection
 class Workflow(SimulationItem):
     """
