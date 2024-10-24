@@ -338,7 +338,7 @@ class Simulation:
                                      resources: list,
                                      scratch_space: str,
                                      property_list: dict[str, str],
-                                     message_payload_list: dict[str, float]) -> BatchComputeService:
+                                     message_payload_list: dict[str, int]) -> BatchComputeService:
         """
         Create a batch compute service
 
@@ -374,7 +374,7 @@ class Simulation:
                                      execution_host: list,
                                      scratch_space: str,
                                      property_list: dict[str, str],
-                                     message_payload_list: dict[str, float]) -> CloudComputeService:
+                                     message_payload_list: dict[str, int]) -> CloudComputeService:
         """
         Create a cloud compute service
 
