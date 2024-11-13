@@ -24,7 +24,7 @@ def pick_task_to_schedule(tasks: List[Task]):
     the task with the largest flop
     """
     # pick the task with the largest flop amount
-    max_flop = 0
+    max_flop = -1
     target_task = None
     for task in tasks:
         if task.get_flops() > max_flop:
