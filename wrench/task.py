@@ -44,6 +44,8 @@ class Task(SimulationItem):
         self.min_num_cores = None
         self.max_num_cores = None
         self.memory = None
+        self.input_files = []
+        self.output_files = []
 
     class TaskState(Enum):
         NOT_READY = 0
@@ -71,7 +73,8 @@ class Task(SimulationItem):
         :param file: File name
         :type file: File
         """
-        return self._simulation._add_input_file(self, file)
+        self._simulation._add_input_file(self, file)
+        self.input_files.append(file)
 
     def add_output_file(self, file: File) -> None:
         """
@@ -79,7 +82,8 @@ class Task(SimulationItem):
         :param file: File name
         :type file: File
         """
-        return self._simulation._add_output_file(self, file)
+        self._simulation._add_output_file(self, file)
+        self.output_files.append(file)
 
     def get_input_files(self) -> List[File]:
         """
@@ -87,7 +91,8 @@ class Task(SimulationItem):
         :return: List of input file names
         :rtype: List[File]
         """
-        return self._simulation._get_task_input_files(self)
+        return self.input_files
+        # return self._simulation._get_task_input_files(self)
 
     def get_output_files(self) -> List[File]:
         """
@@ -95,7 +100,8 @@ class Task(SimulationItem):
         :return: List of output file names
         :rtype: List[File]
         """
-        return self._simulation._get_task_output_files(self)
+        return self.output_files
+        # return self._simulation._get_task_output_files(self)
 
     def get_flops(self) -> float:
         """
