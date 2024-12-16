@@ -9,7 +9,6 @@
 from wrench.compute_service import ComputeService
 
 
-# noinspection GrazieInspection
 class BareMetalComputeService(ComputeService):
     """
     WRENCH Bare Metal Compute Service class

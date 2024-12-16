@@ -15,7 +15,6 @@ import wrench
 
 if __name__ == "__main__":
 
-
     current_dir = pathlib.Path(__file__).parent.resolve()
     platform_file_path = pathlib.Path(current_dir / "sample_platform.xml")
 
@@ -60,6 +59,5 @@ if __name__ == "__main__":
 
     frs.remove_entry(ss2, file1)
     assert frs.lookup_entry(file1) == [], "Should not find entry in file registry service"
-
 
     simulation.terminate()

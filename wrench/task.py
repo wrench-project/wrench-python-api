@@ -40,6 +40,10 @@ class Task(SimulationItem):
         """
         self.workflow = workflow
         super().__init__(simulation, name)
+        self.flops = None
+        self.min_num_cores = None
+        self.max_num_cores = None
+        self.memory = None
 
     class TaskState(Enum):
         NOT_READY = 0
@@ -99,7 +103,9 @@ class Task(SimulationItem):
         :return: A number of flops
         :rtype: float
         """
-        return self._simulation._task_get_flops(self)
+        if not self.flops:
+            self.flops = self._simulation._task_get_flops(self)
+        return self.flops
 
     def get_min_num_cores(self) -> int:
         """
@@ -107,7 +113,9 @@ class Task(SimulationItem):
         :return: A number of cores
         :rtype: integer
         """
-        return self._simulation._task_get_min_num_cores(self)
+        if not self.min_num_cores:
+            self.min_num_cores = self._simulation._task_get_min_num_cores(self)
+        return self.min_num_cores
 
     def get_max_num_cores(self) -> int:
         """
@@ -115,7 +123,9 @@ class Task(SimulationItem):
         :return: A number of cores
         :rtype: integer
         """
-        return self._simulation._task_get_max_num_cores(self)
+        if not self.max_num_cores:
+            self.max_num_cores = self._simulation._task_get_max_num_cores(self)
+        return self.max_num_cores
 
     def get_memory(self) -> int:
         """
@@ -123,7 +133,9 @@ class Task(SimulationItem):
         :return: A memory size in bytes
         :rtype: int
         """
-        return self._simulation._task_get_memory(self)
+        if not self.memory:
+            self.memory = self._simulation._task_get_memory(self)
+        return self.memory
 
     def get_number_of_children(self) -> int:
         """

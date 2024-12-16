@@ -34,14 +34,14 @@ if __name__ == "__main__":
          "CloudHost2": (6, 12.0)},
         "/scratch",
         {"BareMetalComputeServiceProperty::THREAD_STARTUP_OVERHEAD": "12s"},
-        {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
+        {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024})
 
     bcs = simulation.create_batch_compute_service(
         "BatchHeadHost",
         ["BatchHost1", "BatchHost2"],
         "/scratch",
         {},
-        {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
+        {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024})
 
     # Create two storage service
     ss1 = simulation.create_simple_storage_service("StorageHost", ["/"])
@@ -120,7 +120,7 @@ if __name__ == "__main__":
     assert sa.get_sleep_time() == 5.0, "SleepAction1 doesn't have the correct sleeptime"
 
     # Add a compute action to compound job
-    ca = cj.add_compute_action("ComputeAction1", 100.0, 0.0, 2, 1, ("AMDAHL", 0.8))
+    ca = cj.add_compute_action("ComputeAction1", 100.0, 0, 2, 1, ("AMDAHL", 0.8))
     ca.get_name()
     str(ca)
     repr(ca)

@@ -34,7 +34,7 @@ if __name__ == "__main__":
          "BatchHost2": (6, 12.0)},
         "/scratch",
         {"BareMetalComputeServiceProperty::THREAD_STARTUP_OVERHEAD": "12s"},
-        {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
+        {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024})
 
     workflow = simulation.create_workflow()
 

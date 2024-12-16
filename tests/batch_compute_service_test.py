@@ -34,7 +34,7 @@ if __name__ == "__main__":
             ["BatchHost1", "CloudHost2"],
             "/scratch",
             {},
-            {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
+            {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024})
         raise wrench.WRENCHException("Shouldn't be able to create a bogus batch compute service")
     except wrench.WRENCHException as e:
         pass
@@ -44,7 +44,7 @@ if __name__ == "__main__":
         ["BatchHost1", "BatchHost2"],
         "/scratch",
         {},
-        {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
+        {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024})
 
     # Coverage
     cs.get_name()
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     host = random.randint(1, 2)
     core = random.randint(1, 6)
     second = random.randint(5*60, 15*50)
-    service_specific_args = {"-N": str(host), "-c": str(core), "-t":str(second)}
+    service_specific_args = {"-N": str(host), "-c": str(core), "-t": str(second)}
 
     cs.submit_standard_job(job, service_specific_args)
 

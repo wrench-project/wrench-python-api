@@ -32,7 +32,7 @@ if __name__ == "__main__":
                                                       ["CloudHost1_BOGUS", "CloudHost2"],
                                                       "/scratch",
                                                       {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
-                                                      {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
+                                                      {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024})
         raise wrench.WRENCHException("Shouldn't be able to create bogus cloud compute service")
     except wrench.WRENCHException as e:
         pass
@@ -41,7 +41,7 @@ if __name__ == "__main__":
                                                   ["CloudHost1", "CloudHost2"],
                                                   "/scratch",
                                                   {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
-                                                  {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
+                                                  {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024})
 
     # Coverage
     ccs.get_name()
@@ -55,14 +55,14 @@ if __name__ == "__main__":
     try:
         bogus_my_vm = ccs.create_vm(1000, 100,
                                     {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
-                                    {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
+                                    {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024})
         raise wrench.WRENCHException("Should not be able to create a crazy VM")
     except wrench.WRENCHException as e:
         pass
 
     my_vm = ccs.create_vm(1, 100,
                           {"CloudComputeServiceProperty::VM_BOOT_OVERHEAD": "5s"},
-                          {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
+                          {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024})
     my_vm.get_name()
     str(my_vm)
     repr(my_vm)
@@ -137,7 +137,6 @@ if __name__ == "__main__":
         raise wrench.WRENCHException("Should not be able to submit a compound job to a cloud compute service")
     except wrench.WRENCHException as e:
         pass
-
 
     job = simulation.create_standard_job([task2], {})
     vm_cs.submit_standard_job(job)

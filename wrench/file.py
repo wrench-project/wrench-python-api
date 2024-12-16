@@ -34,6 +34,7 @@ class File(SimulationItem):
         :type name: str
         """
         super().__init__(simulation, name)
+        self.size = None
 
     def get_size(self) -> int:
         """
@@ -42,7 +43,9 @@ class File(SimulationItem):
         :return: A number of bytes
         :rtype: int
         """
-        return self._simulation._file_get_size(self)
+        if not self.size:
+            self.size = self._simulation._file_get_size(self)
+        return self.size;
 
     def __str__(self) -> str:
         """

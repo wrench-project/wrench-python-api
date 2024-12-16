@@ -96,7 +96,7 @@ if __name__ == "__main__":
     f.close()
     workflow2 = simulation.create_workflow_from_json(wfcommons_json_workflow, "2", False,
                                                      False,
-                                                     False, 3.0, 3.0, False,
+                                                     False, 3, 3, False,
                                                      False, False)
 
     simulation.terminate()

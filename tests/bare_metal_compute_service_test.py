@@ -15,7 +15,6 @@ import wrench
 
 if __name__ == "__main__":
 
-
     current_dir = pathlib.Path(__file__).parent.resolve()
     platform_file_path = pathlib.Path(current_dir / "sample_platform.xml")
 
@@ -42,7 +41,7 @@ if __name__ == "__main__":
              "BatchHost2": (6, 12.0)},
             "/scratch",
             {"BareMetalComputeServiceProperty::THREAD_STARTUP_OVERHEAD": "12s"},
-            {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
+            {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024})
     except wrench.WRENCHException as e:
         pass
 
@@ -52,7 +51,7 @@ if __name__ == "__main__":
          "BatchHost2": (6, 12.0)},
         "/scratch",
         {"BareMetalComputeServiceProperty::THREAD_STARTUP_OVERHEAD": "12s"},
-        {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024.0})
+        {"ServiceMessagePayload::STOP_DAEMON_MESSAGE_PAYLOAD": 1024})
 
     # Coverage
     cs.get_name()
@@ -132,9 +131,9 @@ if __name__ == "__main__":
 
     # Trying a bogus job
     workflow1 = simulation.create_workflow()
-    t1 = workflow1.add_task("task", 10.0, 1, 2, 0.0)
+    t1 = workflow1.add_task("task", 10.0, 1, 2, 0)
     workflow2 = simulation.create_workflow()
-    t2 = workflow2.add_task("task", 10.0, 1, 2, 0.0)
+    t2 = workflow2.add_task("task", 10.0, 1, 2, 0)
     try:
         simulation.create_standard_job([t1, t2], {})
         raise wrench.WRENCHException("Shouldn't be able to create a job with tasks from different workflows")

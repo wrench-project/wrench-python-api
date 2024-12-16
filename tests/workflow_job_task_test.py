@@ -145,6 +145,5 @@ if __name__ == "__main__":
     except wrench.WRENCHException as e:
         pass
 
-
     simulation.terminate()
 
