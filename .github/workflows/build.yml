@@ -68,9 +68,9 @@ jobs:
           # WIThOUT DOCKER
           #pip install .
           # END WITHOUT DOCKER
-          docker exec --workdir /home/wrench/ wrench-daemon-container sudo python3 -m pip install build
+          docker exec --workdir /home/wrench/ wrench-daemon-container sudo python3 -m pip install --break-system-packages build
           docker exec --workdir /home/wrench/ wrench-daemon-container sudo python3 -m build
-          docker exec --workdir /home/wrench/ wrench-daemon-container sudo python3 -m pip install ./dist/wrench-*.whl
+          docker exec --workdir /home/wrench/ wrench-daemon-container sudo python3 -m pip install --break-system-packages ./dist/wrench-*.whl
       - name: Run all tests
         run: |
           # WITHOUT DOCKER
@@ -95,7 +95,7 @@ jobs:
           #pip install coverage
           #bash ./.compute_coverage.sh
           # END WITHOUT DOCKER
-          docker exec wrench-daemon-container sudo pip install coverage
+          docker exec wrench-daemon-container sudo pip install --break-system-packages coverage
           COVERAGE_PERCENTAGE=$(docker exec --workdir /home/wrench/ wrench-daemon-container bash ./.compute_coverage.sh)
           echo "COVERAGE_PERCENTAGE: $COVERAGE_PERCENTAGE"
           badge_url="https://img.shields.io/badge/Coverage-${COVERAGE_PERCENTAGE}25-brightgreen"
@@ -135,11 +135,11 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get install -y python3-sphinx sphinx-rtd-theme-common
-          pip install sphinx-rtd-theme
-          pip install sphinx_rtd_theme recommonmark
+          pip install --break-system-packages sphinx-rtd-theme
+          pip install --break-system-packages sphinx_rtd_theme recommonmark
       - name: Check package install
         run: |
-          pip install .
+          pip install --break-system-packages .
       - name: Build documentation
         run: |
           cd docs
