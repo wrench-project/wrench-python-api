@@ -81,41 +81,23 @@ if __name__ == "__main__":
         fwa = cj.add_file_write_action("FileWriteAction1", file1, ss1)
         print(f"Adding {fwa.get_name()} to {cj.get_name()}")
 
-        print(f"File Write Action get_file = {fwa.get_file()}")
-        print(f"File Write Action get_file_location = {fwa.get_file_location()}")
-        print(f"File Write Action uses_scratch = {fwa.uses_scratch}")
-
         # Add a file read action to compound job
         fra = cj.add_file_read_action("FileReadAction1", file1, ss1)
         print(f"Adding {fra.get_name()} to {cj.get_name()}")
-
-        print(f"File Read Action get_file = {fra.get_file()}")
-        print(f"File Read Action get_file_location = {fra.get_file_location()}")
-        print(f"File Read Action get_num_bytes_to_read = {fra.get_file_location()}")
-        print(f"File Read Action uses_scratch = {fra.uses_scratch}")
 
         # Add a file copy action to compound job
         fca = cj.add_file_copy_action("FileCopyAction1", file1, ss1, ss2)
         print(f"Adding {fca.get_name()} to {cj.get_name()}")
 
-        print(f"File Copy Action getFile = {fca.get_file()}")
-        print(f"File Copy Action getSourceFileLocation = {fca.get_source_file_location()}")
-        print(f"File Copy Action getDestinationFileLocation = {fca.get_destination_file_location()}")
-        print(f"File Copy Action usesScratch = {fca.uses_scratch}")
-
         # Add a file delete action to compound job
         fda = cj.add_file_delete_action("FileDeleteAction1", file1, ss1)
         print(f"Adding {fda.get_name()} to {cj.get_name()}")
-
-        print(f"File Delete Action getFile = {fda.get_file()}")
-        print(f"File Delete Action getFileLocation = {fda.get_file_location()}")
-        print(f"File Delete Action usesScratch = {fda.uses_scratch}")
 
         # Add a sleep action to compound job
         sa = cj.add_sleep_action("SleepAction1", 5.0)
         print(f"Adding {sa.get_name()} to {cj.get_name()}")
 
-        print(f"Sleep Action getSleepTime = {sa.get_sleep_time()}")
+        # print(f"Sleep Action getSleepTime = {sa.get_sleep_time()}")
 
         # # Add a parent compound job to another compound job
         cj2_0 = simulation.create_compound_job("")
@@ -151,11 +133,6 @@ if __name__ == "__main__":
         event = simulation.wait_for_next_event()
         print(f"\t- Event: {event}")
         print(f"Time is {simulation.get_simulated_time()}")
-
-        # print("Synchronously waiting for the next simulation event...")
-        # event = simulation.wait_for_next_event()
-        # print(f"  - Event: {event}")
-        # print(f"Time is {simulation.get_simulated_time()}")
 
         print("Terminating simulation")
         simulation.terminate()

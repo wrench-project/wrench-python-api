@@ -532,10 +532,10 @@ class Simulation:
             task_max_num_cores = task_spec["max_num_cores"]
             task_memory = task_spec["memory"]
             input_file_list = []
-            for file_name in task_spec["input_files"]:
+            for file_name in task_spec["input_file_names"]:
                 input_file_list.append(self.files[file_name])
             output_file_list = []
-            for file_name in task_spec["output_files"]:
+            for file_name in task_spec["output_file_names"]:
                 output_file_list.append(self.files[file_name])
 
             workflow.tasks[task_name] = Task(self, workflow, task_name, task_flops, task_min_num_cores, task_max_num_cores, task_memory, input_file_list, output_file_list)
