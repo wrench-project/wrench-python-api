@@ -28,7 +28,11 @@ class Task(SimulationItem):
     WRENCH Task class
     """
 
-    def __init__(self, simulation: Simulation, workflow: Workflow, name: str) -> None:
+    def __init__(self, simulation: Simulation, workflow: Workflow, name: str,
+                 flops: flops = None,
+                 min_num_cores:  number = None,
+                 max_num_cores: number = None,
+                 memory: number = None) -> None:
         """
         Constructor
         :param simulation: simulation object
@@ -40,10 +44,10 @@ class Task(SimulationItem):
         """
         self.workflow = workflow
         super().__init__(simulation, name)
-        self.flops = None
-        self.min_num_cores = None
-        self.max_num_cores = None
-        self.memory = None
+        self.flops = flops
+        self.min_num_cores = min_num_cores
+        self.max_num_cores = max_num_cores
+        self.memory = memory
         self.input_files = None
         self.output_files = None
 

@@ -24,7 +24,7 @@ class File(SimulationItem):
     WRENCH File class
     """
 
-    def __init__(self, simulation: Simulation, name: str) -> None:
+    def __init__(self, simulation: Simulation, name: str, size: number = None) -> None:
         """
         Constructor
 
@@ -34,7 +34,7 @@ class File(SimulationItem):
         :type name: str
         """
         super().__init__(simulation, name)
-        self.size = None
+        self.size = size
 
     def get_size(self) -> int:
         """

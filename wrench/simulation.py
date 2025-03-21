@@ -7,6 +7,7 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
+import sys
 import atexit
 import json
 import pathlib
@@ -262,7 +263,7 @@ class Simulation:
 
         response = r.json()
         if response["wrench_api_request_success"]:
-            new_file = File(self, name)
+            new_file = File(self, name, size)
             self.files[name] = new_file
             return new_file
         raise WRENCHException(response["failure_cause"])
@@ -509,6 +510,8 @@ class Simulation:
                 "ignore_avg_cpu": ignore_avg_cpu,
                 "show_warnings": show_warnings}
 
+        sys.stderr.write("HERE\n")
+
         r = self.__send_request_to_daemon(requests.post, f"{self.daemon_url}/{self.simid}/createWorkflowFromJSON",
                                           json_data=data)
         response = r.json()
@@ -516,13 +519,26 @@ class Simulation:
         # Create the workflow
         workflow = Workflow(self, response["workflow_name"])
 
+        sys.stderr.write("CREATING TASKS\n")
         # Create the tasks
-        for task_name in response["tasks"]:
-            workflow.tasks[task_name] = Task(self, workflow, task_name)
+        for task_spec in response["tasks"]:
+            task_name = task_spec["name"]
+            task_flops = task_spec["flops"]
+            task_min_num_cores = task_spec["min_num_cores"]
+            task_max_num_cores = task_spec["max_num_cores"]
+            task_memory = task_spec["memory"]
+            workflow.tasks[task_name] = Task(self, workflow, task_name, task_flops, task_min_num_cores, task_max_num_cores, task_memory)
+
 
         # Create the files
-        for file_name in response["files"]:
-            self.files[file_name] = File(self, file_name)
+        sys.stderr.write("CREATING FILES\n")
+        print(response["files"])
+        for file_spec in response["files"]:
+            file_name = file_spec["name"]
+            file_size = file_spec["size"]
+            sys.stderr.write(f"---> {file_name}: {file_size}\n")
+            self.files[file_name] = File(self, file_name, file_size)
+        sys.stderr.write("CREATED FILES\n")
 
         return workflow
 
@@ -1572,7 +1588,7 @@ class Simulation:
 
         response = r.json()
         if response["wrench_api_request_success"]:
-            workflow.tasks[name] = Task(self, workflow, name)
+            workflow.tasks[name] = Task(self, workflow, name, flops, min_num_cores, max_num_cores, memory)
             return workflow.tasks[name]
         raise WRENCHException(response["failure_cause"])
 
