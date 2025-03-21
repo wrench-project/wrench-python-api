@@ -517,6 +517,13 @@ class Simulation:
         # Create the workflow
         workflow = Workflow(self, response["workflow_name"])
 
+
+        # Create the files (caching parameter values)
+        for file_spec in response["files"]:
+            file_name = file_spec["name"]
+            file_size = file_spec["size"]
+            self.files[file_name] = File(self, file_name, file_size)
+
         # Create the tasks (caching parameter values)
         for task_spec in response["tasks"]:
             task_name = task_spec["name"]
@@ -524,15 +531,15 @@ class Simulation:
             task_min_num_cores = task_spec["min_num_cores"]
             task_max_num_cores = task_spec["max_num_cores"]
             task_memory = task_spec["memory"]
-            workflow.tasks[task_name] = Task(self, workflow, task_name, task_flops, task_min_num_cores, task_max_num_cores, task_memory)
+            input_file_list = []
+            for file_name in task_spec["input_files"]:
+                input_file_list.append(self.files[file_name])
+            output_file_list = []
+            for file_name in task_spec["output_files"]:
+                output_file_list.append(self.files[file_name])
 
+            workflow.tasks[task_name] = Task(self, workflow, task_name, task_flops, task_min_num_cores, task_max_num_cores, task_memory, input_file_list, output_file_list)
 
-        # Create the files (caching parameter values)
-        print(response["files"])
-        for file_spec in response["files"]:
-            file_name = file_spec["name"]
-            file_size = file_spec["size"]
-            self.files[file_name] = File(self, file_name, file_size)
 
         return workflow
 

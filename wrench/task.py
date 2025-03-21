@@ -32,7 +32,9 @@ class Task(SimulationItem):
                  flops: flops = None,
                  min_num_cores:  number = None,
                  max_num_cores: number = None,
-                 memory: number = None) -> None:
+                 memory: number = None,
+                 input_files: List[File] = None,
+                 output_files: List[File] = None) -> None:
         """
         Constructor
         :param simulation: simulation object
@@ -48,8 +50,8 @@ class Task(SimulationItem):
         self.min_num_cores = min_num_cores
         self.max_num_cores = max_num_cores
         self.memory = memory
-        self.input_files = None
-        self.output_files = None
+        self.input_files = input_files
+        self.output_files = output_files
 
     class TaskState(Enum):
         NOT_READY = 0

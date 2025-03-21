@@ -176,6 +176,7 @@ def main():
         for f in files:
             ss.create_file_copy(f)
 
+
         # We are now ready to schedule the workflow
         print(f"Starting my main loop!")
         while not workflow.is_done():
